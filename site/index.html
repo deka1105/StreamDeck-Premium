@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#070b14" />
+<title>streamPhoneDeck — your phone is the button</title>
+<meta name="description" content="Turn your phone into a Stream Deck-style control surface. A native app pairs with an installable desktop host by scanning a QR — end-to-end encrypted — then tiles launch apps, open sites, fire keyboard shortcuts, or type text on your computer." />
+<style>
+  :root {
+    --ground: #070b14;
+    --ground-2: #0a1120;
+    --panel: #0e1626;
+    --panel-2: #121c30;
+    --line: rgba(255,255,255,.09);
+    --line-strong: rgba(255,255,255,.16);
+    --ink: #e8eef9;
+    --muted: #8a99b2;
+    --muted-2: #6b7a94;
+    --accent: #46bdf6;
+    --accent-deep: #0ea5e9;
+    --accent-glow: rgba(70,189,246,.35);
+    --good: #4ade80;
+
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    --maxw: 1080px;
+    --pad: clamp(18px, 5vw, 24px);
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px);
+    --safe-r: env(safe-area-inset-right, 0px);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    overflow-x: hidden;
+    background:
+      radial-gradient(1200px 700px at 78% -8%, rgba(70,189,246,.10), transparent 60%),
+      radial-gradient(900px 600px at 8% 12%, rgba(139,92,246,.08), transparent 55%),
+      var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrap {
+    width: 100%; max-width: var(--maxw); margin: 0 auto;
+    padding-inline: max(var(--pad), var(--safe-l), var(--safe-r));
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  img, svg { max-width: 100%; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--accent);
+  }
+
+  /* ---- scroll progress ---- */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+    z-index: 60; transition: width .1s linear;
+  }
+  @media (prefers-reduced-motion: reduce) { #progress { transition: none; } }
+
+  /* ---- top bar ---- */
+  header.bar {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--ground) 80%, transparent);
+    border-bottom: 1px solid var(--line);
+    padding-top: var(--safe-t);
+  }
+  .bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 58px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; flex: none; }
+  .brand .dot { width: 22px; height: 22px; border-radius: 7px; background: linear-gradient(135deg, #0ea5e9, #6366f1); box-shadow: 0 0 16px var(--accent-glow); }
+  .brand .name { font-size: clamp(.95rem, 3.4vw, 1.05rem); }
+  .bar nav {
+    display: flex; gap: 6px; font-size: .82rem;
+    overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+    margin: 0 -4px; padding: 0 4px;
+  }
+  .bar nav::-webkit-scrollbar { display: none; }
+  .bar nav a {
+    color: var(--muted); white-space: nowrap; padding: 7px 10px; border-radius: 8px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .bar nav a:hover { color: var(--ink); text-decoration: none; }
+  .bar nav a.active { color: var(--ink); background: rgba(70,189,246,.12); }
+  @media (max-width: 520px) { .brand .name { display: none; } }
+
+  /* ---- reveal on scroll ---- */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+  /* ---- hero ---- */
+  .hero { padding: clamp(40px, 8vw, 96px) 0 clamp(48px, 8vw, 64px); }
+  .hero .grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(36px, 6vw, 56px); align-items: center; }
+  @media (max-width: 860px) { .hero .grid { grid-template-columns: 1fr; } }
+
+  h1 {
+    font-size: clamp(2.3rem, 8.5vw, 4.1rem); line-height: 1.02; letter-spacing: -.035em;
+    font-weight: 800; margin: 16px 0 0; text-wrap: balance;
+  }
+  h1 .accent { color: var(--accent); }
+  .lead { color: var(--muted); font-size: clamp(1rem, 3.6vw, 1.12rem); max-width: 34ch; margin: 18px 0 0; }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 12px 20px; border-radius: 12px; font-weight: 650; font-size: .95rem;
+    border: 1px solid transparent; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent-deep), #2563eb); color: #fff; box-shadow: 0 8px 30px -8px var(--accent-glow); }
+  .btn-primary:hover { text-decoration: none; filter: brightness(1.08); }
+  .btn-ghost { background: var(--panel); border-color: var(--line-strong); color: var(--ink); }
+  .btn-ghost:hover { text-decoration: none; border-color: var(--accent); }
+  @media (max-width: 400px) { .cta .btn { flex: 1 1 100%; } }
+
+  .runline {
+    margin-top: 24px; font-family: var(--mono); font-size: clamp(.76rem, 3vw, .84rem);
+    background: var(--ground-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; color: var(--muted); display: flex; align-items: center; gap: 10px;
+    max-width: 380px; overflow-x: auto;
+  }
+  .runline b { color: var(--ink); font-weight: 600; }
+  .runline .prompt { color: var(--accent); }
+
+  /* ---- device / deck ---- */
+  .device {
+    justify-self: center; width: min(320px, 88vw);
+    background: linear-gradient(180deg, #0c1322, #070c16);
+    border: 1px solid var(--line-strong); border-radius: 34px; padding: 16px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05);
+    touch-action: manipulation;
+  }
+  .device .notch { width: 92px; height: 22px; background: #05080f; border-radius: 0 0 12px 12px; margin: -16px auto 12px; }
+  .device .head { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 12px; }
+  .device .head .title { font-weight: 700; font-size: .82rem; }
+  .device .head .pill { font-family: var(--mono); font-size: .6rem; color: var(--accent); border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; }
+
+  .deck { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tile {
+    position: relative; aspect-ratio: 1; border-radius: 16px; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+    color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 6px 16px -6px rgba(0,0,0,.6);
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards; overflow: hidden;
+    font-family: inherit; -webkit-user-select: none; user-select: none;
+  }
+  .tile:hover { transform: translateY(-2px); filter: brightness(1.12); }
+  .tile:active { transform: scale(.93); filter: brightness(1.25); }
+  .tile.hint { animation: rise .5s backwards, nudge 1.4s ease 1s 2; }
+  .tile .em { font-size: clamp(1.4rem, 6vw, 1.6rem); line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+  .tile .lb { font-size: clamp(.58rem, 2.6vw, .66rem); font-weight: 700; letter-spacing: -.01em; }
+  .tile .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,.5); transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: ripple .5s ease-out forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.96); } }
+  @keyframes nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes ripple { to { transform: translate(-50%,-50%) scale(9); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .tile, .tile.hint { animation: none; }
+    .tile .ripple { animation: none; display: none; }
+  }
+
+  .readout {
+    margin-top: 12px; font-family: var(--mono); font-size: .7rem; color: var(--muted);
+    background: var(--ground-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 11px; display: flex; align-items: center; gap: 8px; min-height: 34px;
+    transition: border-color .2s ease;
+  }
+  .readout.flash { border-color: var(--accent); }
+  .readout .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted-2); flex: none; transition: background .2s ease; }
+  .readout.flash .dot { background: var(--good); box-shadow: 0 0 8px var(--good); }
+  .readout b { color: var(--ink); }
+  .readout .cmd { color: var(--accent); margin-left: auto; }
+
+  /* ---- toast ---- */
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%) translateY(20px);
+    background: var(--panel-2); border: 1px solid var(--line-strong); color: var(--ink);
+    padding: 11px 16px; border-radius: 12px; font-size: .85rem; display: flex; align-items: center; gap: 10px;
+    z-index: 60; box-shadow: 0 20px 50px -20px rgba(0,0,0,.8); max-width: calc(100vw - 32px);
+    opacity: 0; pointer-events: none; transition: opacity .22s ease, transform .22s ease;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: opacity .2s ease; } .toast.show { transform: translateX(-50%); } }
+
+  /* ---- keycap chips ---- */
+  .keys { display: inline-flex; gap: 5px; align-items: center; }
+  kbd { font-family: var(--mono); font-size: .72rem; line-height: 1; background: var(--panel-2); color: var(--ink); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 6px; padding: 5px 7px; min-width: 22px; text-align: center; }
+
+  /* ---- sections ---- */
+  section { padding: clamp(48px, 9vw, 68px) 0; border-top: 1px solid var(--line); }
+  .sec-head { max-width: 52ch; margin-bottom: clamp(28px, 5vw, 40px); }
+  h2 { font-size: clamp(1.5rem, 5.5vw, 2.15rem); letter-spacing: -.025em; font-weight: 800; margin: 12px 0 0; text-wrap: balance; }
+  .sec-head p { color: var(--muted); margin: 12px 0 0; }
+
+  /* ---- signal path ---- */
+  .path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .path { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 380px) { .path { grid-template-columns: 1fr; } }
+  .node { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px 18px; position: relative; }
+  .node .step { font-family: var(--mono); font-size: .7rem; color: var(--accent); }
+  .node h3 { margin: 10px 0 6px; font-size: 1rem; }
+  .node p { margin: 0; color: var(--muted); font-size: .86rem; }
+  .node .arrow { position: absolute; right: -11px; top: 50%; transform: translateY(-50%); color: var(--muted-2); font-size: 1.1rem; z-index: 2; }
+  @media (max-width: 760px) { .node .arrow { display: none; } }
+
+  /* ---- action cards ---- */
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 680px) { .cards { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; transition: transform .15s ease, border-color .15s ease; }
+  .card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
+  .card .top { display: flex; align-items: center; gap: 12px; }
+  .card .badge { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 1.2rem; flex: none; }
+  .card h3 { margin: 0; font-size: 1.05rem; }
+  .card .type { font-family: var(--mono); font-size: .7rem; color: var(--muted-2); }
+  .card p { color: var(--muted); font-size: .9rem; margin: 14px 0 12px; }
+  .card .ex { font-family: var(--mono); font-size: .78rem; color: var(--ink); background: var(--ground-2); border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; display: flex; align-items: center; gap: 8px; overflow-x: auto; }
+
+  /* ---- editing split ---- */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 40px); align-items: center; }
+  @media (max-width: 800px) { .split { grid-template-columns: 1fr; } }
+  .checks { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
+  .checks li { display: flex; gap: 12px; color: var(--muted); }
+  .checks .ic { color: var(--accent); flex: none; }
+  .checks b { color: var(--ink); font-weight: 650; }
+  .editor-mock { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; }
+  .editor-mock .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .editor-mock .field { background: var(--ground-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .85rem; color: var(--muted); margin-bottom: 10px; }
+  .editor-mock .seg { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-bottom: 14px; }
+  .editor-mock .seg span { text-align: center; font-size: .72rem; padding: 8px 4px; border-radius: 9px; border: 1px solid var(--line); color: var(--muted); }
+  .editor-mock .seg span.on { border-color: var(--accent); color: var(--accent); background: rgba(70,189,246,.1); }
+  .editor-mock .valid { font-size: .82rem; color: var(--good); font-family: var(--mono); }
+  .swatches { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .swatches i { width: 22px; height: 22px; border-radius: 999px; display: inline-block; }
+  .swatches i.sel { outline: 2px solid #fff; outline-offset: 2px; }
+
+  /* ---- get started ---- */
+  .steps { display: grid; gap: 14px; counter-reset: s; }
+  .step-row { display: grid; grid-template-columns: 34px 1fr; gap: 16px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+  .step-row .n { counter-increment: s; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-family: var(--mono); font-size: .82rem; color: var(--ground); background: var(--accent); font-weight: 700; }
+  .step-row .n::before { content: counter(s); }
+  .step-row .body { min-width: 0; }
+  .step-row .body strong { display: block; margin-bottom: 6px; }
+  .step-row .body p { margin: 0; color: var(--muted); font-size: .88rem; }
+
+  /* ---- code + copy ---- */
+  .code { position: relative; margin-top: 8px; }
+  .code pre { margin: 0; background: var(--ground-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 46px 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: .82rem; color: #cfe3f5; }
+  pre .c { color: var(--muted-2); }
+  pre .a { color: var(--accent); }
+  .copy {
+    position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer;
+    display: grid; place-items: center; font-size: .8rem; transition: color .15s ease, border-color .15s ease;
+  }
+  .copy:hover { color: var(--ink); border-color: var(--accent); }
+  .copy.done { color: var(--good); border-color: var(--good); }
+
+  /* ---- security callout ---- */
+  .callout { background: linear-gradient(180deg, rgba(245,158,11,.08), rgba(245,158,11,.02)); border: 1px solid rgba(245,158,11,.28); border-radius: 18px; padding: 24px 26px; display: flex; gap: 18px; }
+  .callout .warn { font-size: 1.5rem; flex: none; }
+  .callout h3 { margin: 0 0 8px; font-size: 1.05rem; }
+  .callout p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+  footer { border-top: 1px solid var(--line); padding: 40px 0 calc(50px + var(--safe-b)); color: var(--muted-2); font-size: .85rem; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  footer .mono { font-family: var(--mono); }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> <span class="name">streamPhoneDeck</span></div>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#actions">Actions</a>
+      <a href="#edit">Editing</a>
+      <a href="#security">Security</a>
+      <a href="#start">Get running</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="wrap grid">
+      <div>
+        <span class="eyebrow">Phone → Computer · end-to-end encrypted</span>
+        <h1>Your phone is the <span class="accent">button.</span></h1>
+        <p class="lead">A native app pairs with your computer by scanning a QR — encrypted, over your own Wi-Fi. Then a grid of tiles launches apps, opens sites, fires shortcuts, or types text on your Mac or PC.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#start">Get running →</a>
+          <a class="btn btn-ghost" href="https://github.com/deka1105/streamPhoneDeck">View source</a>
+        </div>
+        <div class="runline"><span class="prompt">◈</span> <span>Scan a QR to pair — <b>X25519 + AES-256-GCM</b></span></div>
+      </div>
+
+      <!-- live-ish deck -->
+      <div class="device" aria-label="Interactive demo — tap a tile">
+        <div class="notch"></div>
+        <div class="head">
+          <span class="title">streamPhoneDeck</span>
+          <span class="pill">● live</span>
+        </div>
+        <div class="deck" id="deck"><!-- tiles injected --></div>
+        <div class="readout" id="readout"><span class="dot"></span> <span id="readout-text">Tap a tile to see it fire →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">The signal path</span>
+        <h2>Scan once to pair — then every press is sealed end-to-end.</h2>
+        <p>The phone is a <b>native app</b>. It scans a QR to do an X25519 key exchange with an installable <b>desktop host</b>, then each button press is an AES-256-GCM message only that host can open. No cloud, no account — just your Wi-Fi.</p>
+      </div>
+      <div class="path">
+        <div class="node reveal"><div class="step">01</div><h3>Pair</h3><p>Scan the host's QR — a forward-secret handshake.</p><span class="arrow">→</span></div>
+        <div class="node reveal"><div class="step">02</div><h3>Phone app</h3><p>Tap a tile; it's sealed with your device key.</p><span class="arrow">→</span></div>
+        <div class="node reveal"><div class="step">03</div><h3>Desktop host</h3><p>Menu-bar app verifies + runs the action.</p><span class="arrow">→</span></div>
+        <div class="node reveal"><div class="step">04</div><h3>Your OS</h3><p>App opens · site loads · keys &amp; text fire.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTIONS -->
+  <section id="actions">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">What a tile can do</span>
+        <h2>Five kinds of action, one tap each.</h2>
+      </div>
+      <div class="cards">
+        <div class="card reveal">
+          <div class="top"><div class="badge" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">🚀</div><div><h3>Launch an app</h3><div class="type">type: app</div></div></div>
+          <p>Open or focus any application by name.</p>
+          <div class="ex">open -a <span style="color:var(--accent)">"Visual Studio Code"</span></div>
+        </div>
+        <div class="card reveal">
+          <div class="top"><div class="badge" style="background:linear-gradient(135deg,#525252,#262626)">🌐</div><div><h3>Open a website</h3><div class="type">type: url</div></div></div>
+          <p>Send any URL to your default browser.</p>
+          <div class="ex">https://<span style="color:var(--accent)">github.com</span></div>
+        </div>
+        <div class="card reveal">
+          <div class="top"><div class="badge" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">⌨️</div><div><h3>Fire a shortcut</h3><div class="type">type: keys</div></div></div>
+          <p>Paste a key string — validated live. macOS &amp; Windows.</p>
+          <div class="ex"><span class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>4</kbd></span> <span style="color:var(--muted-2)">→ screenshot</span></div>
+        </div>
+        <div class="card reveal">
+          <div class="top"><div class="badge" style="background:linear-gradient(135deg,#0284c7,#0369a1)">📝</div><div><h3>Type text</h3><div class="type">type: text</div></div></div>
+          <p>Send any string — typed into the focused app. Optional countdown delay.</p>
+          <div class="ex">type <span style="color:var(--accent)">"Hello, world!"</span></div>
+        </div>
+        <div class="card reveal">
+          <div class="top"><div class="badge" style="background:linear-gradient(135deg,#f59e0b,#b45309)">⚡</div><div><h3>Run a command</h3><div class="type">type: shell</div></div></div>
+          <p>Execute a shell command on the host machine.</p>
+          <div class="ex">osascript -e <span style="color:var(--accent)">'set volume…'</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDITING -->
+  <section id="edit">
+    <div class="wrap split">
+      <div class="reveal">
+        <span class="eyebrow">Make it yours</span>
+        <h2>Build your deck on the phone. No code.</h2>
+        <ul class="checks">
+          <li><span class="ic">✦</span><span><b>Add, edit, delete</b> tiles right in the app — tap <b>Edit</b>, then any tile.</span></li>
+          <li><span class="ic">✦</span><span><b>Resize the grid &amp; tiles</b> — pick 2–5 columns, and make any tile span cells (2×1, 2×2…).</span></li>
+          <li><span class="ic">✦</span><span><b>Paste key strings</b> like <span class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>4</kbd></span> — checked as you type and shown back to you.</span></li>
+          <li><span class="ic">✦</span><span><b>Send free text</b> with an optional countdown, plus icon &amp; color quick-picks.</span></li>
+          <li><span class="ic">✦</span><span><b>Saved per device</b> — your phone keeps its own layout.</span></li>
+        </ul>
+      </div>
+      <div class="editor-mock reveal" aria-hidden="true">
+        <div class="row"><strong>New tile</strong><span style="color:var(--muted-2)">✕</span></div>
+        <div class="field">Label — <span style="color:var(--ink)">Screenshot</span></div>
+        <div class="seg"><span>App</span><span>Website</span><span class="on">Shortcut</span><span>Command</span></div>
+        <div class="field" style="font-family:var(--mono)">cmd+shift+4</div>
+        <div class="valid">✓ ⌘ ⇧ 4</div>
+        <div class="swatches">
+          <i class="sel" style="background:linear-gradient(135deg,#d946ef,#a21caf)"></i>
+          <i style="background:linear-gradient(135deg,#0ea5e9,#0369a1)"></i>
+          <i style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"></i>
+          <i style="background:linear-gradient(135deg,#f43f5e,#be123c)"></i>
+          <i style="background:linear-gradient(135deg,#10b981,#047857)"></i>
+          <i style="background:linear-gradient(135deg,#f59e0b,#b45309)"></i>
+        </div>
+        <div class="seg" style="grid-template-columns:56px repeat(4,1fr);align-items:center;margin-top:16px">
+          <span style="border:none;text-align:left;color:var(--muted)">Width</span>
+          <span>1</span><span class="on">2</span><span>3</span><span>4</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GET RUNNING -->
+  <section id="start">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Get running</span>
+        <h2>Install the host, run the app, scan to pair.</h2>
+      </div>
+      <div class="steps">
+        <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Run the desktop host</strong><p>Install the menu-bar app (macOS/Windows), or run it from source. It shows a pairing QR.</p><div class="code"><pre>cd desktop &amp;&amp; npm install
+npm start  <span class="c"># tray app + QR window</span></pre></div></div></div>
+        <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Install the phone app</strong><p>Build a dev or standalone client — the Android APK also builds in CI.</p><div class="code"><pre>cd mobile &amp;&amp; npm install
+npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></div></div>
+        <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Scan the QR to pair</strong><p>Both devices on the same Wi-Fi — the channel is end-to-end encrypted. Then tap tiles.</p><div class="code"><pre><span class="a">Pair a phone</span> → scan → paired ✓</pre></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section id="security">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Secure by design</span>
+        <h2>No cloud, no account — and nobody on your Wi-Fi gets in.</h2>
+        <p>The QR carries only a public key. Phone and host derive a shared key over X25519, and every message is AES-256-GCM with a monotonic counter — so an attacker on the same network can't read, forge, replay, or hijack the pairing.</p>
+      </div>
+      <div class="cards">
+        <div class="card reveal"><div class="top"><div class="badge" style="background:linear-gradient(135deg,#10b981,#047857)">🔑</div><div><h3>Forward-secret pairing</h3></div></div><p>A screenshot of the QR can't derive the key, and a later leak doesn't expose past sessions.</p></div>
+        <div class="card reveal"><div class="top"><div class="badge" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">🔒</div><div><h3>Per-device keys</h3></div></div><p>Each phone gets its own key and appears in the host — revoke any of them with one tap.</p></div>
+      </div>
+      <div class="callout reveal" style="margin-top:16px">
+        <div class="warn">⚠️</div>
+        <div>
+          <h3>One honest caveat</h3>
+          <p>A <b>shell</b> tile runs arbitrary commands on the host — that's the point, but only pair devices you control. For public distribution, sign the desktop app (Developer ID / Authenticode) so it installs without warnings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>streamPhoneDeck — a Stream Deck that lives on your phone.</span>
+    <span class="mono">Expo · React Native · Electron · X25519 + AES-256-GCM</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- deck tiles ---- */
+  var tiles = [
+    { em:"🧭", lb:"Safari",     g:["#0ea5e9","#0369a1"], fire:"Launch Safari" },
+    { em:"💻", lb:"VS Code",    g:["#3b82f6","#1d4ed8"], fire:"Launch VS Code" },
+    { em:"📁", lb:"Finder",     g:["#6366f1","#4338ca"], fire:"Launch Finder" },
+    { em:"🔍", lb:"Spotlight",  g:["#8b5cf6","#6d28d9"], fire:"⌘ Space" },
+    { em:"📸", lb:"Screenshot", g:["#d946ef","#a21caf"], fire:"⌘ ⇧ 4" },
+    { em:"🔒", lb:"Lock",       g:["#64748b","#334155"], fire:"⌃ ⌘ Q" },
+    { em:"🐙", lb:"GitHub",     g:["#525252","#262626"], fire:"Open github.com" },
+    { em:"▶️", lb:"YouTube",    g:["#f43f5e","#be123c"], fire:"Open youtube.com" },
+    { em:"🔇", lb:"Mute",       g:["#f59e0b","#b45309"], fire:"Mute audio" },
+    { em:"📝", lb:"Type",       g:["#0284c7","#0369a1"], fire:"Type “Hello!”" }
+  ];
+
+  var deck = document.getElementById("deck");
+  var toast = document.getElementById("toast");
+  var readout = document.getElementById("readout");
+  var readoutText = document.getElementById("readout-text");
+  var toastTimer, flashTimer;
+
+  function fire(t, ev) {
+    // ripple at pointer location
+    if (!reduce && ev) {
+      var r = ev.currentTarget.getBoundingClientRect();
+      var rip = document.createElement("span");
+      rip.className = "ripple";
+      var size = Math.max(r.width, r.height) * 0.5;
+      rip.style.width = rip.style.height = size + "px";
+      rip.style.left = ((ev.clientX || r.left + r.width/2) - r.left) + "px";
+      rip.style.top = ((ev.clientY || r.top + r.height/2) - r.top) + "px";
+      ev.currentTarget.appendChild(rip);
+      setTimeout(function () { rip.remove(); }, 520);
+    }
+    // device readout
+    readoutText.innerHTML = 'Sent <b>' + t.lb + '</b> <span class="cmd">' + t.fire + '</span>';
+    readout.classList.add("flash");
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { readout.classList.remove("flash"); }, 900);
+    // toast
+    toast.innerHTML = '<span style="font-size:1.1rem">' + t.em + '</span> <span><b style="color:var(--ink)">' + t.lb + '</b> → <span style="color:var(--accent)">' + t.fire + '</span> · sent to your Mac</span>';
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 1700);
+  }
+
+  tiles.forEach(function (t, i) {
+    var b = document.createElement("button");
+    b.className = "tile" + (i === 4 ? " hint" : "");
+    b.type = "button";
+    b.style.background = "linear-gradient(150deg, " + t.g[0] + ", " + t.g[1] + ")";
+    b.style.animationDelay = (i * 45) + "ms";
+    b.innerHTML = '<span class="em">' + t.em + '</span><span class="lb">' + t.lb + '</span>';
+    b.setAttribute("aria-label", t.lb + " — " + t.fire);
+    b.addEventListener("click", function (ev) { fire(t, ev); });
+    deck.appendChild(b);
+  });
+
+  /* ---- scroll progress ---- */
+  var progress = document.getElementById("progress");
+  function onScroll() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + "%";
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  /* ---- reveal on scroll ---- */
+  var reveals = document.querySelectorAll(".reveal");
+  if (reduce || !("IntersectionObserver" in window)) {
+    reveals.forEach(function (el) { el.classList.add("in"); });
+  } else {
+    var ro = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("in"); ro.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    reveals.forEach(function (el) { ro.observe(el); });
+  }
+
+  /* ---- scrollspy nav ---- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll(".bar nav a"));
+  var sections = navLinks.map(function (a) { return document.querySelector(a.getAttribute("href")); });
+  if ("IntersectionObserver" in window) {
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          var idx = sections.indexOf(e.target);
+          navLinks.forEach(function (l, i) { l.classList.toggle("active", i === idx); });
+        }
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    sections.forEach(function (s) { if (s) spy.observe(s); });
+  }
+
+  /* ---- copy buttons on code blocks ---- */
+  document.querySelectorAll(".code").forEach(function (block) {
+    var pre = block.querySelector("pre");
+    if (!pre) return;
+    var btn = document.createElement("button");
+    btn.className = "copy"; btn.type = "button";
+    btn.setAttribute("aria-label", "Copy to clipboard"); btn.textContent = "⧉";
+    btn.addEventListener("click", function () {
+      var text = pre.innerText.replace(/\s*#.*$/gm, "").trim();
+      var done = function () { btn.textContent = "✓"; btn.classList.add("done"); setTimeout(function () { btn.textContent = "⧉"; btn.classList.remove("done"); }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else {
+        var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
+        ta.select(); try { document.execCommand("copy"); } catch (e) {} ta.remove(); done();
+      }
+    });
+    block.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

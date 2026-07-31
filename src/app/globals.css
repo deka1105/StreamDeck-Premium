@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+  /* Avoid the tap-highlight flash on mobile when pressing deck buttons. */
+  -webkit-tap-highlight-color: transparent;
+}
