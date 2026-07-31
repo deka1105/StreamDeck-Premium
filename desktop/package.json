@@ -1,0 +1,65 @@
+{
+  "name": "streamphonedeck-host",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "main.mjs",
+  "author": "Shubham A. D.",
+  "description": "Installable desktop host for streamPhoneDeck — pairs with the phone over an encrypted channel.",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "SMOKE=1 electron .",
+    "host": "node src/host.mjs",
+    "host:dry": "DECK_DRY_RUN=1 node src/host.mjs",
+    "test:client": "node src/test-client.mjs",
+    "gen:icon": "node scripts/gen-icon.mjs",
+    "pack": "npm run gen:icon && electron-builder --dir",
+    "dist": "npm run gen:icon && electron-builder",
+    "dist:mac": "npm run gen:icon && electron-builder --mac",
+    "dist:win": "npm run gen:icon && electron-builder --win"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.5.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.streamphonedeck.host",
+    "productName": "streamPhoneDeck",
+    "afterSign": "build/notarize.cjs",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.mjs",
+      "preload.cjs",
+      "pair.html",
+      "src/host.mjs",
+      "src/executor.mjs",
+      "assets/**/*",
+      "!**/*.map"
+    ],
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    }
+  }
+}
