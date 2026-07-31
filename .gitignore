@@ -11,3 +11,9 @@ env/
 .env/
 .pytest_cache/
 .mypy_cache/
+
+# Auto-added by watcher (too large for GitHub)
+mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-maccatalyst/React.framework/React
+mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-maccatalyst/React.framework/Versions/A/React
+mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-maccatalyst/React.framework/Versions/Current/React
+mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-simulator/React.framework/React
