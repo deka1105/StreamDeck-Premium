@@ -1,0 +1,576 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { CameraView, useCameraPermissions } from "expo-camera";
+
+import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
+import { hello, pair, sendAction } from "./src/rpc";
+import { loadCols, loadDeck, resetDeck, saveCols, saveDeck } from "./src/deckStorage";
+import { DEFAULT_COLS, MAX_COLS, MIN_COLS, type DeckButton } from "./src/buttons";
+import { packDeck } from "./src/layout";
+import { TileEditor } from "./src/TileEditor";
+
+const DEVICE_NAME = Platform.OS === "ios" ? "iPhone" : "Android phone";
+
+const GRID_GAP = 10;
+const COL_OPTIONS = Array.from({ length: MAX_COLS - MIN_COLS + 1 }, (_, i) => MIN_COLS + i);
+// Sentinel used to place the "Add" tile inside the packed grid while editing.
+const ADD_TILE: DeckButton = { id: "__add__", label: "", icon: "", action: { type: "url", target: "add" }, color: "", w: 1, h: 1 };
+
+export default function App() {
+  const [pairing, setPairing] = useState<Pairing | null | "loading">("loading");
+
+  useEffect(() => {
+    loadPairing().then((p) => setPairing(p));
+  }, []);
+
+  if (pairing === "loading") {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color="#38bdf8" />
+        <StatusBar style="light" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.root}>
+      {pairing ? (
+        <DeckScreen
+          pairing={pairing}
+          onUnpair={async () => {
+            await clearPairing();
+            setPairing(null);
+          }}
+        />
+      ) : (
+        <PairScreen onPaired={setPairing} />
+      )}
+      <StatusBar style="light" />
+    </View>
+  );
+}
+
+function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [error, setError] = useState<string | null>(null);
+  const [manual, setManual] = useState(false);
+  const [manualText, setManualText] = useState("");
+  const handled = useRef(false);
+
+  const doPair = useCallback(
+    async (info: any): Promise<boolean> => {
+      if (info?.proto !== "spd2" || !info.pid || !info.hpk || !info.host) {
+        setError("That doesn't look like streamPhoneDeck pairing data.");
+        return false;
+      }
+      try {
+        const pairing = await pair(info.host, info.port, info.pid, info.hpk, DEVICE_NAME);
+        await savePairing(pairing);
+        onPaired(pairing);
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+        return false;
+      }
+    },
+    [onPaired],
+  );
+
+  const onScan = useCallback(
+    async ({ data }: { data: string }) => {
+      if (handled.current) return;
+      let info: any;
+      try {
+        info = JSON.parse(data);
+      } catch {
+        return; // not our QR — keep scanning
+      }
+      handled.current = true;
+      if (!(await doPair(info))) handled.current = false;
+    },
+    [doPair],
+  );
+
+  async function submitManual() {
+    let info: any;
+    try {
+      info = JSON.parse(manualText.trim());
+    } catch {
+      setError("That isn't valid pairing data (paste the JSON from “Copy pairing data”).");
+      return;
+    }
+    await doPair(info);
+  }
+
+  // Manual entry — needed on the Simulator (no camera), handy as a fallback.
+  if (manual) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Enter pairing data</Text>
+        <Text style={styles.dim}>On the Mac app, click “Copy pairing data”, then paste it here.</Text>
+        <TextInput
+          style={styles.manualInput}
+          value={manualText}
+          onChangeText={setManualText}
+          placeholder='{"proto":"spd2", ...}'
+          placeholderTextColor="#475569"
+          autoCapitalize="none"
+          autoCorrect={false}
+          multiline
+        />
+        {error ? <Text style={styles.scanError}>{error}</Text> : null}
+        <View style={styles.manualButtons}>
+          <Pressable style={[styles.grantButton, styles.manualBtn]} onPress={submitManual}>
+            <Text style={styles.grantText}>Pair</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.pill, styles.manualBtn]}
+            onPress={() => {
+              setManual(false);
+              setError(null);
+            }}
+          >
+            <Text style={styles.pillText}>Back</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (!permission) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color="#38bdf8" />
+      </View>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Pair with your Mac</Text>
+        <Text style={styles.dim}>We need the camera to scan the pairing QR code.</Text>
+        <Pressable style={styles.grantButton} onPress={requestPermission}>
+          <Text style={styles.grantText}>Grant camera access</Text>
+        </Pressable>
+        <Pressable onPress={() => setManual(true)}>
+          <Text style={styles.linkText}>Enter pairing data manually</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <CameraView
+        style={StyleSheet.absoluteFill}
+        facing="back"
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+        onBarcodeScanned={onScan}
+      />
+      <View style={styles.scanOverlay}>
+        <View style={styles.reticle} pointerEvents="none" />
+        <Text style={styles.scanHint} pointerEvents="none">
+          Point at the QR in the desktop app’s “Pair a phone” window
+        </Text>
+        {error ? (
+          <Text style={styles.scanError} pointerEvents="none">
+            {error}
+          </Text>
+        ) : null}
+        <Pressable style={styles.manualLink} onPress={() => setManual(true)}>
+          <Text style={styles.linkText}>Enter pairing data manually</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+type EditorState = null | "new" | DeckButton;
+
+function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => void }) {
+  const [deck, setDeck] = useState<DeckButton[] | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editor, setEditor] = useState<EditorState>(null);
+  const [status, setStatus] = useState("Connecting…");
+  const [ok, setOk] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [textDraft, setTextDraft] = useState("");
+  const [delaySec, setDelaySec] = useState("0");
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [cols, setCols] = useState(DEFAULT_COLS);
+  const [gridW, setGridW] = useState(0);
+
+  useEffect(() => {
+    loadDeck().then(setDeck);
+    loadCols().then(setCols);
+  }, []);
+
+  function changeCols(n: number) {
+    setCols(n);
+    saveCols(n);
+  }
+
+  useEffect(() => {
+    hello(pairing, DEVICE_NAME)
+      .then((r) => {
+        setOk(true);
+        setStatus(`Connected to ${r.host}`);
+      })
+      .catch((e) => {
+        setOk(false);
+        setStatus(`Can’t reach host — ${e.message}`);
+      });
+  }, [pairing]);
+
+  function persist(next: DeckButton[]) {
+    setDeck(next);
+    saveDeck(next);
+  }
+
+  async function press(tile: DeckButton) {
+    if (editing) {
+      setEditor(tile);
+      return;
+    }
+    if (busy) return;
+    setBusy(true);
+    setStatus(`Sending ${tile.label}…`);
+    try {
+      const r = await sendAction(pairing, tile.label, tile.action);
+      setOk(r.ok);
+      setStatus(r.ok ? `${tile.label} ✓` : `${tile.label}: ${r.error ?? "failed"}`);
+    } catch (e) {
+      setOk(false);
+      setStatus(`${tile.label}: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function clearCountdown() {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+    setCountdown(null);
+  }
+
+  useEffect(() => clearCountdown, []); // stop any pending countdown on unmount
+
+  async function sendTextNow() {
+    if (busy || !textDraft.trim()) return;
+    const value = textDraft;
+    setBusy(true);
+    setStatus("Sending text…");
+    try {
+      const r = await sendAction(pairing, "Text", { type: "text", text: value });
+      setOk(r.ok);
+      setStatus(r.ok ? `Sent “${value.length > 24 ? value.slice(0, 24) + "…" : value}”` : `Text: ${r.error ?? "failed"}`);
+      if (r.ok) setTextDraft("");
+    } catch (e) {
+      setOk(false);
+      setStatus(`Text: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Tap Send: if a delay is set, count down first (tap again to cancel).
+  function onSendPress() {
+    if (countdown !== null) {
+      clearCountdown();
+      setStatus("Send cancelled");
+      return;
+    }
+    if (busy || !textDraft.trim()) return;
+    let remaining = Math.min(60, Math.max(0, parseInt(delaySec, 10) || 0));
+    if (remaining <= 0) {
+      sendTextNow();
+      return;
+    }
+    setCountdown(remaining);
+    setStatus(`Sending in ${remaining}s… (focus the target on your Mac)`);
+    countdownRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearCountdown();
+        sendTextNow();
+      } else {
+        setCountdown(remaining);
+        setStatus(`Sending in ${remaining}s…`);
+      }
+    }, 1000);
+  }
+
+  function saveTile(tile: DeckButton) {
+    const list = deck ?? [];
+    const idx = list.findIndex((b) => b.id === tile.id);
+    persist(idx >= 0 ? list.map((b) => (b.id === tile.id ? tile : b)) : [...list, tile]);
+    setEditor(null);
+  }
+
+  function deleteTile(tile: DeckButton) {
+    persist((deck ?? []).filter((b) => b.id !== tile.id));
+    setEditor(null);
+  }
+
+  function confirmReset() {
+    Alert.alert("Reset deck?", "Restore the default tiles. Your changes will be lost.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Reset", style: "destructive", onPress: () => resetDeck().then(persist) },
+    ]);
+  }
+
+  if (!deck) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color="#38bdf8" />
+      </View>
+    );
+  }
+
+  const cellSize = gridW > 0 ? (gridW - GRID_GAP * (cols - 1)) / cols : 0;
+  const items = editing ? [...deck, ADD_TILE] : deck;
+  const { placements, rows } = packDeck(items, cols);
+  const gridHeight = cellSize > 0 ? rows * cellSize + Math.max(0, rows - 1) * GRID_GAP : 0;
+
+  return (
+    <View style={styles.deck}>
+      <View style={styles.header}>
+        <View style={{ flexShrink: 1 }}>
+          <Text style={styles.title}>streamPhoneDeck</Text>
+          <Text style={[styles.status, { color: ok ? "#94a3b8" : "#fca5a5" }]} numberOfLines={1}>
+            {status}
+          </Text>
+        </View>
+        <View style={styles.headerButtons}>
+          {!editing && (
+            <Pressable style={styles.pill} onPress={onUnpair}>
+              <Text style={styles.pillText}>Unpair</Text>
+            </Pressable>
+          )}
+          <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => setEditing((e) => !e)}>
+            <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {!editing && (
+        <View style={styles.sendArea}>
+          <View style={styles.sendRow}>
+            <TextInput
+              style={styles.sendInput}
+              value={textDraft}
+              onChangeText={setTextDraft}
+              placeholder="Type text to send to your Mac…"
+              placeholderTextColor="#64748b"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="send"
+              onSubmitEditing={onSendPress}
+              editable={countdown === null}
+            />
+            <Pressable
+              style={[
+                styles.sendBtn,
+                countdown !== null && styles.cancelBtn,
+                countdown === null && (busy || !textDraft.trim()) && styles.sendBtnDisabled,
+              ]}
+              onPress={onSendPress}
+              disabled={countdown === null && (busy || !textDraft.trim())}
+            >
+              <Text style={styles.sendBtnText}>{countdown !== null ? `Cancel ${countdown}s` : "Send"}</Text>
+            </Pressable>
+          </View>
+          <View style={styles.delayRow}>
+            <Text style={styles.delayLabel}>Delay</Text>
+            <TextInput
+              style={styles.delayInput}
+              value={delaySec}
+              onChangeText={(t) => setDelaySec(t.replace(/[^0-9]/g, "").slice(0, 2))}
+              keyboardType="number-pad"
+              maxLength={2}
+            />
+            <Text style={styles.delayLabel}>sec before send</Text>
+            <View style={{ flex: 1 }} />
+            {["3", "5", "10"].map((s) => (
+              <Pressable key={s} onPress={() => setDelaySec(s)} style={[styles.delayChip, delaySec === s && styles.delayChipActive]}>
+                <Text style={[styles.delayChipText, delaySec === s && styles.delayChipTextActive]}>{s}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {editing && (
+        <View style={styles.colsRow}>
+          <Text style={styles.delayLabel}>Layout</Text>
+          {COL_OPTIONS.map((c) => (
+            <Pressable key={c} onPress={() => changeCols(c)} style={[styles.delayChip, cols === c && styles.delayChipActive]}>
+              <Text style={[styles.delayChipText, cols === c && styles.delayChipTextActive]}>{c} wide</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
+      <ScrollView contentContainerStyle={styles.gridScroll}>
+        <View style={{ height: gridHeight }} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
+          {cellSize > 0 &&
+            placements.map((p) => {
+              const box = {
+                position: "absolute" as const,
+                left: p.x * (cellSize + GRID_GAP),
+                top: p.y * (cellSize + GRID_GAP),
+                width: p.w * cellSize + (p.w - 1) * GRID_GAP,
+                height: p.h * cellSize + (p.h - 1) * GRID_GAP,
+              };
+              if (p.tile.id === "__add__") {
+                return (
+                  <View key="__add__" style={box}>
+                    <Pressable style={styles.addTile} onPress={() => setEditor("new")}>
+                      <Text style={styles.addPlus}>＋</Text>
+                      <Text style={styles.addLabel}>Add</Text>
+                    </Pressable>
+                  </View>
+                );
+              }
+              const tile = p.tile;
+              return (
+                <View key={tile.id} style={box}>
+                  <Pressable
+                    style={({ pressed }) => [styles.tile, { backgroundColor: tile.color }, pressed && styles.tilePressed]}
+                    onPress={() => press(tile)}
+                  >
+                    <Text style={styles.tileIcon}>{tile.icon}</Text>
+                    <Text style={styles.tileLabel} numberOfLines={1}>
+                      {tile.label}
+                    </Text>
+                  </Pressable>
+                  {editing && (
+                    <Pressable style={styles.badge} onPress={() => deleteTile(tile)} hitSlop={8}>
+                      <Text style={styles.badgeText}>✕</Text>
+                    </Pressable>
+                  )}
+                </View>
+              );
+            })}
+        </View>
+      </ScrollView>
+
+      {editing && (
+        <Pressable style={styles.resetButton} onPress={confirmReset}>
+          <Text style={styles.resetText}>Reset to defaults</Text>
+        </Pressable>
+      )}
+
+      {editor !== null && (
+        <TileEditor
+          initial={editor === "new" ? null : editor}
+          maxW={cols}
+          onSave={saveTile}
+          onCancel={() => setEditor(null)}
+          onDelete={editor === "new" ? undefined : () => deleteTile(editor)}
+        />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: "#0b1120" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1120", padding: 24, gap: 12 },
+  deck: { flex: 1, paddingTop: 64, paddingHorizontal: 16 },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, gap: 12 },
+  headerButtons: { flexDirection: "row", gap: 8 },
+  title: { color: "#e2e8f0", fontSize: 20, fontWeight: "700" },
+  dim: { color: "#94a3b8", textAlign: "center" },
+  status: { fontSize: 13, marginTop: 4 },
+  pill: { backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
+  pillActive: { backgroundColor: "#0284c7" },
+  pillText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  pillTextActive: { color: "#fff" },
+  sendArea: { marginBottom: 16 },
+  sendRow: { flexDirection: "row", gap: 8, alignItems: "center" },
+  sendInput: { flex: 1, backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15 },
+  sendBtn: { backgroundColor: "#0284c7", borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11, minWidth: 92, alignItems: "center" },
+  cancelBtn: { backgroundColor: "#e11d48" },
+  sendBtnDisabled: { opacity: 0.4 },
+  sendBtnText: { color: "#fff", fontWeight: "700" },
+  delayRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
+  delayLabel: { color: "#94a3b8", fontSize: 13 },
+  delayInput: { backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 14, minWidth: 44, textAlign: "center" },
+  delayChip: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  delayChipActive: { backgroundColor: "#0284c7" },
+  delayChipText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  delayChipTextActive: { color: "#fff" },
+  gridScroll: { paddingBottom: 24 },
+  colsRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
+  tile: { width: "100%", height: "100%", borderRadius: 20, alignItems: "center", justifyContent: "center", gap: 6, padding: 6 },
+  tilePressed: { opacity: 0.75, transform: [{ scale: 0.96 }] },
+  tileIcon: { fontSize: 34 },
+  tileLabel: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "center" },
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    width: 26,
+    height: 26,
+    borderRadius: 999,
+    backgroundColor: "#e11d48",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#0b1120",
+  },
+  badgeText: { color: "#fff", fontSize: 13, fontWeight: "700", lineHeight: 16 },
+  addTile: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 20,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "rgba(255,255,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
+  addPlus: { color: "#94a3b8", fontSize: 30 },
+  addLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "600" },
+  resetButton: { alignItems: "center", paddingVertical: 14 },
+  resetText: { color: "#64748b", fontSize: 13 },
+  grantButton: { backgroundColor: "#0284c7", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
+  grantText: { color: "#fff", fontWeight: "700" },
+  scanOverlay: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
+  reticle: { width: 220, height: 220, borderRadius: 24, borderWidth: 3, borderColor: "rgba(255,255,255,0.9)" },
+  scanHint: { color: "#fff", textAlign: "center", marginTop: 24, fontSize: 15 },
+  scanError: { color: "#fca5a5", textAlign: "center", marginTop: 12, fontWeight: "600" },
+  linkText: { color: "#7dd3fc", fontWeight: "600", marginTop: 10 },
+  manualLink: { position: "absolute", bottom: 48 },
+  manualInput: {
+    width: "100%",
+    minHeight: 120,
+    maxHeight: 220,
+    backgroundColor: "#1e293b",
+    color: "#e2e8f0",
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 13,
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    textAlignVertical: "top",
+  },
+  manualButtons: { flexDirection: "row", gap: 10, marginTop: 4, width: "100%" },
+  manualBtn: { flex: 1, alignItems: "center", paddingVertical: 12 },
+});
