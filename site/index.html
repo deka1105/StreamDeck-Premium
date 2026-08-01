@@ -758,17 +758,18 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
     block.appendChild(btn);
   });
 
-  /* ---- premium: golden diamonds falling ---- */
+  /* ---- premium: gold confetti falling ---- */
   (function () {
     var section = document.getElementById("premium");
-    var canvas = document.getElementById("premium-diamonds");
+    var canvas = document.getElementById("premium-confetti");
     if (!section || !canvas) return;
     var ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var GOLDS = ["#ffe9a8", "#f4cf6e", "#e6b845", "#d4af37", "#c69214"];
-    var W = 0, H = 0, diamonds = [], running = false, rafId = null, last = 0;
+    var GOLDS = ["#fff0c0", "#ffe08a", "#ffd76b", "#f4c04c", "#e6b845", "#d4af37"];
+    var BACKS = ["#d8b968", "#caa64e", "#c39a3c", "#b88f28", "#9c7a1f", "#8a6c14"];
+    var W = 0, H = 0, pieces = [], running = false, rafId = null, last = 0;
 
     function rand(a, b) { return a + Math.random() * (b - a); }
 
@@ -782,51 +783,39 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function makeDiamond(initial) {
+    function makePiece(initial) {
+      var idx = (Math.random() * GOLDS.length) | 0;
       return {
-        x: rand(0, W), y: initial ? rand(0, H) : rand(-40, -6),
-        s: rand(4, 9), vy: rand(14, 34),
-        sway: rand(8, 22), swayFreq: rand(0.4, 1.1), phase: rand(0, Math.PI * 2),
-        rot: rand(0, Math.PI * 2), vrot: rand(-0.8, 0.8),
-        alpha: rand(0.25, 0.7), color: GOLDS[(Math.random() * GOLDS.length) | 0]
+        x: rand(0, W), y: initial ? rand(0, H) : rand(-40, -8),
+        w: rand(5, 9), h: rand(3, 6),
+        vy: rand(26, 58),
+        sway: rand(6, 18), swayFreq: rand(0.6, 1.4), phase: rand(0, Math.PI * 2),
+        rot: rand(0, Math.PI * 2), vrot: rand(-2.2, 2.2),
+        tilt: rand(0, Math.PI * 2), vtilt: rand(2, 5),
+        alpha: rand(0.4, 0.9), color: GOLDS[idx], back: BACKS[idx]
       };
     }
 
     function build() {
-      var count = Math.max(14, Math.min(46, Math.round(W / 26)));
-      diamonds = [];
-      for (var i = 0; i < count; i++) diamonds.push(makeDiamond(true));
+      var count = Math.max(18, Math.min(64, Math.round(W / 20)));
+      pieces = [];
+      for (var i = 0; i < count; i++) pieces.push(makePiece(true));
     }
 
-    function drawOne(d) {
+    function drawOne(p) {
+      var flip = Math.cos(p.tilt); // 1 → front, 0 → edge-on, -1 → back
       ctx.save();
-      ctx.translate(d.x + Math.sin(d.phase) * d.sway, d.y);
-      ctx.rotate(d.rot);
-      ctx.globalAlpha = d.alpha;
-      var g = ctx.createLinearGradient(0, -d.s * 1.4, 0, d.s * 1.4);
-      g.addColorStop(0, "#fff3c4");
-      g.addColorStop(0.5, d.color);
-      g.addColorStop(1, "#a9781a");
-      ctx.fillStyle = g;
-      ctx.shadowColor = "rgba(230,184,69,.55)";
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.moveTo(0, -d.s * 1.4);
-      ctx.lineTo(d.s, 0);
-      ctx.lineTo(0, d.s * 1.4);
-      ctx.lineTo(-d.s, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.globalAlpha = d.alpha * 0.5;
-      ctx.fillStyle = "rgba(255,255,255,.75)";
-      ctx.beginPath();
-      ctx.moveTo(0, -d.s * 0.55);
-      ctx.lineTo(d.s * 0.32, -d.s * 0.1);
-      ctx.lineTo(0, d.s * 0.2);
-      ctx.lineTo(-d.s * 0.32, -d.s * 0.1);
-      ctx.closePath();
-      ctx.fill();
+      ctx.translate(p.x + Math.sin(p.phase) * p.sway, p.y);
+      ctx.rotate(p.rot);
+      ctx.scale(1, flip);          // foreshorten to fake a 3D paper flutter
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = flip >= 0 ? p.color : p.back;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      if (flip >= 0) {             // thin highlight on the lit face
+        ctx.globalAlpha = p.alpha * 0.6;
+        ctx.fillStyle = "rgba(255,255,255,.6)";
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * 0.35);
+      }
       ctx.restore();
     }
 
@@ -835,13 +824,14 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
       var dt = last ? Math.min((t - last) / 1000, 0.05) : 0.016;
       last = t;
       ctx.clearRect(0, 0, W, H);
-      for (var i = 0; i < diamonds.length; i++) {
-        var d = diamonds[i];
-        d.y += d.vy * dt;
-        d.phase += d.swayFreq * dt;
-        d.rot += d.vrot * dt;
-        if (d.y - d.s * 1.4 > H + 12) diamonds[i] = makeDiamond(false);
-        drawOne(diamonds[i]);
+      for (var i = 0; i < pieces.length; i++) {
+        var p = pieces[i];
+        p.y += p.vy * dt;
+        p.phase += p.swayFreq * dt;
+        p.rot += p.vrot * dt;
+        p.tilt += p.vtilt * dt;
+        if (p.y - 8 > H + 12) pieces[i] = makePiece(false);
+        drawOne(pieces[i]);
       }
       rafId = requestAnimationFrame(frame);
     }
@@ -851,7 +841,7 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
 
     function staticDraw() {
       ctx.clearRect(0, 0, W, H);
-      for (var i = 0; i < diamonds.length; i++) { diamonds[i].y = rand(0, H); drawOne(diamonds[i]); }
+      for (var i = 0; i < pieces.length; i++) { pieces[i].y = rand(0, H); drawOne(pieces[i]); }
     }
 
     function init() { size(); build(); if (reduce) staticDraw(); }
