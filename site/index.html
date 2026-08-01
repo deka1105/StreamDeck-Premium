@@ -208,6 +208,9 @@
   .pm-fg .wand { color: var(--accent); }
   .minigrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .minitile { aspect-ratio: 1; border-radius: 13px; display: grid; place-items: center; font-size: 1.3rem; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 4px 12px -6px rgba(0,0,0,.6); }
+  .minitile.mt-text { font-size: .95rem; font-weight: 800; letter-spacing: .04em; }
+  .minitile.mt-photo { padding: 0; }
+  .minitile.mt-photo > span { display: block; width: 62%; height: 62%; border-radius: 8px; box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
 
   /* ---- app switcher mock ---- */
   .sub-h { font-size: clamp(1.3rem, 4.6vw, 1.7rem); letter-spacing: -.02em; font-weight: 800; margin: 12px 0 0; text-wrap: balance; }
