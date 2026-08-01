@@ -369,6 +369,17 @@ export function Deck() {
         </div>
       </header>
 
+      {view === "apps" ? (
+        <RunningApps
+          data={runningApps}
+          onFocus={focusApp}
+          onPin={pinApp}
+          full={full}
+          onRefresh={refreshApps}
+          loading={appsLoading}
+        />
+      ) : (
+      <>
       {/* Profile switcher: tap to switch; in edit mode, tap the active one for settings. */}
       <nav className={[autoMode ? "mb-2" : "mb-5", "flex items-center gap-2 overflow-x-auto pb-1"].join(" ")}>
         {state.profiles.map((p) => {
