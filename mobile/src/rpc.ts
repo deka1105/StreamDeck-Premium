@@ -89,3 +89,8 @@ export function sendAction(p: Pairing, label: string, action: DeckAction) {
 export function foreground(p: Pairing) {
   return sendCmd<{ ok: boolean; app: string | null }>(p, { cmd: "foreground" });
 }
+
+/** Ask the host for the list of running apps (for the Apps screen). */
+export function apps(p: Pairing) {
+  return sendCmd<{ ok: boolean; apps: string[]; frontmost: string | null }>(p, { cmd: "apps" });
+}
