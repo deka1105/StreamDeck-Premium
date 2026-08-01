@@ -48,7 +48,14 @@ export function DeckButton({ button, editing, onPress, onEdit, onDelete }: Props
         ].join(" ")}
         aria-label={editing ? `Edit ${button.label}` : button.label}
       >
-        <span className="text-3xl leading-none sm:text-4xl">{button.icon}</span>
+        {isImageIcon(button) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={button.icon} alt="" className="size-9 rounded-lg object-cover sm:size-11" draggable={false} />
+        ) : (
+          <span className={button.iconType === "text" ? "text-lg font-bold leading-none sm:text-xl" : "text-3xl leading-none sm:text-4xl"}>
+            {button.icon}
+          </span>
+        )}
         <span className="text-xs font-semibold tracking-tight sm:text-sm">
           {button.label}
         </span>
