@@ -583,6 +583,17 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         </View>
       </View>
 
+      {view === "apps" ? (
+        <RunningApps
+          data={runningApps}
+          onFocus={focusAppByName}
+          onPin={pinApp}
+          full={full}
+          onRefresh={refreshApps}
+          loading={appsLoading}
+        />
+      ) : (
+      <>
       {/* Profile switcher: tap to switch; in edit mode, tap the active one for settings. */}
       <View style={styles.profileRow}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.profileRowContent}>
