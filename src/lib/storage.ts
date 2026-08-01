@@ -9,10 +9,12 @@
 
 import {
   defaultButtons,
+  MAX_ICON_IMAGE_LEN,
   MAX_TILES_PER_PROFILE,
   validateAction,
   type DeckButton,
   type DeckProfile,
+  type IconType,
 } from "./buttons";
 
 const PROFILES_KEY = "streamphonedeck.profiles.v1";
