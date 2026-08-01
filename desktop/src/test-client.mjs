@@ -128,6 +128,11 @@ async function main() {
   assert(fg.status === 200 && fg.reply.ok, "foreground command accepted over the paired channel");
   assert("app" in fg.reply, `focused app reported: ${JSON.stringify(fg.reply.app)}`);
 
+  console.log("10. apps — host reports its running apps (Apps screen)");
+  const ra = await rpc({ cmd: "apps" });
+  assert(ra.status === 200 && ra.reply.ok, "apps command accepted over the paired channel");
+  assert(Array.isArray(ra.reply.apps), `running apps reported: ${ra.reply.apps.length} app(s)`);
+
   console.log("\nAll checks passed. 🎉");
 }
 

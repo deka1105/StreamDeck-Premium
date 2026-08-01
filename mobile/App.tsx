@@ -790,7 +790,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1120", padding: 24, gap: 12 },
   deck: { flex: 1, paddingTop: 64, paddingHorizontal: 16 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, gap: 12 },
-  headerButtons: { flexDirection: "row", gap: 8 },
+  headerButtons: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 8 },
   title: { color: "#e2e8f0", fontSize: 20, fontWeight: "700" },
   dim: { color: "#94a3b8", textAlign: "center" },
   status: { fontSize: 13, marginTop: 4 },
