@@ -277,6 +277,7 @@ async function main() {
   console.log(`streamPhoneDeck agent — platform: ${platform}${DRY_RUN ? " (DRY RUN)" : ""}`);
   console.log(`Watching ${EVENTS_URL} … (Ctrl+C to stop)`);
   startForegroundReporter();
+  startAppsReporter();
   for (;;) {
     const ok = await connect();
     if (!ok) process.stdout.write(".");
