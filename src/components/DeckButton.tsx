@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { DeckButton as DeckButtonConfig } from "@/lib/buttons";
+import { isImageIcon, type DeckButton as DeckButtonConfig } from "@/lib/buttons";
 
 type Props = {
   button: DeckButtonConfig;
