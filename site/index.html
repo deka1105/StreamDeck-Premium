@@ -223,6 +223,11 @@
   .app-row .tag { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
   .app-row .tile-btn { margin-left: auto; font-family: var(--mono); font-size: .68rem; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 8px; padding: 4px 9px; }
 
+  /* ---- premium golden-diamond fall ---- */
+  #premium { position: relative; overflow: hidden; }
+  #premium > .wrap { position: relative; z-index: 1; }
+  #premium-diamonds { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
   /* ---- toast ---- */
   .toast {
     position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%) translateY(20px);
