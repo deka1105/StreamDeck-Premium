@@ -231,6 +231,25 @@
   #premium > .wrap { position: relative; z-index: 1; }
   #premium-confetti { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 
+  /* ---- premium carousel ---- */
+  .carousel { position: relative; }
+  .carousel-viewport { overflow: hidden; }
+  .carousel-track { display: flex; transition: transform .5s cubic-bezier(.4, 0, .2, 1); will-change: transform; }
+  .carousel-slide { flex: 0 0 100%; min-width: 0; }
+  .carousel-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: clamp(22px, 4vw, 30px); }
+  .carousel-arrow {
+    width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--line-strong);
+    background: var(--panel); color: var(--ink); font-size: 1.5rem; line-height: 0; font-family: inherit;
+    display: grid; place-items: center; cursor: pointer; padding: 0;
+    transition: border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .carousel-arrow:hover { border-color: var(--accent); background: var(--panel-2); text-decoration: none; }
+  .carousel-arrow:active { transform: scale(.9); }
+  .carousel-dots { display: flex; align-items: center; gap: 9px; }
+  .carousel-dot { width: 8px; height: 8px; border-radius: 999px; border: none; padding: 0; background: var(--line-strong); cursor: pointer; transition: background .2s ease, transform .2s ease, width .2s ease; }
+  .carousel-dot.active { background: var(--accent); width: 22px; }
+  @media (prefers-reduced-motion: reduce) { .carousel-track { transition: none; } }
+
   /* ---- toast ---- */
   .toast {
     position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%) translateY(20px);
