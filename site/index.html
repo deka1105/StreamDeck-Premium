@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#070b14" />
 <title>streamPhoneDeck — your phone is the button</title>
-<meta name="description" content="Turn your phone into a Stream Deck-style control surface. A native app pairs with an installable desktop host by scanning a QR — end-to-end encrypted — then tiles launch apps, open sites, fire keyboard shortcuts, or type text on your computer." />
+<meta name="description" content="Turn your phone into a Stream Deck-style control surface. A native app pairs with an installable desktop host by scanning a QR — end-to-end encrypted — then tiles launch apps, open sites, fire keyboard shortcuts, or type text on your computer. Group tiles into profiles that auto-switch to match the app you're using." />
 <style>
   :root {
     --ground: #070b14;
@@ -187,6 +187,28 @@
   .readout b { color: var(--ink); }
   .readout .cmd { color: var(--accent); margin-left: auto; }
 
+  /* ---- profile switcher + auto (hero device) ---- */
+  .autobtn { font-family: inherit; font-size: .62rem; font-weight: 700; letter-spacing: .02em; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; cursor: pointer; transition: color .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+  .autobtn[aria-pressed="true"] { color: #fff; background: linear-gradient(135deg, var(--accent-deep), #2563eb); border-color: transparent; box-shadow: 0 0 12px var(--accent-glow); }
+  .profrow { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 4px 2px 10px; }
+  .profrow::-webkit-scrollbar { display: none; }
+  .prof { flex: none; font-family: inherit; font-size: .64rem; font-weight: 700; color: var(--muted); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; cursor: pointer; white-space: nowrap; transition: color .15s ease, background .15s ease, border-color .15s ease; }
+  .prof.on { color: #fff; background: linear-gradient(135deg, #0ea5e9, #6366f1); border-color: transparent; }
+  .fgline { font-family: var(--mono); font-size: .64rem; color: var(--muted); background: var(--ground-2); border: 1px solid var(--line); border-radius: 9px; padding: 7px 10px; margin: 0 2px 10px; }
+  .fgline b { color: var(--ink); }
+
+  /* ---- premium mock ---- */
+  .premium-mock { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+  .pm-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pm-pill { font-size: .72rem; font-weight: 650; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--line); }
+  .pm-pill.on { background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; border-color: transparent; }
+  .pm-pill.add { border-style: dashed; color: var(--muted-2); }
+  .pm-fg { font-family: var(--mono); font-size: .76rem; color: var(--muted); background: var(--ground-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; margin-bottom: 14px; }
+  .pm-fg b { color: var(--ink); }
+  .pm-fg .wand { color: var(--accent); }
+  .minigrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .minitile { aspect-ratio: 1; border-radius: 13px; display: grid; place-items: center; font-size: 1.3rem; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 4px 12px -6px rgba(0,0,0,.6); }
+
   /* ---- toast ---- */
   .toast {
     position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%) translateY(20px);
@@ -293,6 +315,7 @@
       <a href="#how">How it works</a>
       <a href="#actions">Actions</a>
       <a href="#edit">Editing</a>
+      <a href="#premium">Premium</a>
       <a href="#security">Security</a>
       <a href="#start">Get running</a>
     </nav>
@@ -315,14 +338,16 @@
       </div>
 
       <!-- live-ish deck -->
-      <div class="device" aria-label="Interactive demo — tap a tile">
+      <div class="device" aria-label="Interactive demo — switch profiles, turn on Auto, tap a tile">
         <div class="notch"></div>
         <div class="head">
           <span class="title">streamPhoneDeck</span>
-          <span class="pill">● live</span>
+          <button class="autobtn" id="autobtn" type="button" aria-pressed="false" title="Auto mode — the profile follows your focused app">🪄 Auto</button>
         </div>
+        <div class="profrow" id="profrow"><!-- profile pills injected --></div>
+        <div class="fgline" id="fgline" hidden></div>
         <div class="deck" id="deck"><!-- tiles injected --></div>
-        <div class="readout" id="readout"><span class="dot"></span> <span id="readout-text">Tap a tile to see it fire →</span></div>
+        <div class="readout" id="readout"><span class="dot"></span> <span id="readout-text">Switch a profile or tap a tile →</span></div>
       </div>
     </div>
   </div>
@@ -417,6 +442,48 @@
     </div>
   </section>
 
+  <!-- PREMIUM -->
+  <section id="premium">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Premium</span>
+        <h2>Profiles that follow your focus.</h2>
+        <p>Group your tiles into named decks, then let the deck switch itself based on what you're actually doing on your computer.</p>
+      </div>
+      <div class="split">
+        <div class="reveal">
+          <ul class="checks">
+            <li><span class="ic">✦</span><span><b>Profiles</b> — name a deck (Work, Design, Home) and pin your <b>top&nbsp;9</b> tiles in a 3×3 grid. Switch with a tap; each keeps its own layout.</span></li>
+            <li><span class="ic">✦</span><span><b>🪄 Intuitive mode</b> — flip on <b>Auto</b> and the active profile <b>follows the app you're focused on</b>. Open Figma, your Design deck appears.</span></li>
+            <li><span class="ic">✦</span><span><b>Map apps → profiles</b> with a “Use current app” shortcut. It's <b>edge-triggered</b>, so a manual switch sticks until you change apps.</span></li>
+            <li><span class="ic">✦</span><span><b>No match, no surprises</b> — focus an app you haven't mapped and the deck stays exactly where it is.</span></li>
+            <li><span class="ic">✦</span><span>Runs on the <b>web deck and the native app</b> alike. Focus detection is macOS today, Windows next.</span></li>
+          </ul>
+        </div>
+        <div class="premium-mock reveal" aria-hidden="true">
+          <div class="pm-pills">
+            <span class="pm-pill">🪄 Work</span>
+            <span class="pm-pill on">🪄 Design</span>
+            <span class="pm-pill">Home</span>
+            <span class="pm-pill add">＋</span>
+          </div>
+          <div class="pm-fg"><span class="wand">🪄</span> 🖥 <b>Figma</b> → <span style="color:var(--accent)">Design</span></div>
+          <div class="minigrid">
+            <div class="minitile" style="background:linear-gradient(150deg,#a855f7,#7c3aed)">🎨</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#0ea5e9,#0369a1)">🖼️</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#6366f1,#4338ca)">🎞️</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#f43f5e,#be123c)">🌈</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#10b981,#047857)">📐</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#8b5cf6,#6d28d9)">🔎</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#334155,#0f172a)">↩️</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#0284c7,#0369a1)">📤</div>
+            <div class="minitile" style="background:linear-gradient(150deg,#ec4899,#be185d)">💬</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- GET RUNNING -->
   <section id="start">
     <div class="wrap">
@@ -471,24 +538,51 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
   "use strict";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---- deck tiles ---- */
-  var tiles = [
-    { em:"🧭", lb:"Safari",     g:["#0ea5e9","#0369a1"], fire:"Launch Safari" },
-    { em:"💻", lb:"VS Code",    g:["#3b82f6","#1d4ed8"], fire:"Launch VS Code" },
-    { em:"📁", lb:"Finder",     g:["#6366f1","#4338ca"], fire:"Launch Finder" },
-    { em:"🔍", lb:"Spotlight",  g:["#8b5cf6","#6d28d9"], fire:"⌘ Space" },
-    { em:"📸", lb:"Screenshot", g:["#d946ef","#a21caf"], fire:"⌘ ⇧ 4" },
-    { em:"🔒", lb:"Lock",       g:["#64748b","#334155"], fire:"⌃ ⌘ Q" },
-    { em:"🐙", lb:"GitHub",     g:["#525252","#262626"], fire:"Open github.com" },
-    { em:"▶️", lb:"YouTube",    g:["#f43f5e","#be123c"], fire:"Open youtube.com" },
-    { em:"🔇", lb:"Mute",       g:["#f59e0b","#b45309"], fire:"Mute audio" },
-    { em:"📝", lb:"Type",       g:["#0284c7","#0369a1"], fire:"Type “Hello!”" }
+  /* ---- profiles (interactive premium demo) ---- */
+  var profiles = [
+    { name:"Work", app:"VS Code", tiles:[
+      { em:"💻", lb:"VS Code",    g:["#3b82f6","#1d4ed8"], fire:"Launch VS Code" },
+      { em:"🧭", lb:"Safari",     g:["#0ea5e9","#0369a1"], fire:"Launch Safari" },
+      { em:"📁", lb:"Finder",     g:["#6366f1","#4338ca"], fire:"Launch Finder" },
+      { em:"🖥️", lb:"Terminal",   g:["#334155","#0f172a"], fire:"Launch Terminal" },
+      { em:"🔍", lb:"Spotlight",  g:["#8b5cf6","#6d28d9"], fire:"⌘ Space" },
+      { em:"📸", lb:"Screenshot", g:["#d946ef","#a21caf"], fire:"⌘ ⇧ 4" },
+      { em:"🐙", lb:"GitHub",     g:["#525252","#262626"], fire:"Open github.com" },
+      { em:"📊", lb:"Standup",    g:["#0284c7","#0369a1"], fire:"Type standup note" },
+      { em:"🔇", lb:"Mute",       g:["#f59e0b","#b45309"], fire:"Mute audio" }
+    ]},
+    { name:"Design", app:"Figma", tiles:[
+      { em:"🎨", lb:"Figma",      g:["#a855f7","#7c3aed"], fire:"Launch Figma" },
+      { em:"🖼️", lb:"Photoshop",  g:["#0ea5e9","#0369a1"], fire:"Launch Photoshop" },
+      { em:"🎞️", lb:"After FX",   g:["#6366f1","#4338ca"], fire:"Launch After Effects" },
+      { em:"🌈", lb:"Palette",    g:["#f43f5e","#be123c"], fire:"Open coolors.co" },
+      { em:"📐", lb:"Guides",     g:["#10b981","#047857"], fire:"⌘ ;" },
+      { em:"🔎", lb:"Zoom In",    g:["#8b5cf6","#6d28d9"], fire:"⌘ +" },
+      { em:"↩️", lb:"Undo",       g:["#334155","#0f172a"], fire:"⌘ Z" },
+      { em:"📤", lb:"Export",     g:["#0284c7","#0369a1"], fire:"⌘ ⇧ E" },
+      { em:"💬", lb:"Dribbble",   g:["#ec4899","#be185d"], fire:"Open dribbble.com" }
+    ]},
+    { name:"Home", app:"Spotify", tiles:[
+      { em:"🎵", lb:"Spotify",    g:["#22c55e","#15803d"], fire:"Launch Spotify" },
+      { em:"▶️", lb:"YouTube",    g:["#f43f5e","#be123c"], fire:"Open youtube.com" },
+      { em:"🍿", lb:"Netflix",    g:["#ef4444","#991b1b"], fire:"Open netflix.com" },
+      { em:"⏯️", lb:"Play/Pause", g:["#334155","#0f172a"], fire:"Play / Pause" },
+      { em:"⏭️", lb:"Next",       g:["#6366f1","#4338ca"], fire:"Next track" },
+      { em:"🔆", lb:"Bright",     g:["#f59e0b","#b45309"], fire:"Brightness up" },
+      { em:"🏠", lb:"Lights",     g:["#8b5cf6","#6d28d9"], fire:"Run home scene" },
+      { em:"🔕", lb:"DND",        g:["#0ea5e9","#0369a1"], fire:"Toggle Do Not Disturb" },
+      { em:"🔇", lb:"Mute",       g:["#f59e0b","#b45309"], fire:"Mute audio" }
+    ]}
   ];
+  var active = 0, auto = false;
 
   var deck = document.getElementById("deck");
   var toast = document.getElementById("toast");
   var readout = document.getElementById("readout");
   var readoutText = document.getElementById("readout-text");
+  var profrow = document.getElementById("profrow");
+  var autobtn = document.getElementById("autobtn");
+  var fgline = document.getElementById("fgline");
   var toastTimer, flashTimer;
 
   function fire(t, ev) {
@@ -516,17 +610,55 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
     toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 1700);
   }
 
-  tiles.forEach(function (t, i) {
-    var b = document.createElement("button");
-    b.className = "tile" + (i === 4 ? " hint" : "");
-    b.type = "button";
-    b.style.background = "linear-gradient(150deg, " + t.g[0] + ", " + t.g[1] + ")";
-    b.style.animationDelay = (i * 45) + "ms";
-    b.innerHTML = '<span class="em">' + t.em + '</span><span class="lb">' + t.lb + '</span>';
-    b.setAttribute("aria-label", t.lb + " — " + t.fire);
-    b.addEventListener("click", function (ev) { fire(t, ev); });
-    deck.appendChild(b);
+  function renderDeck() {
+    deck.innerHTML = "";
+    profiles[active].tiles.forEach(function (t, i) {
+      var b = document.createElement("button");
+      b.className = "tile";
+      b.type = "button";
+      b.style.background = "linear-gradient(150deg, " + t.g[0] + ", " + t.g[1] + ")";
+      b.style.animationDelay = (i * 40) + "ms";
+      b.innerHTML = '<span class="em">' + t.em + '</span><span class="lb">' + t.lb + '</span>';
+      b.setAttribute("aria-label", t.lb + " — " + t.fire);
+      b.addEventListener("click", function (ev) { fire(t, ev); });
+      deck.appendChild(b);
+    });
+  }
+
+  function renderPills() {
+    profrow.innerHTML = "";
+    profiles.forEach(function (p, i) {
+      var s = document.createElement("button");
+      s.className = "prof" + (i === active ? " on" : "");
+      s.type = "button";
+      s.textContent = (auto ? "🪄 " : "") + p.name;
+      s.setAttribute("aria-pressed", i === active ? "true" : "false");
+      s.addEventListener("click", function () { active = i; renderPills(); renderDeck(); showFocus(); });
+      profrow.appendChild(s);
+    });
+  }
+
+  function showFocus() {
+    if (!auto) { fgline.hidden = true; return; }
+    fgline.hidden = false;
+    fgline.innerHTML = '🖥 <b>' + profiles[active].app + '</b> → <span style="color:var(--accent)">' + profiles[active].name + '</span>';
+  }
+
+  autobtn.addEventListener("click", function () {
+    auto = !auto;
+    autobtn.setAttribute("aria-pressed", auto ? "true" : "false");
+    if (auto) active = 1; // "focus" Figma → jump to the Design profile (intuitive mode)
+    renderPills(); renderDeck(); showFocus();
+    if (auto) {
+      readoutText.innerHTML = 'Auto on — profile follows your <b>focused app</b>';
+      readout.classList.add("flash");
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(function () { readout.classList.remove("flash"); }, 1100);
+    }
   });
+
+  renderPills();
+  renderDeck();
 
   /* ---- scroll progress ---- */
   var progress = document.getElementById("progress");
