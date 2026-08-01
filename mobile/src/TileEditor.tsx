@@ -153,7 +153,7 @@ export function TileEditor({
             {iconType === "image" && (
               <View style={[styles.imageRow, { marginTop: 8 }]}>
                 <View style={styles.imageThumb}>
-                  {hasImage ? <Image source={{ uri: icon }} style={styles.imageThumbImg} /> : <Text style={styles.imageThumbGlyph}>🖼️</Text>}
+                  {hasImage ? <Image source={{ uri: icon }} style={styles.imageThumbImg} alt="" /> : <Text style={styles.imageThumbGlyph}>🖼️</Text>}
                 </View>
                 <View style={{ flex: 1 }}>
                   <Pressable style={styles.imageBtn} onPress={pickImage}>
