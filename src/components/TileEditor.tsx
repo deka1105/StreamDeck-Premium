@@ -37,9 +37,16 @@ const FIELD: Record<ActionType, { label: string; placeholder: string; hint: stri
 const KEY_EXAMPLES = ["cmd+space", "cmd+shift+4", "ctrl+cmd+q", "cmd+tab"];
 const EMOJI_PICKS = ["🚀", "🌐", "⌨️", "⚡", "🎬", "🎙️", "📷", "🔒", "▶️", "🔇", "💬", "⭐"];
 
+const ICON_TYPES: { type: IconType; label: string; glyph: string }[] = [
+  { type: "emoji", label: "Emoji", glyph: "🙂" },
+  { type: "text", label: "Text", glyph: "Aa" },
+  { type: "image", label: "Image", glyph: "🖼️" },
+];
+
 export function TileEditor({ initial, onSave, onCancel, onDelete }: Props) {
   const [label, setLabel] = useState(initial?.label ?? "");
   const [icon, setIcon] = useState(initial?.icon ?? "⭐");
+  const [iconType, setIconType] = useState<IconType>(initial?.iconType ?? "emoji");
   const [type, setType] = useState<ActionType>(initial?.action.type ?? "app");
   const [value, setValue] = useState(initial ? actionValue(initial.action) : "");
   const [color, setColor] = useState(initial?.color ?? TILE_COLORS[0].class);
