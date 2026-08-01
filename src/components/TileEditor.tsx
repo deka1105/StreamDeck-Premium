@@ -144,33 +144,88 @@ export function TileEditor({ initial, onSave, onCancel, onDelete }: Props) {
           </div>
         </div>
 
-        {/* Label + icon */}
-        <div className="mb-4 flex gap-3">
-          <label className="flex-1 text-sm">
-            <span className="mb-1 block font-medium text-slate-300">Label</span>
-            <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="Screenshot"
-              className="w-full rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
-            />
-          </label>
-          <label className="w-20 text-sm">
-            <span className="mb-1 block font-medium text-slate-300">Icon</span>
-            <input
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="⭐"
-              className="w-full rounded-lg bg-white/5 px-3 py-2 text-center text-xl ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
-            />
-          </label>
-        </div>
-        <div className="mb-5 flex flex-wrap gap-1.5">
-          {EMOJI_PICKS.map((e) => (
-            <button key={e} onClick={() => setIcon(e)} className="rounded-md bg-white/5 px-2 py-1 text-lg hover:bg-white/15">
-              {e}
-            </button>
-          ))}
+        {/* Label */}
+        <label className="mb-4 block text-sm">
+          <span className="mb-1 block font-medium text-slate-300">Label</span>
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Screenshot"
+            className="w-full rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          />
+        </label>
+
+        {/* Icon face: emoji / text / image */}
+        <div className="mb-5">
+          <span className="mb-1 block text-sm font-medium text-slate-300">Icon</span>
+          <div className="mb-3 grid grid-cols-3 gap-1.5">
+            {ICON_TYPES.map((t) => (
+              <button
+                key={t.type}
+                onClick={() => setIconType(t.type)}
+                className={[
+                  "flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium ring-1 transition",
+                  iconType === t.type ? "bg-sky-500/20 text-sky-200 ring-sky-500" : "bg-white/5 text-slate-300 ring-white/10 hover:bg-white/10",
+                ].join(" ")}
+              >
+                <span className="text-sm">{t.glyph}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {iconType === "emoji" && (
+            <>
+              <input
+                value={icon}
+                onChange={(e) => setIcon(e.target.value)}
+                placeholder="⭐"
+                maxLength={8}
+                className="w-full rounded-lg bg-white/5 px-3 py-2 text-center text-2xl ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {EMOJI_PICKS.map((e) => (
+                  <button key={e} onClick={() => setIcon(e)} className="rounded-md bg-white/5 px-2 py-1 text-lg hover:bg-white/15">
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {iconType === "text" && (
+            <>
+              <input
+                value={icon}
+                onChange={(e) => setIcon(e.target.value.slice(0, 6))}
+                placeholder="REC"
+                maxLength={6}
+                autoCapitalize="characters"
+                className="w-full rounded-lg bg-white/5 px-3 py-2 text-center text-lg font-bold tracking-wide ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+              <p className="mt-1.5 text-xs text-slate-500">Up to 6 characters, shown on the tile (e.g. REC, 1, GG).</p>
+            </>
+          )}
+
+          {iconType === "image" && (
+            <div className="flex items-center gap-3">
+              <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
+                {hasImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={icon} alt="" className="size-full object-cover" />
+                ) : (
+                  <span className="text-2xl">🖼️</span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-sky-500/20 px-3 py-2 text-sm font-medium text-sky-200 hover:bg-sky-500/30">
+                  {hasImage ? "Replace image…" : "Choose image…"}
+                  <input type="file" accept="image/*" onChange={onPickImage} className="hidden" />
+                </label>
+                <p className="mt-1.5 text-xs text-slate-500">Resized to 64px and saved on this device.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action type */}
