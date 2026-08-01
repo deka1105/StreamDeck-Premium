@@ -313,44 +313,59 @@ export function Deck() {
       <header className="mb-4 flex items-center justify-between">
         <h1 className="text-lg font-bold tracking-tight">streamPhoneDeck</h1>
         <div className="flex items-center gap-2">
-          {authRequired && (
+          {view === "apps" ? (
             <button
-              onClick={manageToken}
-              title={token ? "Access token set — tap to change" : "This deck needs an access token"}
-              aria-label="Manage access token"
-              className={[
-                "rounded-full px-2.5 py-1 text-xs font-medium",
-                token ? "bg-white/10 text-slate-300 hover:bg-white/20" : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30",
-              ].join(" ")}
+              onClick={() => setView("deck")}
+              className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300 hover:bg-white/20"
             >
-              {token ? "🔒" : "🔓"}
+              ← Deck
             </button>
+          ) : (
+            <>
+              {authRequired && (
+                <button
+                  onClick={manageToken}
+                  title={token ? "Access token set — tap to change" : "This deck needs an access token"}
+                  aria-label="Manage access token"
+                  className={[
+                    "rounded-full px-2.5 py-1 text-xs font-medium",
+                    token ? "bg-white/10 text-slate-300 hover:bg-white/20" : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30",
+                  ].join(" ")}
+                >
+                  {token ? "🔒" : "🔓"}
+                </button>
+              )}
+              {!editing && (
+                <button
+                  onClick={() => setView("apps")}
+                  title="See the apps running on your computer"
+                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300 hover:bg-white/20"
+                >
+                  Apps
+                </button>
+              )}
+              <button
+                onClick={toggleAuto}
+                title={autoMode ? "Auto mode on — the profile follows your computer's focused app" : "Auto mode off — turn on to follow your focused app"}
+                aria-pressed={autoMode}
+                className={[
+                  "rounded-full px-3 py-1 text-xs font-medium",
+                  autoMode ? "bg-sky-500 text-white" : "bg-white/10 text-slate-300 hover:bg-white/20",
+                ].join(" ")}
+              >
+                {autoMode ? "🪄 Auto" : "Auto"}
+              </button>
+              <button
+                onClick={() => setEditing((e) => !e)}
+                className={[
+                  "rounded-full px-3 py-1 text-xs font-medium",
+                  editing ? "bg-sky-500 text-white" : "bg-white/10 text-slate-300 hover:bg-white/20",
+                ].join(" ")}
+              >
+                {editing ? "Done" : "Edit"}
+              </button>
+            </>
           )}
-          {!editing && (
-            <a href="/host" className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300 hover:bg-white/20">
-              Monitor →
-            </a>
-          )}
-          <button
-            onClick={toggleAuto}
-            title={autoMode ? "Auto mode on — the profile follows your computer's focused app" : "Auto mode off — turn on to follow your focused app"}
-            aria-pressed={autoMode}
-            className={[
-              "rounded-full px-3 py-1 text-xs font-medium",
-              autoMode ? "bg-sky-500 text-white" : "bg-white/10 text-slate-300 hover:bg-white/20",
-            ].join(" ")}
-          >
-            {autoMode ? "🪄 Auto" : "Auto"}
-          </button>
-          <button
-            onClick={() => setEditing((e) => !e)}
-            className={[
-              "rounded-full px-3 py-1 text-xs font-medium",
-              editing ? "bg-sky-500 text-white" : "bg-white/10 text-slate-300 hover:bg-white/20",
-            ].join(" ")}
-          >
-            {editing ? "Done" : "Edit"}
-          </button>
         </div>
       </header>
 
