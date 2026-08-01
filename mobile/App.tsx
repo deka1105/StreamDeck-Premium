@@ -14,11 +14,25 @@ import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
 import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
-import { hello, pair, sendAction } from "./src/rpc";
-import { loadCols, loadDeck, resetDeck, saveCols, saveDeck } from "./src/deckStorage";
-import { DEFAULT_COLS, MAX_COLS, MIN_COLS, type DeckButton } from "./src/buttons";
+import { foreground, hello, pair, sendAction } from "./src/rpc";
+import { loadCols, loadProfiles, saveCols, saveProfiles, type ProfilesState } from "./src/deckStorage";
+import {
+  DEFAULT_COLS,
+  MAX_COLS,
+  MAX_TILES_PER_PROFILE,
+  MIN_COLS,
+  defaultButtons,
+  newProfileId,
+  profileForApp,
+  type DeckButton,
+} from "./src/buttons";
 import { packDeck } from "./src/layout";
 import { TileEditor } from "./src/TileEditor";
+import { NamePrompt } from "./src/NamePrompt";
+import { ProfileSettings } from "./src/ProfileSettings";
+
+// How often the phone polls the host's focused app while Auto mode is on.
+const FOREGROUND_POLL_MS = 1500;
 
 const DEVICE_NAME = Platform.OS === "ios" ? "iPhone" : "Android phone";
 
@@ -200,7 +214,13 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
 type EditorState = null | "new" | DeckButton;
 
 function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => void }) {
-  const [deck, setDeck] = useState<DeckButton[] | null>(null);
+  const [state, setState] = useState<ProfilesState | null>(null);
+  const [namePrompt, setNamePrompt] = useState<null | "add">(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentApp, setCurrentApp] = useState<string | null>(null);
+  // The focused app we've already reacted to — makes auto-switch edge-triggered,
+  // so a manual profile switch sticks until the focused app actually changes.
+  const handledAppRef = useRef<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editor, setEditor] = useState<EditorState>(null);
   const [status, setStatus] = useState("Connecting…");
@@ -214,9 +234,15 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   const [gridW, setGridW] = useState(0);
 
   useEffect(() => {
-    loadDeck().then(setDeck);
+    loadProfiles().then(setState);
     loadCols().then(setCols);
   }, []);
+
+  // The active profile (always defined once state loads — there's ≥1 profile).
+  const active = state ? state.profiles.find((p) => p.id === state.activeId) ?? state.profiles[0] : null;
+  const deck = active?.buttons ?? [];
+  const full = deck.length >= MAX_TILES_PER_PROFILE;
+  const autoMode = state?.autoMode ?? false;
 
   function changeCols(n: number) {
     setCols(n);
@@ -235,9 +261,100 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       });
   }, [pairing]);
 
-  function persist(next: DeckButton[]) {
-    setDeck(next);
-    saveDeck(next);
+  // Auto mode: poll the host for its focused app on a timer.
+  useEffect(() => {
+    if (!autoMode) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const r = await foreground(pairing);
+        if (!cancelled) setCurrentApp(r.app ?? null);
+      } catch {
+        // host momentarily unreachable — keep the last known app
+      }
+    };
+    poll();
+    const id = setInterval(poll, FOREGROUND_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [autoMode, pairing]);
+
+  // Edge-triggered switch: when the focused app *changes* to one a profile maps,
+  // activate that profile. No match → stay put. Paused while editing.
+  useEffect(() => {
+    if (!state || !autoMode || editing) {
+      handledAppRef.current = currentApp; // stay synced so we don't snap on resume
+      return;
+    }
+    if (currentApp === handledAppRef.current) return;
+    handledAppRef.current = currentApp;
+    const match = profileForApp(state.profiles, currentApp);
+    if (match && match.id !== state.activeId) {
+      const next = { ...state, activeId: match.id };
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setState(next);
+      saveProfiles(next);
+    }
+  }, [currentApp, state, editing, autoMode]);
+
+  function persistState(next: ProfilesState) {
+    setState(next);
+    saveProfiles(next);
+  }
+
+  /** Replace the active profile's tiles. */
+  function persistButtons(next: DeckButton[]) {
+    if (!state || !active) return;
+    persistState({
+      ...state,
+      profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, buttons: next } : p)),
+    });
+  }
+
+  function toggleAuto() {
+    if (!state) return;
+    handledAppRef.current = null; // re-evaluate the focused app when turning on
+    const next = { ...state, autoMode: !state.autoMode };
+    persistState(next);
+    if (!next.autoMode) setCurrentApp(null);
+  }
+
+  function switchProfile(id: string) {
+    if (state) persistState({ ...state, activeId: id });
+  }
+
+  function submitName(name: string) {
+    if (!state) return;
+    const id = newProfileId();
+    persistState({ ...state, profiles: [...state.profiles, { id, name, buttons: [], apps: [] }], activeId: id });
+    setNamePrompt(null);
+  }
+
+  function saveSettings(patch: { name: string; apps: string[] }) {
+    if (!state || !active) return;
+    persistState({
+      ...state,
+      profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, name: patch.name, apps: patch.apps } : p)),
+    });
+    setShowSettings(false);
+  }
+
+  function confirmDeleteProfile() {
+    if (!state || !active || state.profiles.length <= 1) return;
+    Alert.alert(`Delete “${active.name}”?`, "Its tiles will be lost.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          const profiles = state.profiles.filter((p) => p.id !== active.id);
+          persistState({ ...state, profiles, activeId: profiles[0].id });
+          setShowSettings(false);
+        },
+      },
+    ]);
   }
 
   async function press(tile: DeckButton) {
@@ -316,25 +433,32 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   }
 
   function saveTile(tile: DeckButton) {
-    const list = deck ?? [];
+    const list = deck;
     const idx = list.findIndex((b) => b.id === tile.id);
-    persist(idx >= 0 ? list.map((b) => (b.id === tile.id ? tile : b)) : [...list, tile]);
+    if (idx < 0 && list.length >= MAX_TILES_PER_PROFILE) {
+      setOk(false);
+      setStatus(`Profile is full — ${MAX_TILES_PER_PROFILE} tiles max. Add another profile.`);
+      setEditor(null);
+      return;
+    }
+    persistButtons(idx >= 0 ? list.map((b) => (b.id === tile.id ? tile : b)) : [...list, tile]);
     setEditor(null);
   }
 
   function deleteTile(tile: DeckButton) {
-    persist((deck ?? []).filter((b) => b.id !== tile.id));
+    persistButtons(deck.filter((b) => b.id !== tile.id));
     setEditor(null);
   }
 
   function confirmReset() {
-    Alert.alert("Reset deck?", "Restore the default tiles. Your changes will be lost.", [
+    if (!active) return;
+    Alert.alert(`Reset “${active.name}”?`, "Restore the default tiles in this profile. Your changes to it will be lost.", [
       { text: "Cancel", style: "cancel" },
-      { text: "Reset", style: "destructive", onPress: () => resetDeck().then(persist) },
+      { text: "Reset", style: "destructive", onPress: () => persistButtons(defaultButtons) },
     ]);
   }
 
-  if (!deck) {
+  if (!state || !active) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color="#38bdf8" />
@@ -343,7 +467,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   }
 
   const cellSize = gridW > 0 ? (gridW - GRID_GAP * (cols - 1)) / cols : 0;
-  const items = editing ? [...deck, ADD_TILE] : deck;
+  const items = editing && !full ? [...deck, ADD_TILE] : deck;
   const { placements, rows } = packDeck(items, cols);
   const gridHeight = cellSize > 0 ? rows * cellSize + Math.max(0, rows - 1) * GRID_GAP : 0;
 
@@ -362,11 +486,54 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               <Text style={styles.pillText}>Unpair</Text>
             </Pressable>
           )}
+          <Pressable style={[styles.pill, autoMode && styles.pillActive]} onPress={toggleAuto}>
+            <Text style={[styles.pillText, autoMode && styles.pillTextActive]}>{autoMode ? "🪄 Auto" : "Auto"}</Text>
+          </Pressable>
           <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => setEditing((e) => !e)}>
             <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
           </Pressable>
         </View>
       </View>
+
+      {/* Profile switcher: tap to switch; in edit mode, tap the active one for settings. */}
+      <View style={styles.profileRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.profileRowContent}>
+          {state.profiles.map((p) => {
+            const isActive = p.id === active.id;
+            const auto = autoMode && !!p.apps?.length;
+            return (
+              <Pressable
+                key={p.id}
+                onPress={() => (editing && isActive ? setShowSettings(true) : switchProfile(p.id))}
+                style={[styles.profilePill, isActive && styles.profilePillActive]}
+              >
+                <Text style={[styles.profilePillText, isActive && styles.profilePillTextActive]} numberOfLines={1}>
+                  {auto ? "🪄 " : ""}
+                  {p.name}
+                  {editing && isActive ? "  ⚙" : ""}
+                </Text>
+              </Pressable>
+            );
+          })}
+          {editing && (
+            <Pressable onPress={() => setNamePrompt("add")} style={styles.profileAddPill}>
+              <Text style={styles.profileAddText}>＋ Profile</Text>
+            </Pressable>
+          )}
+        </ScrollView>
+      </View>
+
+      {/* Live "intuitive mode" indicator: what's focused → which profile it maps to. */}
+      {autoMode && (
+        <View style={styles.fgRow}>
+          <Text style={styles.fgText} numberOfLines={1}>
+            🖥{"  "}
+            {currentApp
+              ? `${currentApp} → ${profileForApp(state.profiles, currentApp)?.name ?? "no profile (staying put)"}`
+              : "Waiting for your computer…"}
+          </Text>
+        </View>
+      )}
 
       {!editing && (
         <View style={styles.sendArea}>
@@ -471,9 +638,16 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       </ScrollView>
 
       {editing && (
-        <Pressable style={styles.resetButton} onPress={confirmReset}>
-          <Text style={styles.resetText}>Reset to defaults</Text>
-        </Pressable>
+        <View style={styles.editFooter}>
+          <Pressable style={styles.resetButton} onPress={confirmReset}>
+            <Text style={styles.resetText}>Reset tiles</Text>
+          </Pressable>
+          {state.profiles.length > 1 && (
+            <Pressable style={styles.resetButton} onPress={confirmDeleteProfile}>
+              <Text style={styles.resetText}>Delete profile</Text>
+            </Pressable>
+          )}
+        </View>
       )}
 
       {editor !== null && (
@@ -483,6 +657,27 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           onSave={saveTile}
           onCancel={() => setEditor(null)}
           onDelete={editor === "new" ? undefined : () => deleteTile(editor)}
+        />
+      )}
+
+      {namePrompt === "add" && (
+        <NamePrompt
+          title="New profile"
+          initial={`Profile ${state.profiles.length + 1}`}
+          confirmLabel="Create"
+          onSubmit={submitName}
+          onCancel={() => setNamePrompt(null)}
+        />
+      )}
+
+      {showSettings && (
+        <ProfileSettings
+          profile={active}
+          currentApp={currentApp}
+          canDelete={state.profiles.length > 1}
+          onSave={saveSettings}
+          onDelete={confirmDeleteProfile}
+          onCancel={() => setShowSettings(false)}
         />
       )}
     </View>
@@ -517,6 +712,17 @@ const styles = StyleSheet.create({
   delayChipText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
   delayChipTextActive: { color: "#fff" },
   gridScroll: { paddingBottom: 24 },
+  profileRow: { marginBottom: 16 },
+  profileRowContent: { gap: 8, paddingRight: 8 },
+  profilePill: { maxWidth: 180, backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
+  profilePillActive: { backgroundColor: "#0284c7" },
+  profilePillText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  profilePillTextActive: { color: "#fff" },
+  profileAddPill: { borderWidth: 1, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.25)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
+  profileAddText: { color: "#94a3b8", fontSize: 13, fontWeight: "600" },
+  fgRow: { marginTop: -8, marginBottom: 12, paddingHorizontal: 2 },
+  fgText: { color: "#64748b", fontSize: 12 },
+  editFooter: { flexDirection: "row", justifyContent: "center", gap: 24 },
   colsRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
   tile: { width: "100%", height: "100%", borderRadius: 20, alignItems: "center", justifyContent: "center", gap: 6, padding: 6 },
   tilePressed: { opacity: 0.75, transform: [{ scale: 0.96 }] },
