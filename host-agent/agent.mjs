@@ -231,6 +231,46 @@ function startForegroundReporter() {
   setInterval(tick, FOREGROUND_POLL_MS);
 }
 
+// Names of the apps with a UI currently running (what you'd see in ⌘-Tab / Dock).
+async function runningApps() {
+  if (platform !== "darwin") return null; // Windows/Linux: not implemented yet
+  try {
+    const out = await sh(
+      `osascript -e 'tell application "System Events" to get name of every application process whose background only is false'`,
+    );
+    const list = out.trim() ? out.trim().split(",").map((s) => s.trim()).filter(Boolean) : [];
+    return [...new Set(list)].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  } catch {
+    return null; // Accessibility not granted yet
+  }
+}
+
+function startAppsReporter() {
+  if (platform !== "darwin") {
+    console.log("  (running-apps list is macOS-only for now)");
+    return;
+  }
+  let lastKey = "";
+  const tick = async () => {
+    const apps = await runningApps();
+    if (!apps) return;
+    const frontmost = await frontmostApp();
+    const key = `${frontmost}|${apps.join(",")}`;
+    if (key === lastKey) return; // unchanged — skip the POST
+    lastKey = key;
+    try {
+      await fetch(APPS_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ apps, frontmost }),
+      });
+    } catch {
+      lastKey = ""; // server unreachable — re-report next tick
+    }
+  };
+  setInterval(tick, APPS_POLL_MS);
+}
+
 // --- Main loop with reconnect ------------------------------------------------
 
 async function main() {
