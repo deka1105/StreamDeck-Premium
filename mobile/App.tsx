@@ -556,17 +556,30 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           </Text>
         </View>
         <View style={styles.headerButtons}>
-          {!editing && (
-            <Pressable style={styles.pill} onPress={onUnpair}>
-              <Text style={styles.pillText}>Unpair</Text>
+          {view === "apps" ? (
+            <Pressable style={styles.pill} onPress={() => setView("deck")}>
+              <Text style={styles.pillText}>← Deck</Text>
             </Pressable>
+          ) : (
+            <>
+              {!editing && (
+                <Pressable style={styles.pill} onPress={onUnpair}>
+                  <Text style={styles.pillText}>Unpair</Text>
+                </Pressable>
+              )}
+              {!editing && (
+                <Pressable style={styles.pill} onPress={() => setView("apps")}>
+                  <Text style={styles.pillText}>Apps</Text>
+                </Pressable>
+              )}
+              <Pressable style={[styles.pill, autoMode && styles.pillActive]} onPress={toggleAuto}>
+                <Text style={[styles.pillText, autoMode && styles.pillTextActive]}>{autoMode ? "🪄 Auto" : "Auto"}</Text>
+              </Pressable>
+              <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => setEditing((e) => !e)}>
+                <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
+              </Pressable>
+            </>
           )}
-          <Pressable style={[styles.pill, autoMode && styles.pillActive]} onPress={toggleAuto}>
-            <Text style={[styles.pillText, autoMode && styles.pillTextActive]}>{autoMode ? "🪄 Auto" : "Auto"}</Text>
-          </Pressable>
-          <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => setEditing((e) => !e)}>
-            <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
-          </Pressable>
         </View>
       </View>
 
