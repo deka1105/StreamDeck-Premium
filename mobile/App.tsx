@@ -305,6 +305,26 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     }
   }, [currentApp, state, editing, autoMode]);
 
+  // Apps screen: poll the host for its running apps while the screen is open.
+  useEffect(() => {
+    if (view !== "apps") return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const r = await fetchApps(pairing);
+        if (!cancelled) setRunningApps({ apps: r.apps ?? [], frontmost: r.frontmost ?? null });
+      } catch {
+        // host momentarily unreachable — keep the last snapshot
+      }
+    };
+    poll();
+    const id = setInterval(poll, 2500);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [view, pairing]);
+
   function persistState(next: ProfilesState) {
     setState(next);
     saveProfiles(next);
@@ -317,6 +337,55 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       ...state,
       profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, buttons: next } : p)),
     });
+  }
+
+  async function refreshApps() {
+    setAppsLoading(true);
+    try {
+      const r = await fetchApps(pairing);
+      setRunningApps({ apps: r.apps ?? [], frontmost: r.frontmost ?? null });
+    } catch {
+      // keep the last snapshot
+    } finally {
+      setAppsLoading(false);
+    }
+  }
+
+  // Bring a running app to the front (sends an `app` action).
+  async function focusAppByName(name: string) {
+    if (busy) return;
+    setBusy(true);
+    setStatus(`Focusing ${name}…`);
+    try {
+      const r = await sendAction(pairing, name, { type: "app", target: name });
+      setOk(r.ok);
+      setStatus(r.ok ? `${name} ✓` : `${name}: ${r.error ?? "failed"}`);
+    } catch (e) {
+      setOk(false);
+      setStatus(`${name}: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Pin a running app as a tile in the active profile.
+  function pinApp(name: string) {
+    if (!active) return;
+    if (deck.length >= MAX_TILES_PER_PROFILE) {
+      setOk(false);
+      setStatus(`Profile is full — ${MAX_TILES_PER_PROFILE} tiles max`);
+      return;
+    }
+    const tile: DeckButton = {
+      id: newButtonId(),
+      label: name,
+      icon: "🖥️",
+      color: TILE_COLORS[deck.length % TILE_COLORS.length].color,
+      action: { type: "app", target: name },
+    };
+    persistButtons([...deck, tile]);
+    setOk(true);
+    setStatus(`Pinned ${name} to “${active.name}”`);
   }
 
   function toggleAuto() {
