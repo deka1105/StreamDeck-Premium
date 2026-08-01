@@ -114,16 +114,55 @@ export function TileEditor({
             <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="Safari" placeholderTextColor="#64748b" />
 
             <Text style={styles.fieldLabel}>Icon</Text>
-            <View style={styles.inputRow}>
-              <TextInput style={[styles.input, styles.iconInput]} value={icon} onChangeText={setIcon} maxLength={4} />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emojiRow}>
-                {EMOJI.map((e) => (
-                  <Pressable key={e} onPress={() => setIcon(e)} style={[styles.emoji, icon === e && styles.emojiActive]}>
-                    <Text style={styles.emojiText}>{e}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
+            <View style={styles.typeRow}>
+              {ICON_TYPES.map((t) => (
+                <Pressable key={t.type} onPress={() => setIconType(t.type)} style={[styles.typeChip, iconType === t.type && styles.typeChipActive]}>
+                  <Text style={[styles.typeChipText, iconType === t.type && styles.typeChipTextActive]}>{t.label}</Text>
+                </Pressable>
+              ))}
             </View>
+
+            {iconType === "emoji" && (
+              <View style={[styles.inputRow, { marginTop: 8 }]}>
+                <TextInput style={[styles.input, styles.iconInput]} value={icon} onChangeText={setIcon} maxLength={8} />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emojiRow}>
+                  {EMOJI.map((e) => (
+                    <Pressable key={e} onPress={() => setIcon(e)} style={[styles.emoji, icon === e && styles.emojiActive]}>
+                      <Text style={styles.emojiText}>{e}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {iconType === "text" && (
+              <>
+                <TextInput
+                  style={[styles.input, styles.textIconInput, { marginTop: 8 }]}
+                  value={icon.startsWith("data:") ? "" : icon}
+                  onChangeText={(t) => setIcon(t.slice(0, 6))}
+                  placeholder="REC"
+                  placeholderTextColor="#64748b"
+                  maxLength={6}
+                  autoCapitalize="characters"
+                />
+                <Text style={styles.hint}>Up to 6 characters, shown on the tile (e.g. REC, 1, GG).</Text>
+              </>
+            )}
+
+            {iconType === "image" && (
+              <View style={[styles.imageRow, { marginTop: 8 }]}>
+                <View style={styles.imageThumb}>
+                  {hasImage ? <Image source={{ uri: icon }} style={styles.imageThumbImg} /> : <Text style={styles.imageThumbGlyph}>🖼️</Text>}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Pressable style={styles.imageBtn} onPress={pickImage}>
+                    <Text style={styles.imageBtnText}>{hasImage ? "Replace image…" : "Choose image…"}</Text>
+                  </Pressable>
+                  <Text style={styles.hint}>Resized to 64px and saved on this device.</Text>
+                </View>
+              </View>
+            )}
 
             <Text style={styles.fieldLabel}>Action</Text>
             <View style={styles.typeRow}>
