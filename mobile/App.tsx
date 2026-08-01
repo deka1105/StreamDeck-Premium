@@ -14,7 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
 import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
-import { foreground, hello, pair, sendAction } from "./src/rpc";
+import { apps as fetchApps, foreground, hello, pair, sendAction } from "./src/rpc";
 import { loadCols, loadProfiles, saveCols, saveProfiles, type ProfilesState } from "./src/deckStorage";
 import {
   DEFAULT_COLS,
