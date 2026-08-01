@@ -223,10 +223,10 @@
   .app-row .tag { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
   .app-row .tile-btn { margin-left: auto; font-family: var(--mono); font-size: .68rem; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 8px; padding: 4px 9px; }
 
-  /* ---- premium golden-diamond fall ---- */
+  /* ---- premium gold-confetti fall ---- */
   #premium { position: relative; overflow: hidden; }
   #premium > .wrap { position: relative; z-index: 1; }
-  #premium-diamonds { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  #premium-confetti { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 
   /* ---- toast ---- */
   .toast {
@@ -797,7 +797,7 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
     }
 
     function build() {
-      var count = Math.max(18, Math.min(64, Math.round(W / 20)));
+      var count = Math.max(40, Math.min(150, Math.round(W / 11)));
       pieces = [];
       for (var i = 0; i < count; i++) pieces.push(makePiece(true));
     }
