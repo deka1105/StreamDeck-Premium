@@ -456,6 +456,8 @@ export function Deck() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       <footer className="mt-6 flex h-6 items-center justify-center gap-4 text-xs">
         {editing ? (
