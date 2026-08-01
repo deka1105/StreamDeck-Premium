@@ -96,6 +96,23 @@ export async function frontmostApp() {
   return null; // Windows/Linux: not implemented yet
 }
 
+// Names of the apps with a UI currently running (what you'd see in ⌘-Tab / Dock),
+// sorted and de-duped. Powers the phone's "Apps" screen. Observation-only.
+export async function runningApps() {
+  if (platform === "darwin") {
+    try {
+      const out = await sh(
+        `osascript -e 'tell application "System Events" to get name of every application process whose background only is false'`,
+      );
+      const list = out.trim() ? out.trim().split(",").map((s) => s.trim()).filter(Boolean) : [];
+      return [...new Set(list)].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    } catch {
+      return []; // Accessibility not granted
+    }
+  }
+  return []; // Windows/Linux: not implemented yet
+}
+
 // The SendKeys string is passed via an env var so we never have to escape it
 // through the shell — PowerShell reads $env:SPD_KEYS.
 async function winSendKeys(sendKeysString) {
