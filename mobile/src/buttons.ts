@@ -11,15 +11,27 @@ export type ButtonAction =
 
 export type ActionType = ButtonAction["type"];
 
+/** How a tile's `icon` is rendered. */
+export type IconType = "emoji" | "text" | "image";
+
+/** Max length of a stored image data URI (guards AsyncStorage; picker resizes small). */
+export const MAX_ICON_IMAGE_LEN = 200_000;
+
 export type DeckButton = {
   id: string;
   label: string;
-  icon: string;
+  icon: string; // emoji glyph, short text, or an image data URI (see iconType)
+  iconType?: IconType; // default "emoji"
   action: ButtonAction;
   color: string; // a hex from TILE_COLORS
   w?: number; // column span (default 1)
   h?: number; // row span (default 1)
 };
+
+/** True if the icon is a usable inline image data URI. */
+export function isImageIcon(button: Pick<DeckButton, "icon" | "iconType">): boolean {
+  return button.iconType === "image" && typeof button.icon === "string" && button.icon.startsWith("data:image/");
+}
 
 /** How many tiles a profile pins — the "top 9" the user wants to see. */
 export const MAX_TILES_PER_PROFILE = 9;
