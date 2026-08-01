@@ -23,7 +23,10 @@ const execAsync = promisify(exec);
 
 const BASE_URL = (process.env.DECK_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const EVENTS_URL = `${BASE_URL}/api/events`;
+const FOREGROUND_URL = `${BASE_URL}/api/foreground`;
 const platform = process.platform; // 'darwin' | 'win32' | 'linux'
+// How often to check the focused app for intuitive profile switching.
+const FOREGROUND_POLL_MS = 1500;
 // When set, resolve each action to the command it *would* run, but don't run it.
 const DRY_RUN = ["1", "true", "yes"].includes((process.env.DECK_DRY_RUN ?? "").toLowerCase());
 
@@ -184,11 +187,53 @@ function handleFrame(frame) {
   execute(action).catch((err) => console.error(`  ✗ ${err.message}`));
 }
 
+// --- Foreground app reporting (macOS) ----------------------------------------
+// Powers "intuitive" mode: the deck maps focused apps to profiles. We only POST
+// when the focused app changes, so the server holds the latest for the deck to
+// poll. Observation-only — never executes anything.
+
+async function frontmostApp() {
+  if (platform !== "darwin") return null; // Windows/Linux: not implemented yet
+  try {
+    const out = await sh(
+      `osascript -e 'tell application "System Events" to name of first application process whose frontmost is true'`,
+    );
+    return out.trim() || null;
+  } catch {
+    return null; // Accessibility not granted yet, or nothing frontmost
+  }
+}
+
+function startForegroundReporter() {
+  if (platform !== "darwin") {
+    console.log("  (intuitive mode: focused-app reporting is macOS-only for now)");
+    return;
+  }
+  let lastApp = null;
+  const tick = async () => {
+    const app = await frontmostApp();
+    if (!app || app === lastApp) return;
+    lastApp = app;
+    try {
+      await fetch(FOREGROUND_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ app }),
+      });
+      console.log(`  ◆ focus → ${app}`);
+    } catch {
+      lastApp = null; // server unreachable — re-report this app next tick
+    }
+  };
+  setInterval(tick, FOREGROUND_POLL_MS);
+}
+
 // --- Main loop with reconnect ------------------------------------------------
 
 async function main() {
   console.log(`streamPhoneDeck agent — platform: ${platform}${DRY_RUN ? " (DRY RUN)" : ""}`);
   console.log(`Watching ${EVENTS_URL} … (Ctrl+C to stop)`);
+  startForegroundReporter();
   for (;;) {
     const ok = await connect();
     if (!ok) process.stdout.write(".");

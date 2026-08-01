@@ -80,6 +80,22 @@ async function typeText(text) {
   throw new Error(`Typing text isn't implemented for ${platform}`);
 }
 
+// Name of the focused application on the host — powers the phone's "intuitive"
+// auto profile switching. Observation-only; never executes anything.
+export async function frontmostApp() {
+  if (platform === "darwin") {
+    try {
+      const out = await sh(
+        `osascript -e 'tell application "System Events" to name of first application process whose frontmost is true'`,
+      );
+      return out.trim() || null;
+    } catch {
+      return null; // Accessibility not granted, or nothing frontmost
+    }
+  }
+  return null; // Windows/Linux: not implemented yet
+}
+
 // The SendKeys string is passed via an env var so we never have to escape it
 // through the shell — PowerShell reads $env:SPD_KEYS.
 async function winSendKeys(sendKeysString) {

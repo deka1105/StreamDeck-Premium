@@ -20,7 +20,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import qrcode from "qrcode";
-import { execute, validateAction } from "./executor.mjs";
+import { execute, validateAction, frontmostApp } from "./executor.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -172,6 +172,9 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     let reply;
     if (msg.cmd === "hello") {
       reply = { ok: true, host: name };
+    } else if (msg.cmd === "foreground") {
+      // Report the focused app so the phone can auto-switch profiles.
+      reply = { ok: true, app: await frontmostApp() };
     } else if (msg.cmd === "action") {
       const action = validateAction(msg.action);
       if (!action) {

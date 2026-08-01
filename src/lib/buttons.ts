@@ -33,6 +33,44 @@ export type DeckButton = {
   color: string;
 };
 
+/**
+ * How many tiles a profile pins — the "top 9" the user wants to see (a 3×3 grid).
+ * The editor blocks adding past this; loading truncates to it.
+ */
+export const MAX_TILES_PER_PROFILE = 9;
+
+/**
+ * A named deck of pinned tiles. Users create several profiles (e.g. Work,
+ * Streaming, Home) and switch between them; only the active profile's tiles
+ * show. Persisted per-device — see src/lib/storage.ts.
+ */
+export type DeckProfile = {
+  /** Stable, unique id. */
+  id: string;
+  /** User-facing name shown on the profile switcher. */
+  name: string;
+  /** The pinned tiles for this profile (≤ MAX_TILES_PER_PROFILE). */
+  buttons: DeckButton[];
+  /**
+   * Frontmost-app names that auto-activate this profile in "intuitive" mode
+   * (e.g. ["Safari", "Google Chrome"]). Matched case-insensitively against what
+   * the host reports as the focused app. Empty = never auto-activates.
+   */
+  apps?: string[];
+};
+
+/** Case-insensitive match of a frontmost app name against a profile's triggers. */
+export function profileMatchesApp(profile: DeckProfile, app: string | null | undefined): boolean {
+  if (!app || !profile.apps?.length) return false;
+  const needle = app.trim().toLowerCase();
+  return profile.apps.some((a) => a.trim().toLowerCase() === needle);
+}
+
+/** The first profile whose trigger list matches the app, or null (stay put). */
+export function profileForApp(profiles: DeckProfile[], app: string | null | undefined): DeckProfile | null {
+  return profiles.find((p) => profileMatchesApp(p, app)) ?? null;
+}
+
 /** Selectable tile background gradients, offered in the editor. */
 export const TILE_COLORS: { name: string; class: string }[] = [
   { name: "Sky", class: "from-sky-500 to-sky-700" },

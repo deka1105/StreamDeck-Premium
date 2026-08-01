@@ -123,6 +123,11 @@ async function main() {
   const ran = await rpc({ cmd: "action", label: "Open example", action: { type: "url", target: "https://example.com" } });
   assert(ran.status === 200 && ran.reply.ok, "action accepted and executed (dry-run)");
 
+  console.log("9. foreground — host reports its focused app (intuitive mode)");
+  const fg = await rpc({ cmd: "foreground" });
+  assert(fg.status === 200 && fg.reply.ok, "foreground command accepted over the paired channel");
+  assert("app" in fg.reply, `focused app reported: ${JSON.stringify(fg.reply.app)}`);
+
   console.log("\nAll checks passed. 🎉");
 }
 
