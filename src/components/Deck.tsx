@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   MAX_TILES_PER_PROFILE,
+  TILE_COLORS,
   defaultButtons,
   profileForApp,
   type DeckButton as DeckButtonConfig,
@@ -13,15 +14,20 @@ import {
   saveProfiles,
   loadToken,
   saveToken,
+  newButtonId,
   newProfileId,
   type ProfilesState,
 } from "@/lib/storage";
+import type { RunningApps as RunningAppsData } from "@/lib/apps";
 import { DeckButton } from "./DeckButton";
 import { TileEditor } from "./TileEditor";
 import { ProfileSettings } from "./ProfileSettings";
+import { RunningApps } from "./RunningApps";
 
 // How often the deck polls the host's focused app while Auto mode is on.
 const FOREGROUND_POLL_MS = 1500;
+// How often the Apps screen refreshes the running-apps list while open.
+const APPS_POLL_MS = 2500;
 
 type Status = { text: string; ok: boolean } | null;
 // null = closed, "new" = adding, or the button being edited.
