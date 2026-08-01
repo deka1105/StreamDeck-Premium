@@ -950,19 +950,27 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
     }, { passive: true });
   })();
 
-  /* ---- premium: sliding feature gallery ---- */
+  /* ---- premium: sliding feature gallery (10s ring timer; manual disables auto) ---- */
   (function () {
     var root = document.getElementById("premium-carousel");
     var track = document.getElementById("premium-track");
     var prev = document.getElementById("premium-prev");
     var next = document.getElementById("premium-next");
+    var nextWrap = document.getElementById("premium-next-wrap");
     var dotsWrap = document.getElementById("premium-dots");
-    if (!root || !track || !prev || !next || !dotsWrap) return;
+    var ring = document.getElementById("premium-ring");
+    if (!root || !track || !prev || !next || !dotsWrap || !ring) return;
 
     var slides = Array.prototype.slice.call(track.children);
     var n = slides.length;
-    var index = 0, timer = null;
+    var index = 0;
     var DELAY = 10000;
+    var C = 2 * Math.PI * 20; // ring circumference (r=20)
+    ring.style.strokeDasharray = C;
+    ring.style.strokeDashoffset = C;
+
+    var autoOff = false, inView = false, hovered = false, focused = false;
+    var rafId = null, lastTs = 0, accrued = 0;
 
     var dots = [];
     for (var i = 0; i < n; i++) {
@@ -971,7 +979,7 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
         d.type = "button";
         d.className = "carousel-dot" + (i === 0 ? " active" : "");
         d.setAttribute("aria-label", "Show feature " + (i + 1) + " of " + n);
-        d.addEventListener("click", function () { goTo(i, true); });
+        d.addEventListener("click", function () { manual(i); });
         dotsWrap.appendChild(d);
         dots.push(d);
       })(i);
@@ -981,42 +989,69 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
       track.style.transform = "translateX(" + (-index * 100) + "%)";
       for (var i = 0; i < n; i++) dots[i].classList.toggle("active", i === index);
     }
-    function goTo(i, manual) {
-      index = (i % n + n) % n;
-      render();
-      if (manual) restart();
+    function goTo(i) { index = (i % n + n) % n; render(); }
+    function ringSet(p) { ring.style.strokeDashoffset = C * (1 - Math.min(p, 1)); }
+    function resetTimer() { accrued = 0; lastTs = 0; ringSet(0); }
+
+    function tick(ts) {
+      if (lastTs) accrued += ts - lastTs;
+      lastTs = ts;
+      if (accrued >= DELAY) {          // 10s elapsed → advance and restart the ring
+        rafId = null;
+        resetTimer();
+        goTo(index + 1);
+        resume();
+        return;
+      }
+      ringSet(accrued / DELAY);
+      rafId = requestAnimationFrame(tick);
     }
-    function start() { if (!reduce && !timer) timer = setInterval(function () { goTo(index + 1, false); }, DELAY); }
-    function stop() { if (timer) { clearInterval(timer); timer = null; } }
-    function restart() { stop(); start(); }
+    function resume() {
+      if (autoOff || reduce || rafId || !inView || hovered || focused) return;
+      lastTs = 0; // ignore the paused gap
+      rafId = requestAnimationFrame(tick);
+    }
+    function pause() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
-    prev.addEventListener("click", function () { goTo(index - 1, true); });
-    next.addEventListener("click", function () { goTo(index + 1, true); });
+    // Any manual navigation turns auto-advance off for good and hides the ring.
+    function disableAuto() {
+      if (autoOff) return;
+      autoOff = true;
+      pause();
+      if (nextWrap) nextWrap.classList.add("auto-off");
+    }
+    function manual(i) { disableAuto(); goTo(i); }
 
-    // Pause auto-advance while the user is interacting.
-    root.addEventListener("mouseenter", stop);
-    root.addEventListener("mouseleave", start);
-    root.addEventListener("focusin", stop);
-    root.addEventListener("focusout", start);
+    prev.addEventListener("click", function () { manual(index - 1); });
+    next.addEventListener("click", function () { manual(index + 1); });
 
-    // Touch swipe.
+    root.addEventListener("mouseenter", function () { hovered = true; pause(); });
+    root.addEventListener("mouseleave", function () { hovered = false; resume(); });
+    root.addEventListener("focusin", function () { focused = true; pause(); });
+    root.addEventListener("focusout", function () { focused = false; resume(); });
+
     var x0 = null;
-    root.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; stop(); }, { passive: true });
+    root.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; hovered = true; pause(); }, { passive: true });
     root.addEventListener("touchend", function (e) {
-      if (x0 === null) return;
-      var dx = e.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 40) goTo(index + (dx < 0 ? 1 : -1), true);
-      else start();
+      hovered = false;
+      if (x0 !== null) {
+        var dx = e.changedTouches[0].clientX - x0;
+        if (Math.abs(dx) > 40) { manual(index + (dx < 0 ? 1 : -1)); x0 = null; return; }
+      }
       x0 = null;
+      resume();
     }, { passive: true });
 
-    // Only auto-advance while the gallery is on screen.
+    if (reduce && nextWrap) nextWrap.classList.add("auto-off"); // no countdown when motion is reduced
+
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) start(); else stop();
+        inView = entries[0].isIntersecting;
+        if (inView) resume(); else pause();
       }, { threshold: 0.2 }).observe(root);
     } else {
-      start();
+      inView = true;
+      resume();
     }
 
     render();
