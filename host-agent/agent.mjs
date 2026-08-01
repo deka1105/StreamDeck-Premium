@@ -24,9 +24,12 @@ const execAsync = promisify(exec);
 const BASE_URL = (process.env.DECK_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const EVENTS_URL = `${BASE_URL}/api/events`;
 const FOREGROUND_URL = `${BASE_URL}/api/foreground`;
+const APPS_URL = `${BASE_URL}/api/apps`;
 const platform = process.platform; // 'darwin' | 'win32' | 'linux'
 // How often to check the focused app for intuitive profile switching.
 const FOREGROUND_POLL_MS = 1500;
+// How often to report the list of running apps (changes slowly — slower cadence).
+const APPS_POLL_MS = 3000;
 // When set, resolve each action to the command it *would* run, but don't run it.
 const DRY_RUN = ["1", "true", "yes"].includes((process.env.DECK_DRY_RUN ?? "").toLowerCase());
 
