@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 
 import {
   ACTION_TYPES,
@@ -12,10 +14,17 @@ import {
   newButtonId,
   type ActionType,
   type DeckButton,
+  type IconType,
 } from "./buttons";
 import { parseCombo } from "./keys";
 
 const EMOJI = ["🧭", "💻", "📁", "🔍", "📸", "🔒", "🐙", "▶️", "🔇", "🎵", "🎨", "⚙️", "📝", "🚀", "⭐", "💬", "📅", "🖥️", "🔔", "☕"];
+
+const ICON_TYPES: { type: IconType; label: string }[] = [
+  { type: "emoji", label: "Emoji" },
+  { type: "text", label: "Text" },
+  { type: "image", label: "Image" },
+];
 
 export function TileEditor({
   initial,
@@ -32,6 +41,7 @@ export function TileEditor({
 }) {
   const [label, setLabel] = useState(initial?.label ?? "");
   const [icon, setIcon] = useState(initial?.icon ?? "⭐");
+  const [iconType, setIconType] = useState<IconType>(initial?.iconType ?? "emoji");
   const [type, setType] = useState<ActionType>(initial?.action.type ?? "app");
   const [value, setValue] = useState(initial ? actionValue(initial.action) : "");
   const [color, setColor] = useState(initial?.color ?? TILE_COLORS[0].color);
@@ -44,13 +54,48 @@ export function TileEditor({
   const field = FIELD[type];
   const combo = type === "keys" ? parseCombo(value) : null;
   const canSave = label.trim().length > 0 && value.trim().length > 0;
+  const hasImage = iconType === "image" && icon.startsWith("data:image/");
+
+  // A valid uploaded image stays an image; else emoji/text (empty text → ⭐).
+  function resolveIcon(): { icon: string; iconType: IconType } {
+    if (hasImage) return { icon, iconType: "image" };
+    const trimmed = icon.trim();
+    if (iconType === "text" && trimmed) return { icon: trimmed.slice(0, 6), iconType: "text" };
+    return { icon: trimmed || "⭐", iconType: "emoji" };
+  }
+
+  async function pickImage() {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Photos permission needed", "Allow photo access to pick a tile image.");
+      return;
+    }
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (res.canceled || !res.assets?.length) return;
+    // Resize to 64px so the stored data URI stays small.
+    const out = await ImageManipulator.manipulateAsync(
+      res.assets[0].uri,
+      [{ resize: { width: 64, height: 64 } }],
+      { base64: true, compress: 0.8, format: ImageManipulator.SaveFormat.PNG },
+    );
+    if (!out.base64) return;
+    setIcon(`data:image/png;base64,${out.base64}`);
+    setIconType("image");
+  }
 
   function save() {
     if (!canSave) return;
+    const face = resolveIcon();
     onSave({
       id: initial?.id ?? newButtonId(),
       label: label.trim(),
-      icon: icon || "⭐",
+      icon: face.icon,
+      iconType: face.iconType,
       color,
       w: Math.min(w, maxW),
       h,
