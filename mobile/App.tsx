@@ -722,7 +722,13 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
                     style={({ pressed }) => [styles.tile, { backgroundColor: tile.color }, pressed && styles.tilePressed]}
                     onPress={() => press(tile)}
                   >
-                    <Text style={styles.tileIcon}>{tile.icon}</Text>
+                    {isImageIcon(tile) ? (
+                      <Image source={{ uri: tile.icon }} style={styles.tileImage} resizeMode="cover" />
+                    ) : (
+                      <Text style={[styles.tileIcon, tile.iconType === "text" && styles.tileIconText]} numberOfLines={1}>
+                        {tile.icon}
+                      </Text>
+                    )}
                     <Text style={styles.tileLabel} numberOfLines={1}>
                       {tile.label}
                     </Text>
