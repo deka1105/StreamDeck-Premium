@@ -748,6 +748,8 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           )}
         </View>
       )}
+      </>
+      )}
 
       {editor !== null && (
         <TileEditor
