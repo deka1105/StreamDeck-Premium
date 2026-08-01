@@ -24,6 +24,7 @@ import {
   MIN_COLS,
   TILE_COLORS,
   defaultButtons,
+  isImageIcon,
   newButtonId,
   newProfileId,
   profileForApp,
