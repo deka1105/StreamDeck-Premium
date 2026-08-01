@@ -836,6 +836,8 @@ const styles = StyleSheet.create({
   tile: { width: "100%", height: "100%", borderRadius: 20, alignItems: "center", justifyContent: "center", gap: 6, padding: 6 },
   tilePressed: { opacity: 0.75, transform: [{ scale: 0.96 }] },
   tileIcon: { fontSize: 34 },
+  tileIconText: { fontSize: 20, fontWeight: "800", letterSpacing: 0.5 },
+  tileImage: { width: 40, height: 40, borderRadius: 8 },
   tileLabel: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "center" },
   badge: {
     position: "absolute",
