@@ -470,83 +470,108 @@
     <div class="wrap">
       <div class="sec-head reveal">
         <span class="eyebrow">Premium</span>
-        <h2>Profiles that follow your focus.</h2>
-        <p>Group your tiles into named decks, then let the deck switch itself based on what you're actually doing on your computer.</p>
-      </div>
-      <div class="split">
-        <div class="reveal">
-          <ul class="checks">
-            <li><span class="ic">✦</span><span><b>Profiles</b> — name a deck (Work, Design, Home) and pin your <b>top&nbsp;9</b> tiles in a 3×3 grid. Switch with a tap; each keeps its own layout.</span></li>
-            <li><span class="ic">✦</span><span><b>🪄 Intuitive mode</b> — flip on <b>Auto</b> and the active profile <b>follows the app you're focused on</b>. Open Figma, your Design deck appears.</span></li>
-            <li><span class="ic">✦</span><span><b>Map apps → profiles</b> with a “Use current app” shortcut. It's <b>edge-triggered</b>, so a manual switch sticks until you change apps.</span></li>
-            <li><span class="ic">✦</span><span><b>No match, no surprises</b> — focus an app you haven't mapped and the deck stays exactly where it is.</span></li>
-            <li><span class="ic">✦</span><span>Runs on the <b>web deck and the native app</b> alike. Focus detection is macOS today, Windows next.</span></li>
-          </ul>
-        </div>
-        <div class="premium-mock reveal" aria-hidden="true">
-          <div class="pm-pills">
-            <span class="pm-pill">🪄 Work</span>
-            <span class="pm-pill on">🪄 Design</span>
-            <span class="pm-pill">Home</span>
-            <span class="pm-pill add">＋</span>
-          </div>
-          <div class="pm-fg"><span class="wand">🪄</span> 🖥 <b>Figma</b> → <span style="color:var(--accent)">Design</span></div>
-          <div class="minigrid">
-            <div class="minitile" style="background:linear-gradient(150deg,#a855f7,#7c3aed)">🎨</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#0ea5e9,#0369a1)">🖼️</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#6366f1,#4338ca)">🎞️</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#f43f5e,#be123c)">🌈</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#10b981,#047857)">📐</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#8b5cf6,#6d28d9)">🔎</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#334155,#0f172a)">↩️</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#0284c7,#0369a1)">📤</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#ec4899,#be185d)">💬</div>
-          </div>
-        </div>
+        <h2>Built for the way you actually work.</h2>
+        <p>Profiles that follow your focus, a live app switcher, and custom tile faces. Swipe through — or let them rotate on their own.</p>
       </div>
 
-      <div class="split" style="margin-top:clamp(28px,5vw,44px)">
-        <div class="reveal">
-          <span class="eyebrow">Live app switcher</span>
-          <h3 class="sub-h">See what&rsquo;s running — act on it.</h3>
-          <ul class="checks">
-            <li><span class="ic">✦</span><span>A live list of the apps open on your computer, the <b>focused one highlighted</b>.</span></li>
-            <li><span class="ic">✦</span><span><b>Tap to bring an app to the front</b> — instant window switching, from your phone.</span></li>
-            <li><span class="ic">✦</span><span><b>＋ Tile</b> pins any running app straight into the active profile — build your deck from what you actually use.</span></li>
-          </ul>
-        </div>
-        <div class="apps-mock reveal" aria-hidden="true">
-          <div class="apps-head"><span class="t">Running apps · 5</span><span class="r">↻ Refresh</span></div>
-          <div class="app-row"><span class="ico">🖥️</span><span class="nm">Safari</span><span class="tile-btn">＋ Tile</span></div>
-          <div class="app-row"><span class="ico">🖥️</span><span class="nm">VS Code</span><span class="tile-btn">＋ Tile</span></div>
-          <div class="app-row front"><span class="ico">🪄</span><span class="nm">Figma</span><span class="tag">frontmost</span><span class="tile-btn">＋ Tile</span></div>
-          <div class="app-row"><span class="ico">🖥️</span><span class="nm">Spotify</span><span class="tile-btn">＋ Tile</span></div>
-          <div class="app-row"><span class="ico">🖥️</span><span class="nm">Slack</span><span class="tile-btn">＋ Tile</span></div>
-        </div>
-      </div>
+      <div class="carousel reveal" id="premium-carousel">
+        <div class="carousel-viewport">
+          <div class="carousel-track" id="premium-track">
 
-      <div class="split" style="margin-top:clamp(28px,5vw,44px)">
-        <div class="reveal">
-          <span class="eyebrow">Custom tile faces</span>
-          <h3 class="sub-h">Emoji, text, or your own image.</h3>
-          <ul class="checks">
-            <li><span class="ic">✦</span><span>Give any tile an <b>emoji</b>, a few characters of <b>text</b> (REC, 1, GG), or an <b>image you upload</b>.</span></li>
-            <li><span class="ic">✦</span><span>Uploaded images are <b>resized and stored on your device</b> — self-contained, works offline, no server.</span></li>
-            <li><span class="ic">✦</span><span>Mix them across a profile so your deck is readable at a glance.</span></li>
-          </ul>
-        </div>
-        <div class="premium-mock reveal" aria-hidden="true">
-          <div class="minigrid">
-            <div class="minitile" style="background:linear-gradient(150deg,#8b5cf6,#6d28d9)">🎧</div>
-            <div class="minitile mt-text" style="background:linear-gradient(150deg,#e11d48,#be123c)">REC</div>
-            <div class="minitile mt-photo"><span style="background:linear-gradient(135deg,#22d3ee,#6366f1,#f472b6)"></span></div>
-            <div class="minitile mt-text" style="background:linear-gradient(150deg,#0284c7,#0369a1)">1</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#10b981,#047857)">🎨</div>
-            <div class="minitile mt-photo"><span style="background:linear-gradient(135deg,#f59e0b,#ef4444,#8b5cf6)"></span></div>
-            <div class="minitile mt-text" style="background:linear-gradient(150deg,#d97706,#b45309)">GG</div>
-            <div class="minitile" style="background:linear-gradient(150deg,#0ea5e9,#0369a1)">🧭</div>
-            <div class="minitile mt-photo"><span style="background:linear-gradient(135deg,#34d399,#3b82f6,#a855f7)"></span></div>
+            <!-- Slide 1: profiles + intuitive mode -->
+            <div class="carousel-slide">
+              <div class="split">
+                <div>
+                  <span class="eyebrow">Profiles + intuitive mode</span>
+                  <h3 class="sub-h">Profiles that follow your focus.</h3>
+                  <ul class="checks">
+                    <li><span class="ic">✦</span><span><b>Profiles</b> — name a deck (Work, Design, Home) and pin your <b>top&nbsp;9</b> tiles in a 3×3 grid. Switch with a tap; each keeps its own layout.</span></li>
+                    <li><span class="ic">✦</span><span><b>🪄 Intuitive mode</b> — flip on <b>Auto</b> and the active profile <b>follows the app you're focused on</b>. Open Figma, your Design deck appears.</span></li>
+                    <li><span class="ic">✦</span><span><b>Map apps → profiles</b> with a “Use current app” shortcut. It's <b>edge-triggered</b>, so a manual switch sticks until you change apps.</span></li>
+                    <li><span class="ic">✦</span><span><b>No match, no surprises</b> — focus an app you haven't mapped and the deck stays exactly where it is.</span></li>
+                  </ul>
+                </div>
+                <div class="premium-mock" aria-hidden="true">
+                  <div class="pm-pills">
+                    <span class="pm-pill">🪄 Work</span>
+                    <span class="pm-pill on">🪄 Design</span>
+                    <span class="pm-pill">Home</span>
+                    <span class="pm-pill add">＋</span>
+                  </div>
+                  <div class="pm-fg"><span class="wand">🪄</span> 🖥 <b>Figma</b> → <span style="color:var(--accent)">Design</span></div>
+                  <div class="minigrid">
+                    <div class="minitile" style="background:linear-gradient(150deg,#a855f7,#7c3aed)">🎨</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#0ea5e9,#0369a1)">🖼️</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#6366f1,#4338ca)">🎞️</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#f43f5e,#be123c)">🌈</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#10b981,#047857)">📐</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#8b5cf6,#6d28d9)">🔎</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#334155,#0f172a)">↩️</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#0284c7,#0369a1)">📤</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#ec4899,#be185d)">💬</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2: live app switcher -->
+            <div class="carousel-slide">
+              <div class="split">
+                <div>
+                  <span class="eyebrow">Live app switcher</span>
+                  <h3 class="sub-h">See what&rsquo;s running — act on it.</h3>
+                  <ul class="checks">
+                    <li><span class="ic">✦</span><span>A live list of the apps open on your computer, the <b>focused one highlighted</b>.</span></li>
+                    <li><span class="ic">✦</span><span><b>Tap to bring an app to the front</b> — instant window switching, from your phone.</span></li>
+                    <li><span class="ic">✦</span><span><b>＋ Tile</b> pins any running app straight into the active profile — build your deck from what you actually use.</span></li>
+                  </ul>
+                </div>
+                <div class="apps-mock" aria-hidden="true">
+                  <div class="apps-head"><span class="t">Running apps · 5</span><span class="r">↻ Refresh</span></div>
+                  <div class="app-row"><span class="ico">🖥️</span><span class="nm">Safari</span><span class="tile-btn">＋ Tile</span></div>
+                  <div class="app-row"><span class="ico">🖥️</span><span class="nm">VS Code</span><span class="tile-btn">＋ Tile</span></div>
+                  <div class="app-row front"><span class="ico">🪄</span><span class="nm">Figma</span><span class="tag">frontmost</span><span class="tile-btn">＋ Tile</span></div>
+                  <div class="app-row"><span class="ico">🖥️</span><span class="nm">Spotify</span><span class="tile-btn">＋ Tile</span></div>
+                  <div class="app-row"><span class="ico">🖥️</span><span class="nm">Slack</span><span class="tile-btn">＋ Tile</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3: custom tile faces -->
+            <div class="carousel-slide">
+              <div class="split">
+                <div>
+                  <span class="eyebrow">Custom tile faces</span>
+                  <h3 class="sub-h">Emoji, text, or your own image.</h3>
+                  <ul class="checks">
+                    <li><span class="ic">✦</span><span>Give any tile an <b>emoji</b>, a few characters of <b>text</b> (REC, 1, GG), or an <b>image you upload</b>.</span></li>
+                    <li><span class="ic">✦</span><span>Uploaded images are <b>resized and stored on your device</b> — self-contained, works offline, no server.</span></li>
+                    <li><span class="ic">✦</span><span>Mix them across a profile so your deck is readable at a glance.</span></li>
+                  </ul>
+                </div>
+                <div class="premium-mock" aria-hidden="true">
+                  <div class="minigrid">
+                    <div class="minitile" style="background:linear-gradient(150deg,#8b5cf6,#6d28d9)">🎧</div>
+                    <div class="minitile mt-text" style="background:linear-gradient(150deg,#e11d48,#be123c)">REC</div>
+                    <div class="minitile mt-photo"><span style="background:linear-gradient(135deg,#22d3ee,#6366f1,#f472b6)"></span></div>
+                    <div class="minitile mt-text" style="background:linear-gradient(150deg,#0284c7,#0369a1)">1</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#10b981,#047857)">🎨</div>
+                    <div class="minitile mt-photo"><span style="background:linear-gradient(135deg,#f59e0b,#ef4444,#8b5cf6)"></span></div>
+                    <div class="minitile mt-text" style="background:linear-gradient(150deg,#d97706,#b45309)">GG</div>
+                    <div class="minitile" style="background:linear-gradient(150deg,#0ea5e9,#0369a1)">🧭</div>
+                    <div class="minitile mt-photo"><span style="background:linear-gradient(135deg,#34d399,#3b82f6,#a855f7)"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
+        </div>
+
+        <div class="carousel-controls">
+          <button class="carousel-arrow" id="premium-prev" type="button" aria-label="Previous feature">‹</button>
+          <div class="carousel-dots" id="premium-dots" role="tablist" aria-label="Premium features"></div>
+          <button class="carousel-arrow" id="premium-next" type="button" aria-label="Next feature">›</button>
         </div>
       </div>
     </div>
