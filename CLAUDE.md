@@ -86,9 +86,12 @@ phone (/) ──POST /api/action──▶ bus (src/lib/bus.ts) ──SSE /api/ev
 - **`src/components/ProfileSettings.tsx`** — per-profile modal: rename + the
   trigger-app list for Auto mode, with a "Use current app" shortcut fed by the
   live foreground reading.
-- **`src/components/TileEditor.tsx`** — the add/edit modal: label, icon (with
-  emoji quick-picks), action type selector, a value field whose label/hint change
-  per type, live `parseCombo` feedback for shortcuts, and color swatches.
+- **`src/components/TileEditor.tsx`** — the add/edit modal: label, **icon face**
+  (emoji with quick-picks, short text, or an uploaded image — resized to ~64px and
+  stored inline as a data URI), action type selector, a value field whose label/hint
+  change per type, live `parseCombo` feedback for shortcuts, and color swatches.
+  The tile's face is `icon` + `iconType` (`emoji` | `text` | `image`); `DeckButton`
+  renders an `<img>` for image faces, text otherwise.
 - **`src/components/DeckButton.tsx`** — one tile. In edit mode it shows a delete
   badge and tapping opens the editor instead of sending.
 - **`src/app/host/page.tsx`** (`/host`) — **read-only monitor**. Parses the same
