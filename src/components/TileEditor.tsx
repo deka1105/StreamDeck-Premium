@@ -7,6 +7,7 @@ import {
   TILE_COLORS,
   type ActionType,
   type DeckButton,
+  type IconType,
 } from "@/lib/buttons";
 import { parseCombo } from "@/lib/keys";
 import { newButtonId } from "@/lib/storage";
