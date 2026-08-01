@@ -20,18 +20,31 @@ export type ButtonAction =
 
 export type ActionType = ButtonAction["type"];
 
+/** How a tile's `icon` is rendered. */
+export type IconType = "emoji" | "text" | "image";
+
+/** Max length of a stored image data URI (guards localStorage; editor resizes to ~64px). */
+export const MAX_ICON_IMAGE_LEN = 200_000;
+
 export type DeckButton = {
   /** Stable, unique id — React key and reorder handle. */
   id: string;
   /** Text shown on the button. */
   label: string;
-  /** Emoji/icon glyph shown above the label. */
+  /** The tile face: an emoji/glyph, short text, or an image data URI (see iconType). */
   icon: string;
+  /** How `icon` is shown — emoji glyph (default), short text, or an uploaded image. */
+  iconType?: IconType;
   /** What pressing the button does on the host. */
   action: ButtonAction;
   /** One of TILE_COLORS below (Tailwind gradient classes). */
   color: string;
 };
+
+/** True if the icon is a usable inline image data URI. */
+export function isImageIcon(button: Pick<DeckButton, "icon" | "iconType">): boolean {
+  return button.iconType === "image" && typeof button.icon === "string" && button.icon.startsWith("data:image/");
+}
 
 /**
  * How many tiles a profile pins — the "top 9" the user wants to see (a 3×3 grid).
