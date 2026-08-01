@@ -2,6 +2,7 @@
 # Auto-added by watcher
 dist/
 node_modules/
+.next/
 .tox/
 build/
 venv/
