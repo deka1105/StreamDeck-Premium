@@ -144,11 +144,26 @@ function coerceButton(input: unknown): DeckButton | null {
   const b = input as Record<string, unknown>;
   const action = validateAction(b.action);
   if (!action) return null;
+  const { icon, iconType } = coerceIcon(b.icon, b.iconType);
   return {
     id: typeof b.id === "string" && b.id ? b.id : newButtonId(),
     label: typeof b.label === "string" ? b.label : "",
-    icon: typeof b.icon === "string" && b.icon ? b.icon : "⭐",
+    icon,
+    iconType,
     color: typeof b.color === "string" && b.color ? b.color : "from-slate-500 to-slate-700",
     action,
   };
+}
+
+/** Normalize a tile's face: valid image data URI stays an image; anything else is
+ *  emoji/text; unusable values fall back to the ⭐ emoji. */
+function coerceIcon(rawIcon: unknown, rawType: unknown): { icon: string; iconType: IconType } {
+  const icon = typeof rawIcon === "string" ? rawIcon : "";
+  const type: IconType = rawType === "text" || rawType === "image" ? rawType : "emoji";
+  if (type === "image") {
+    if (icon.startsWith("data:image/") && icon.length <= MAX_ICON_IMAGE_LEN) return { icon, iconType: "image" };
+    return { icon: "⭐", iconType: "emoji" }; // bad/oversized image → default glyph
+  }
+  const trimmed = icon.trim().slice(0, 64);
+  return { icon: trimmed || "⭐", iconType: type };
 }
