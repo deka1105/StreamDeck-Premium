@@ -240,6 +240,41 @@ export function Deck() {
     }
   }
 
+  // Bring a running app to the front — reuses press() (and its token flow).
+  function focusApp(name: string) {
+    press({ id: "__focus__", label: name, icon: "🖥️", color: "", action: { type: "app", target: name } });
+  }
+
+  // Pin a running app as a tile in the active profile.
+  function pinApp(name: string) {
+    if (!active) return;
+    if (buttons.length >= MAX_TILES_PER_PROFILE) {
+      setStatus({ text: `Profile is full — ${MAX_TILES_PER_PROFILE} tiles max. Add another profile.`, ok: false });
+      return;
+    }
+    const tile: DeckButtonConfig = {
+      id: newButtonId(),
+      label: name,
+      icon: "🖥️",
+      color: TILE_COLORS[buttons.length % TILE_COLORS.length].class,
+      action: { type: "app", target: name },
+    };
+    persistButtons([...buttons, tile]);
+    setStatus({ text: `Pinned ${name} to “${active.name}”`, ok: true });
+  }
+
+  async function refreshApps() {
+    setAppsLoading(true);
+    try {
+      const r = await fetch("/api/apps");
+      setRunningApps(await r.json());
+    } catch {
+      // keep the last snapshot
+    } finally {
+      setAppsLoading(false);
+    }
+  }
+
   function manageToken() {
     const entered = window.prompt(
       "Access token for this deck (leave blank to clear). Must match the server's DECK_TOKEN.",
