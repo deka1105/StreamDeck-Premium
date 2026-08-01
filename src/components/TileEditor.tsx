@@ -134,7 +134,12 @@ export function TileEditor({ initial, onSave, onCancel, onDelete }: Props) {
         {/* Live preview */}
         <div className="mb-5 flex justify-center">
           <div className={`flex aspect-square w-24 flex-col items-center justify-center gap-1 rounded-2xl bg-gradient-to-br ${color} shadow-lg ring-1 ring-white/10`}>
-            <span className="text-3xl leading-none">{icon || "⭐"}</span>
+            {hasImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={icon} alt="" className="size-11 rounded-lg object-cover" />
+            ) : (
+              <span className={iconType === "text" ? "text-xl font-bold leading-none" : "text-3xl leading-none"}>{icon || "⭐"}</span>
+            )}
             <span className="px-1 text-center text-xs font-semibold">{label || "Label"}</span>
           </div>
         </div>
