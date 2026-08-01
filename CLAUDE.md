@@ -71,6 +71,10 @@ phone (/) ──POST /api/action──▶ bus (src/lib/bus.ts) ──SSE /api/ev
   auto-switching. The agent POSTs the host's focused app; the deck polls GET.
   Latest value is process-local on `globalThis` (like the bus). Ungated like
   `/api/events` — it carries no execution vector.
+- **`src/lib/apps.ts` + `src/app/api/apps/route.ts`** — the "Apps" screen feed.
+  The agent POSTs `{apps, frontmost}` (running apps); the deck's Apps view polls
+  GET while open. Same process-local + ungated pattern. Focusing/pinning an app
+  still goes through the token-gated `/api/action` (as an `app` action).
 - **`src/components/Deck.tsx`** (`/`) — the phone UI. Loads profiles from storage
   after mount (null until hydrated, to avoid SSR mismatch), POSTs `{label,
   action}`, and hosts edit mode (toggle, add/edit/delete tiles, reset) and the
