@@ -1,6 +1,0 @@
-module Pods_streamPhoneDeck {
-  umbrella header "Pods-streamPhoneDeck-umbrella.h"
-
-  export *
-  module * { export * }
-}

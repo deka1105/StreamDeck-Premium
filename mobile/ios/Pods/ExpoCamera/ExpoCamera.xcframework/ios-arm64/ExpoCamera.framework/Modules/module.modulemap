@@ -1,6 +1,0 @@
-framework module ExpoCamera {
-    use React
-    header "ExpoCamera-Swift.h"
-
-    export *
-}

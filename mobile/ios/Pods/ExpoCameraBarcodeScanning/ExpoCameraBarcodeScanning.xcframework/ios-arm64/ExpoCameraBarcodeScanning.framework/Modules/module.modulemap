@@ -1,5 +1,0 @@
-framework module ExpoCameraBarcodeScanning {
-    header "ExpoCameraBarcodeScanning-Swift.h"
-
-    export *
-}
