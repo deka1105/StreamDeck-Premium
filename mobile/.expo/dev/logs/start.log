@@ -150,3 +150,7 @@
 {"_e":"metro:bundling:progress","_t":1785510025604,"id":"1","progress":0.999,"total":750,"current":750}
 {"_e":"metro:bundling:done","_t":1785510026618,"id":"1","total":750,"ms":2633.130489}
 {"_e":"metro:server_log","_t":1785510191102,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","com.dekisuki05.streamphonedeck","iPhone","60"]}
+{"_e":"root:init","_t":1785599008211,"format":"v0-jsonl","version":"57.0.10"}
+{"_e":"devserver:start","_t":1785599008252,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../../../app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785599009132,"serverRoot":"../../..","projectRoot":"../../..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785599009497,"plugins":[]}
