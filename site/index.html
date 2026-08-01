@@ -936,6 +936,78 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
       rt = setTimeout(init, 200);
     }, { passive: true });
   })();
+
+  /* ---- premium: sliding feature gallery ---- */
+  (function () {
+    var root = document.getElementById("premium-carousel");
+    var track = document.getElementById("premium-track");
+    var prev = document.getElementById("premium-prev");
+    var next = document.getElementById("premium-next");
+    var dotsWrap = document.getElementById("premium-dots");
+    if (!root || !track || !prev || !next || !dotsWrap) return;
+
+    var slides = Array.prototype.slice.call(track.children);
+    var n = slides.length;
+    var index = 0, timer = null;
+    var DELAY = 10000;
+
+    var dots = [];
+    for (var i = 0; i < n; i++) {
+      (function (i) {
+        var d = document.createElement("button");
+        d.type = "button";
+        d.className = "carousel-dot" + (i === 0 ? " active" : "");
+        d.setAttribute("aria-label", "Show feature " + (i + 1) + " of " + n);
+        d.addEventListener("click", function () { goTo(i, true); });
+        dotsWrap.appendChild(d);
+        dots.push(d);
+      })(i);
+    }
+
+    function render() {
+      track.style.transform = "translateX(" + (-index * 100) + "%)";
+      for (var i = 0; i < n; i++) dots[i].classList.toggle("active", i === index);
+    }
+    function goTo(i, manual) {
+      index = (i % n + n) % n;
+      render();
+      if (manual) restart();
+    }
+    function start() { if (!reduce && !timer) timer = setInterval(function () { goTo(index + 1, false); }, DELAY); }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function restart() { stop(); start(); }
+
+    prev.addEventListener("click", function () { goTo(index - 1, true); });
+    next.addEventListener("click", function () { goTo(index + 1, true); });
+
+    // Pause auto-advance while the user is interacting.
+    root.addEventListener("mouseenter", stop);
+    root.addEventListener("mouseleave", start);
+    root.addEventListener("focusin", stop);
+    root.addEventListener("focusout", start);
+
+    // Touch swipe.
+    var x0 = null;
+    root.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; stop(); }, { passive: true });
+    root.addEventListener("touchend", function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) goTo(index + (dx < 0 ? 1 : -1), true);
+      else start();
+      x0 = null;
+    }, { passive: true });
+
+    // Only auto-advance while the gallery is on screen.
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) start(); else stop();
+      }, { threshold: 0.2 }).observe(root);
+    } else {
+      start();
+    }
+
+    render();
+  })();
 })();
 </script>
 </body>
