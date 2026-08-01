@@ -590,7 +590,13 @@
         <div class="carousel-controls">
           <button class="carousel-arrow" id="premium-prev" type="button" aria-label="Previous feature">‹</button>
           <div class="carousel-dots" id="premium-dots" role="tablist" aria-label="Premium features"></div>
-          <button class="carousel-arrow" id="premium-next" type="button" aria-label="Next feature">›</button>
+          <div class="carousel-next" id="premium-next-wrap">
+            <svg class="carousel-ring" viewBox="0 0 44 44" aria-hidden="true">
+              <circle class="ring-track" cx="22" cy="22" r="20"></circle>
+              <circle class="ring-progress" id="premium-ring" cx="22" cy="22" r="20"></circle>
+            </svg>
+            <button class="carousel-arrow" id="premium-next" type="button" aria-label="Next feature (auto-advances in 10s)">›</button>
+          </div>
         </div>
       </div>
     </div>
