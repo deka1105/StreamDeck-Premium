@@ -88,7 +88,7 @@ export function TileEditor({ initial, onSave, onCancel, onDelete }: Props) {
   }
 
   // Read an image file, resize to 64px (centered/contained), store as a data URI.
-  function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPickImage(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ""; // let the same file be re-picked later
     if (!file) return;
