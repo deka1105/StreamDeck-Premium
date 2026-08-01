@@ -248,6 +248,13 @@
   .carousel-dots { display: flex; align-items: center; gap: 9px; }
   .carousel-dot { width: 8px; height: 8px; border-radius: 999px; border: none; padding: 0; background: var(--line-strong); cursor: pointer; transition: background .2s ease, transform .2s ease, width .2s ease; }
   .carousel-dot.active { background: var(--accent); width: 22px; }
+  /* next arrow with a 10s countdown ring */
+  .carousel-next { position: relative; width: 44px; height: 44px; }
+  .carousel-next .carousel-arrow { position: absolute; top: 1px; left: 1px; }
+  .carousel-ring { position: absolute; inset: 0; width: 44px; height: 44px; transform: rotate(-90deg); pointer-events: none; }
+  .carousel-ring .ring-track { fill: none; stroke: rgba(255,255,255,.08); stroke-width: 2.5; }
+  .carousel-ring .ring-progress { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--accent-glow)); }
+  .carousel-next.auto-off .carousel-ring { display: none; }
   @media (prefers-reduced-motion: reduce) { .carousel-track { transition: none; } }
 
   /* ---- toast ---- */
