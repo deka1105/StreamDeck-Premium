@@ -102,6 +102,28 @@ export function Deck() {
     }
   }, [currentApp, state, editing, autoMode]);
 
+  // Apps screen: poll the host's running apps while the screen is open. The
+  // setState lands in the fetch callback (a later microtask), not synchronously.
+  useEffect(() => {
+    if (view !== "apps") return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const r = await fetch("/api/apps");
+        const d = await r.json();
+        if (!cancelled) setRunningApps(d);
+      } catch {
+        // server momentarily unreachable — keep the last snapshot
+      }
+    };
+    poll();
+    const id = setInterval(poll, APPS_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [view]);
+
   // The active profile (always defined once state loads — there's ≥1 profile).
   const active = state ? state.profiles.find((p) => p.id === state.activeId) ?? state.profiles[0] : null;
   const buttons = active?.buttons ?? [];
