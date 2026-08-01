@@ -61,21 +61,58 @@ export function TileEditor({ initial, onSave, onCancel, onDelete }: Props) {
     value.trim().length > 0 &&
     (type !== "keys" || (comboResult?.ok ?? false));
 
+  // Resolve the tile face: a valid uploaded image stays an image; otherwise it's
+  // emoji/text (empty text falls back to a ⭐ emoji).
+  function resolveIcon(): { icon: string; iconType: IconType } {
+    if (iconType === "image" && icon.startsWith("data:image/")) return { icon, iconType: "image" };
+    const trimmed = icon.trim();
+    if (iconType === "text" && trimmed) return { icon: trimmed.slice(0, 6), iconType: "text" };
+    return { icon: trimmed || "⭐", iconType: "emoji" };
+  }
+
   function handleSave() {
     if (!valid) return;
     let finalValue = value.trim();
     if (type === "url" && !/^[a-z]+:\/\//i.test(finalValue)) {
       finalValue = `https://${finalValue}`;
     }
+    const face = resolveIcon();
     onSave({
       id: initial?.id ?? newButtonId(),
       label: label.trim(),
-      icon: icon.trim() || "⭐",
+      icon: face.icon,
+      iconType: face.iconType,
       color,
       action: makeAction(type, finalValue),
     });
   }
 
+  // Read an image file, resize to 64px (centered/contained), store as a data URI.
+  function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // let the same file be re-picked later
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const S = 64;
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = S;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const scale = Math.min(S / img.width, S / img.height);
+        const w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+        setIcon(canvas.toDataURL("image/png"));
+        setIconType("image");
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const hasImage = iconType === "image" && icon.startsWith("data:image/");
   const field = FIELD[type];
 
   return (
