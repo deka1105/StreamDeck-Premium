@@ -27,7 +27,33 @@ export function validateAction(action) {
   return { type: action.type, [field]: value };
 }
 
-export async function execute(action, { dryRun = false } = {}) {
+/**
+ * Decide whether a shell command may run, given the host's policy.
+ *   allowShell=false           → blocked (shell is opt-in; off by default)
+ *   allowShell=true, no list    → allowed (any command)
+ *   allowShell=true, allowlist  → allowed only if the exact (trimmed) command is listed
+ * Returns { ok, reason }. Kept pure + exported so it's unit-testable and reusable.
+ */
+export function shellDecision(command, { allowShell = false, shellAllowlist = null } = {}) {
+  if (!allowShell) {
+    return { ok: false, reason: "Shell commands are disabled on this host. Enable “Allow shell commands” in the tray menu." };
+  }
+  if (Array.isArray(shellAllowlist) && shellAllowlist.length > 0) {
+    const cmd = String(command).trim();
+    if (!shellAllowlist.some((a) => String(a).trim() === cmd)) {
+      return { ok: false, reason: "Command is not in the host's shell allowlist." };
+    }
+  }
+  return { ok: true, reason: "" };
+}
+
+export async function execute(action, { dryRun = false, allowShell = false, shellAllowlist = null } = {}) {
+  // Gate the shell RCE path *before* dry-run, so a blocked command is reported as
+  // blocked even in a preview run.
+  if (action.type === "shell") {
+    const d = shellDecision(action.command, { allowShell, shellAllowlist });
+    if (!d.ok) throw new Error(d.reason);
+  }
   if (dryRun) {
     console.log(`  (dry-run) ${JSON.stringify(action)}`);
     return;
