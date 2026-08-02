@@ -795,29 +795,23 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
                 );
               }
               const tile = p.tile;
+              const target = tile.action.type === "app" ? tile.action.target.toLowerCase() : null;
+              const running = !!target && !!runningApps?.apps.some((a) => a.toLowerCase() === target);
+              const frontmost = !!target && frontLower === target;
               return (
-                <View key={tile.id} style={box}>
-                  <Pressable
-                    style={({ pressed }) => [styles.tile, { backgroundColor: tile.color }, pressed && styles.tilePressed]}
-                    onPress={() => press(tile)}
-                  >
-                    {isImageIcon(tile) ? (
-                      <Image source={{ uri: tile.icon }} style={styles.tileImage} resizeMode="cover" alt="" />
-                    ) : (
-                      <Text style={[styles.tileIcon, tile.iconType === "text" && styles.tileIconText]} numberOfLines={1}>
-                        {tile.icon}
-                      </Text>
-                    )}
-                    <Text style={styles.tileLabel} numberOfLines={1}>
-                      {tile.label}
-                    </Text>
-                  </Pressable>
-                  {editing && (
-                    <Pressable style={styles.badge} onPress={() => deleteTile(tile)} hitSlop={8}>
-                      <Text style={styles.badgeText}>✕</Text>
-                    </Pressable>
-                  )}
-                </View>
+                <TileCell
+                  key={tile.id}
+                  tile={tile}
+                  box={box}
+                  editing={editing}
+                  dragging={dragId === tile.id}
+                  running={running}
+                  frontmost={frontmost}
+                  onPress={press}
+                  onDelete={deleteTile}
+                  onPickUp={onPickUp}
+                  onDrop={onDrop}
+                />
               );
             })}
         </View>
