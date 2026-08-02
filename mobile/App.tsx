@@ -922,6 +922,9 @@ function TileCell({
   const responder = PanResponder.create({
     onStartShouldSetPanResponder: () => false,
     onMoveShouldSetPanResponder: (_, g) => editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
+    // Capture the drag before the inner Pressable so reorder wins once the finger
+    // moves (a tap, with no move, still falls through to the Pressable = edit).
+    onMoveShouldSetPanResponderCapture: (_, g) => editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
     onPanResponderGrant: () => onPickUp(tile.id),
     onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
     onPanResponderRelease: (_, g) => {
