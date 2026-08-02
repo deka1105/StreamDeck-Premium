@@ -47,23 +47,32 @@ export function isImageIcon(button: Pick<DeckButton, "icon" | "iconType">): bool
 }
 
 /**
- * How many tiles a profile pins — the "top 9" the user wants to see (a 3×3 grid).
- * The editor blocks adding past this; loading truncates to it.
+ * How many tiles fit on one page — the "top 9" (a 3×3 grid). The editor blocks
+ * adding past this per page; loading truncates to it. (Profiles hold multiple
+ * pages, so a profile isn't limited to 9 overall.)
  */
 export const MAX_TILES_PER_PROFILE = 9;
 
+/** One page of a profile — up to MAX_TILES_PER_PROFILE tiles. */
+export type DeckPage = {
+  /** Stable, unique id. */
+  id: string;
+  /** The tiles on this page (≤ MAX_TILES_PER_PROFILE). */
+  buttons: DeckButton[];
+};
+
 /**
- * A named deck of pinned tiles. Users create several profiles (e.g. Work,
- * Streaming, Home) and switch between them; only the active profile's tiles
- * show. Persisted per-device — see src/lib/storage.ts.
+ * A named deck. Users create several profiles (e.g. Work, Streaming, Home) and
+ * switch between them; only the active profile shows. Each profile holds one or
+ * more pages of tiles. Persisted per-device — see src/lib/storage.ts.
  */
 export type DeckProfile = {
   /** Stable, unique id. */
   id: string;
   /** User-facing name shown on the profile switcher. */
   name: string;
-  /** The pinned tiles for this profile (≤ MAX_TILES_PER_PROFILE). */
-  buttons: DeckButton[];
+  /** The profile's pages (always ≥ 1). */
+  pages: DeckPage[];
   /**
    * Frontmost-app names that auto-activate this profile in "intuitive" mode
    * (e.g. ["Safari", "Google Chrome"]). Matched case-insensitively against what
