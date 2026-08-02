@@ -289,6 +289,9 @@ function startAppsReporter() {
 
 async function main() {
   console.log(`streamPhoneDeck agent — platform: ${platform}${DRY_RUN ? " (DRY RUN)" : ""}`);
+  console.log(
+    `  shell: ${ALLOW_SHELL ? (SHELL_ALLOWLIST.length ? `allowlist (${SHELL_ALLOWLIST.length})` : "ENABLED (any command)") : "disabled"}`,
+  );
   console.log(`Watching ${EVENTS_URL} … (Ctrl+C to stop)`);
   startForegroundReporter();
   startAppsReporter();
