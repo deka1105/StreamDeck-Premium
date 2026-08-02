@@ -94,6 +94,10 @@ vars (as `CSC_LINK`/`CSC_KEY_PASSWORD`/`APPLE_*`) before `npm run dist:mac`.
   PowerShell `SendKeys`. On Windows "cmd" maps to Ctrl, and the Win/Super key +
   secure sequences (Ctrl+Alt+Del) can't be synthesized. Linux has no keystroke
   path yet. `text` types a literal string into the focused app.
-- **`shell` runs arbitrary commands** by design; it's gated behind pairing.
-- Host data (device keys) lives in Electron's `userData/data`; **Unpair** from the
-  tray or pairing window revokes a device.
+- **`shell` runs arbitrary commands**, so it's **off by default**: enable it via
+  the tray menu → *Allow shell commands* (confirmation-guarded, persisted in
+  `settings.json`), or run headless with `DECK_ALLOW_SHELL=1`. An optional
+  `shellAllowlist` (settings.json) / `DECK_SHELL_ALLOWLIST` restricts which exact
+  commands run. Enforced by `shellDecision()` in `src/executor.mjs`.
+- Host data (device keys, `settings.json`) lives in Electron's `userData/data`;
+  **Unpair** from the tray or pairing window revokes a device.
