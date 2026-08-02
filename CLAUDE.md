@@ -97,8 +97,9 @@ phone (/) ──POST /api/action──▶ bus (src/lib/bus.ts) ──SSE /api/ev
   change per type, live `parseCombo` feedback for shortcuts, and color swatches.
   The tile's face is `icon` + `iconType` (`emoji` | `text` | `image`); `DeckButton`
   renders an `<img>` for image faces, text otherwise.
-- **`src/components/DeckButton.tsx`** — one tile. In edit mode it shows a delete
-  badge and tapping opens the editor instead of sending.
+- **`src/components/DeckButton.tsx`** — one tile. In edit mode it shows ✎ edit +
+  ✕ delete badges (`data-no-drag`) and the body is a drag handle. Renders a live
+  running/frontmost dot for `app` tiles.
 - **`src/app/host/page.tsx`** (`/host`) — **read-only monitor**. Parses the same
   SSE stream and lists actions via `describeAction`. Does NOT execute anything.
 - **`host-agent/agent.mjs`** — the executor. Dependency-free SSE client (parses
