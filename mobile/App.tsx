@@ -422,7 +422,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     if (!active) return;
     if (deck.length >= MAX_TILES_PER_PROFILE) {
       setOk(false);
-      setStatus(`Profile is full — ${MAX_TILES_PER_PROFILE} tiles max`);
+      setStatus(`Page is full — ${MAX_TILES_PER_PROFILE} tiles max`);
       return;
     }
     const tile: DeckButton = {
