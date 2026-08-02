@@ -130,9 +130,12 @@ including CI, in [`mobile/README.md`](mobile/README.md).
 
 1. On the computer: launch the host → click **Pair a phone** (shows a QR).
 2. On the phone: open the app → **scan the QR** with the camera.
-3. You land on the deck — set the **layout size** (2–5 columns) and **resize tiles**
-   (2×1, 2×2…) in Edit mode; tap tiles, or use the **Send text** bar (with an
-   optional countdown delay) to type onto your computer.
+3. You land on the deck — tap tiles to fire actions, or use the **Send text** bar
+   (with an optional countdown delay) to type onto your computer. In **Edit** mode
+   you can add/edit/delete and **drag to reorder** tiles, add **pages** and
+   **profiles**, set the layout size (2–5 columns) and resize tiles. Turn on
+   **🪄 Auto** to have the profile follow your focused app, or open **Apps** to
+   focus/pin what's running. See [Deck features](#deck-features).
 
 Both devices must be on the **same Wi-Fi**. On iOS, allow the **Local Network**
 permission prompt. For `keys`/`text`, grant the host **Accessibility** (macOS:
