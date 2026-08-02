@@ -598,6 +598,34 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   const items = editing && !full ? [...deck, ADD_TILE] : deck;
   const { placements, rows } = packDeck(items, cols);
   const gridHeight = cellSize > 0 ? rows * cellSize + Math.max(0, rows - 1) * GRID_GAP : 0;
+  const frontLower = runningApps?.frontmost?.toLowerCase() ?? null;
+
+  function onPickUp(id: string) {
+    const pl = placements.find((pp) => pp.tile.id === id);
+    if (!pl) return;
+    dragFromRef.current = { id, x: pl.x, y: pl.y, w: pl.w, h: pl.h };
+    setDragId(id);
+  }
+
+  // Drop: map the finger's grid-local position to the tile under it, then reorder.
+  function onDrop(dx: number, dy: number) {
+    const from = dragFromRef.current;
+    dragFromRef.current = null;
+    setDragId(null);
+    if (!from) return;
+    const step = cellSize + GRID_GAP;
+    const cx = from.x * step + (from.w * cellSize + (from.w - 1) * GRID_GAP) / 2 + dx;
+    const cy = from.y * step + (from.h * cellSize + (from.h - 1) * GRID_GAP) / 2 + dy;
+    const target = placements.find((pl) => {
+      if (pl.tile.id === "__add__" || pl.tile.id === from.id) return false;
+      const left = pl.x * step;
+      const top = pl.y * step;
+      const w = pl.w * cellSize + (pl.w - 1) * GRID_GAP;
+      const h = pl.h * cellSize + (pl.h - 1) * GRID_GAP;
+      return cx >= left && cx <= left + w && cy >= top && cy <= top + h;
+    });
+    if (target) reorderDeck(from.id, target.tile.id);
+  }
 
   return (
     <View style={styles.deck}>
