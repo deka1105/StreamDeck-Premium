@@ -312,13 +312,14 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       const next = { ...state, activeId: match.id };
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(next);
+      setPageIdx(0);
       saveProfiles(next);
     }
   }, [currentApp, state, editing, autoMode]);
 
-  // Apps screen: poll the host for its running apps while the screen is open.
+  // Continuously poll running apps — powers the Apps screen AND the live
+  // running/frontmost dots on app tiles.
   useEffect(() => {
-    if (view !== "apps") return;
     let cancelled = false;
     const poll = async () => {
       try {
@@ -334,7 +335,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       cancelled = true;
       clearInterval(id);
     };
-  }, [view, pairing]);
+  }, [pairing]);
 
   function persistState(next: ProfilesState) {
     setState(next);
