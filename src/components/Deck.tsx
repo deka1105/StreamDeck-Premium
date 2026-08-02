@@ -274,7 +274,7 @@ export function Deck() {
     }
     if (d?.moved) {
       setDragId(null);
-      if (stateRef.current) saveProfiles(stateRef.current); // persist the reordered result
+      if (state) saveProfiles(state); // persist the reordered result (closure has the latest)
     }
   }
 
