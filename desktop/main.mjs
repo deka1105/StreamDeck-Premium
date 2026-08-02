@@ -75,6 +75,33 @@ function buildTrayMenu() {
     { label: "Paired devices", submenu: deviceItems },
     { type: "separator" },
     {
+      label: "Allow shell commands (⚠️ runs code)",
+      type: "checkbox",
+      checked: host.getAllowShell(),
+      click: (item) => {
+        if (item.checked) {
+          // Enabling the RCE path — confirm first. Deny reverts the checkbox.
+          const choice = dialog.showMessageBoxSync({
+            type: "warning",
+            buttons: ["Cancel", "Allow shell commands"],
+            defaultId: 0,
+            cancelId: 0,
+            title: "Allow shell commands?",
+            message: "Shell tiles run arbitrary commands on this Mac.",
+            detail:
+              "Any paired phone will be able to execute shell commands here. Only enable this if you trust every paired device. You can turn it off again anytime.",
+          });
+          if (choice !== 1) {
+            host.setAllowShell(false);
+            refresh();
+            return;
+          }
+        }
+        host.setAllowShell(item.checked);
+        refresh();
+      },
+    },
+    {
       label: "Open at login",
       type: "checkbox",
       checked: app.getLoginItemSettings().openAtLogin,

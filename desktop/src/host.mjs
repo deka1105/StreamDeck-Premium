@@ -279,6 +279,12 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     startPairing,
     revoke,
     listDevices: () => devices.map(({ key, ...rest }) => rest),
+    getAllowShell: () => settings.allowShell,
+    setAllowShell: (on) => {
+      settings.allowShell = !!on;
+      saveSettings(dir, settings);
+    },
+    getShellAllowlist: () => settings.shellAllowlist,
     listen: () => new Promise((r) => server.listen(port, r)),
     stop: () => new Promise((r) => server.close(r)),
   };
