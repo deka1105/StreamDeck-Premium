@@ -78,11 +78,16 @@ phone (/) ──POST /api/action──▶ bus (src/lib/bus.ts) ──SSE /api/ev
 - **`src/components/Deck.tsx`** (`/`) — the phone UI. Loads profiles from storage
   after mount (null until hydrated, to avoid SSR mismatch), POSTs `{label,
   action}`, and hosts edit mode (toggle, add/edit/delete tiles, reset) and the
-  profile switcher. **Auto mode** (🪄): polls `/api/foreground` and edge-triggered
-  switches the active profile to the first one whose `apps` list matches the
-  focused app (no match = stay put); a manual switch sticks until the app changes.
-  An **Apps** view (`RunningApps.tsx`) lists the host's running apps (polls
-  `/api/apps`) — tap to focus one, or ＋ to pin it as a tile in the active profile.
+  profile switcher. Each profile has **pages** of up to `MAX_TILES_PER_PROFILE`
+  (9) tiles — a dots/arrows page switcher below the grid; add/delete pages in edit
+  mode. **Drag-to-reorder**: pointer-based (mouse + touch); the grid captures the
+  pointer, hit-tests `data-tile-id`, reorders live, and persists once on drop (edit
+  a tile via its ✎ badge, since the body is a drag handle). **Live tile state**:
+  polls `/api/apps` continuously so `app` tiles show a running / frontmost dot.
+  **Auto mode** (🪄): polls `/api/foreground` and edge-triggered switches the active
+  profile to the first one whose `apps` list matches the focused app (no match =
+  stay put); a manual switch sticks until the app changes. An **Apps** view
+  (`RunningApps.tsx`) lists the host's running apps — tap to focus, or ＋ to pin.
 - **`src/components/ProfileSettings.tsx`** — per-profile modal: rename + the
   trigger-app list for Auto mode, with a "Use current app" shortcut fed by the
   live foreground reading.

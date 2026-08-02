@@ -918,7 +918,7 @@ function TileCell({
   onPickUp: (id: string) => void;
   onDrop: (dx: number, dy: number) => void;
 }) {
-  const pan = useRef(new Animated.ValueXY()).current;
+  const pan = useMemo(() => new Animated.ValueXY(), []);
   const responder = PanResponder.create({
     onStartShouldSetPanResponder: () => false,
     onMoveShouldSetPanResponder: (_, g) => editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
