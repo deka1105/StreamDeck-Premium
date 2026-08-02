@@ -132,6 +132,12 @@ phone (/) ──POST /api/action──▶ bus (src/lib/bus.ts) ──SSE /api/ev
   `keys.ts` `parseCombo` must recognize the same names. Sending keys needs macOS
   Accessibility permission.
 - **Auth is opt-in via `DECK_TOKEN`.** Unset = open (frictionless local dev); set
-  = `POST /api/action` requires the token. Because the deck can send **arbitrary
-  `shell`**, set a token before exposing the server beyond trusted Wi-Fi. The
-  agent needs no token (`/api/events` is observation-only and still ungated).
+  = `POST /api/action` requires the token. Still set a token before exposing the
+  server beyond trusted Wi-Fi. The agent needs no token (`/api/events` is
+  observation-only and still ungated).
+- **`shell` is opt-in (arbitrary RCE).** Disabled by default on both hosts.
+  Agent: `DECK_ALLOW_SHELL=1` (+ optional exact-match `DECK_SHELL_ALLOWLIST`).
+  Electron host: tray toggle → persisted in `settings.json` (`allowShell`,
+  `shellAllowlist`); enforced by `shellDecision()` in `desktop/src/executor.mjs`,
+  which `execute()` checks before running (even in dry-run). When disabled, a
+  paired phone / leaked token cannot execute code.
