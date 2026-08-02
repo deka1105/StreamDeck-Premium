@@ -51,10 +51,9 @@ export function Deck() {
   const [dragId, setDragId] = useState<string | null>(null);
   // Edge-triggered auto-switch: last focused app we reacted to.
   const handledAppRef = useRef<string | null>(null);
-  // Drag session + latest-state mirror (so the pointer-up handler can persist once).
+  // Drag session state. The pointer-up handler persists once, using its own
+  // (latest) `state` closure — React re-renders between reorder moves and release.
   const dragRef = useRef<{ id: string; x: number; y: number; moved: boolean } | null>(null);
-  const stateRef = useRef<ProfilesState | null>(null);
-  stateRef.current = state;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
