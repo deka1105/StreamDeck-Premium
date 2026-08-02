@@ -296,7 +296,11 @@ async function main() {
   const dir = join(process.cwd(), ".data");
   const dryRun = ["1", "true", "yes"].includes((process.env.DECK_DRY_RUN ?? "").toLowerCase());
   const port = process.env.DECK_PORT ? Number(process.env.DECK_PORT) : undefined;
-  const host = createHost({ dir, dryRun, port });
+  // Shell tiles are opt-in (arbitrary RCE). Enable headless with DECK_ALLOW_SHELL=1.
+  const allowShell = process.env.DECK_ALLOW_SHELL
+    ? ["1", "true", "yes"].includes(process.env.DECK_ALLOW_SHELL.toLowerCase())
+    : undefined;
+  const host = createHost({ dir, dryRun, port, allowShell });
   await host.listen();
 
   const { payload } = host.startPairing();
