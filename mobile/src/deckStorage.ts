@@ -114,24 +114,45 @@ function coerceState(input: unknown): ProfilesState | null {
   return { profiles, activeId, autoMode: s.autoMode === true };
 }
 
-/** Validate/normalize one stored profile; null if unusable. */
+/** Validate/normalize one stored profile; null if unusable. Migrates a
+ *  pre-pages profile (flat `buttons`) into a single page. */
 function coerceProfile(input: unknown): DeckProfile | null {
   if (!input || typeof input !== "object") return null;
   const p = input as Record<string, unknown>;
-  if (!Array.isArray(p.buttons)) return null;
-  const buttons = p.buttons
-    .map(coerceButton)
-    .filter((b): b is DeckButton => b !== null)
-    .slice(0, MAX_TILES_PER_PROFILE);
+  let pages: DeckPage[];
+  if (Array.isArray(p.pages)) {
+    pages = p.pages.map(coercePage).filter((pg): pg is DeckPage => pg !== null);
+  } else if (Array.isArray(p.buttons)) {
+    const buttons = p.buttons
+      .map(coerceButton)
+      .filter((b): b is DeckButton => b !== null)
+      .slice(0, MAX_TILES_PER_PROFILE);
+    pages = [{ id: newPageId(), buttons }];
+  } else {
+    return null;
+  }
+  if (!pages.length) pages = [{ id: newPageId(), buttons: [] }]; // always ≥ 1 page
   const apps = Array.isArray(p.apps)
     ? p.apps.filter((a): a is string => typeof a === "string" && a.trim().length > 0).map((a) => a.trim())
     : [];
   return {
     id: typeof p.id === "string" && p.id ? p.id : newProfileId(),
     name: typeof p.name === "string" && p.name.trim() ? p.name : "Profile",
-    buttons,
+    pages,
     apps,
   };
+}
+
+/** Validate/normalize one stored page; null if unusable. */
+function coercePage(input: unknown): DeckPage | null {
+  if (!input || typeof input !== "object") return null;
+  const pg = input as Record<string, unknown>;
+  if (!Array.isArray(pg.buttons)) return null;
+  const buttons = pg.buttons
+    .map(coerceButton)
+    .filter((b): b is DeckButton => b !== null)
+    .slice(0, MAX_TILES_PER_PROFILE);
+  return { id: typeof pg.id === "string" && pg.id ? pg.id : newPageId(), buttons };
 }
 
 function coerceButton(input: unknown): DeckButton | null {
