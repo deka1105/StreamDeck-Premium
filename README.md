@@ -164,21 +164,8 @@ npm run agent    # host agent that executes actions
 Open `http://<your-computer-ip>:3000/` on your phone. It's gated by an optional
 `DECK_TOKEN` (plaintext header over HTTP) — fine on trusted Wi-Fi, but the native
 app + desktop host above replace it with real end-to-end encryption. Architecture
-notes for this version are in [`CLAUDE.md`](CLAUDE.md).
-
-### Shell commands are opt-in
-
-`shell` tiles run arbitrary commands on the host, so they are **disabled by
-default** and only run when the operator explicitly enables them:
-
-- **Desktop app**: tray menu → *Allow shell commands* (a confirmation dialog
-  guards it; the setting persists per host).
-- **Node agent / headless host**: start with `DECK_ALLOW_SHELL=1`.
-
-Optionally restrict *which* commands run, even when enabled, with an exact-match
-allowlist: `DECK_SHELL_ALLOWLIST="cmd one,cmd two"` for the agent (or a
-`shellAllowlist` array in the host's `settings.json`). With shell disabled, a
-paired phone (or a leaked token) still cannot execute code on your machine.
+notes for this version are in [`CLAUDE.md`](CLAUDE.md). (Shell tiles are opt-in
+here too — see [Security](#security).)
 
 ## Repository layout
 
