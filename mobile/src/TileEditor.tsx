@@ -65,27 +65,34 @@ export function TileEditor({
   }
 
   async function pickImage() {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert("Photos permission needed", "Allow photo access to pick a tile image.");
-      return;
+    try {
+      // launchImageLibraryAsync uses the iOS PHPicker (iOS 14+) / Android photo
+      // picker, which need NO runtime permission. We deliberately do NOT call
+      // requestMediaLibraryPermissionsAsync — that flow hard-crashes iOS builds
+      // whose Info.plist lacks the photo-usage key (added by the expo-image-picker
+      // config plugin; a build predating it will crash).
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+      if (res.canceled || !res.assets?.length) return;
+      // Resize to 64px so the stored data URI stays small.
+      const out = await ImageManipulator.manipulateAsync(
+        res.assets[0].uri,
+        [{ resize: { width: 64, height: 64 } }],
+        { base64: true, compress: 0.8, format: ImageManipulator.SaveFormat.PNG },
+      );
+      if (!out.base64) return;
+      setIcon(`data:image/png;base64,${out.base64}`);
+      setIconType("image");
+    } catch (e) {
+      Alert.alert(
+        "Couldn't add image",
+        `${e instanceof Error ? e.message : String(e)}\n\nIf you just updated the app, rebuild the dev client (npx expo run:ios / run:android) so the image picker is included.`,
+      );
     }
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (res.canceled || !res.assets?.length) return;
-    // Resize to 64px so the stored data URI stays small.
-    const out = await ImageManipulator.manipulateAsync(
-      res.assets[0].uri,
-      [{ resize: { width: 64, height: 64 } }],
-      { base64: true, compress: 0.8, format: ImageManipulator.SaveFormat.PNG },
-    );
-    if (!out.base64) return;
-    setIcon(`data:image/png;base64,${out.base64}`);
-    setIconType("image");
   }
 
   function save() {

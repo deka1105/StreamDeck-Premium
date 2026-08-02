@@ -773,7 +773,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         </View>
       )}
 
-      <ScrollView contentContainerStyle={styles.gridScroll}>
+      <ScrollView contentContainerStyle={styles.gridScroll} scrollEnabled={!editing}>
         <View style={{ height: gridHeight }} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
           {cellSize > 0 &&
             placements.map((p) => {
