@@ -446,14 +446,17 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   }
 
   function switchProfile(id: string) {
-    if (state) persistState({ ...state, activeId: id });
+    if (!state) return;
+    persistState({ ...state, activeId: id });
+    setPageIdx(0);
   }
 
   function submitName(name: string) {
     if (!state) return;
     const id = newProfileId();
-    persistState({ ...state, profiles: [...state.profiles, { id, name, buttons: [], apps: [] }], activeId: id });
+    persistState({ ...state, profiles: [...state.profiles, { id, name, pages: [{ id: newPageId(), buttons: [] }], apps: [] }], activeId: id });
     setNamePrompt(null);
+    setPageIdx(0);
   }
 
   function saveSettings(patch: { name: string; apps: string[] }) {
