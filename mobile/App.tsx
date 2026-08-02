@@ -29,6 +29,7 @@ import {
   defaultButtons,
   isImageIcon,
   newButtonId,
+  newPageId,
   newProfileId,
   profileForApp,
   type DeckButton,
@@ -229,6 +230,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   const [view, setView] = useState<"deck" | "apps">("deck");
   const [runningApps, setRunningApps] = useState<{ apps: string[]; frontmost: string | null } | null>(null);
   const [appsLoading, setAppsLoading] = useState(false);
+  const [pageIdx, setPageIdx] = useState(0);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const dragFromRef = useRef<{ id: string; x: number; y: number; w: number; h: number } | null>(null);
   // The focused app we've already reacted to — makes auto-switch edge-triggered,
   // so a manual profile switch sticks until the focused app actually changes.
   const handledAppRef = useRef<string | null>(null);
