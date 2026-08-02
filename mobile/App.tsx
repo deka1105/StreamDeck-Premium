@@ -255,7 +255,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   // The active profile (always defined once state loads — there's ≥1 profile).
   const active = state ? state.profiles.find((p) => p.id === state.activeId) ?? state.profiles[0] : null;
-  const deck = active?.buttons ?? [];
+  const pages = active?.pages ?? [];
+  const safeIdx = Math.min(pageIdx, Math.max(0, pages.length - 1));
+  const deck = pages[safeIdx]?.buttons ?? [];
   const full = deck.length >= MAX_TILES_PER_PROFILE;
   const autoMode = state?.autoMode ?? false;
 
