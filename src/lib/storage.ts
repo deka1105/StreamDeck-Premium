@@ -47,7 +47,11 @@ export function saveToken(token: string): void {
 /** A fresh device: one "Default" profile seeded with the default tiles. */
 export function defaultProfilesState(): ProfilesState {
   const id = newProfileId();
-  return { profiles: [{ id, name: "Default", buttons: [...defaultButtons], apps: [] }], activeId: id, autoMode: false };
+  return {
+    profiles: [{ id, name: "Default", pages: [{ id: newPageId(), buttons: [...defaultButtons] }], apps: [] }],
+    activeId: id,
+    autoMode: false,
+  };
 }
 
 /**
@@ -73,7 +77,10 @@ export function loadProfiles(): ProfilesState {
           .slice(0, MAX_TILES_PER_PROFILE);
         const id = newProfileId();
         const state: ProfilesState = {
-          profiles: [{ id, name: "Default", buttons: buttons.length ? buttons : [...defaultButtons], apps: [] }],
+          profiles: [{
+            id, name: "Default", apps: [],
+            pages: [{ id: newPageId(), buttons: buttons.length ? buttons : [...defaultButtons] }],
+          }],
           activeId: id,
           autoMode: false,
         };
