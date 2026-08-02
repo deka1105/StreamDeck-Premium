@@ -212,7 +212,7 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       } else {
         console.log(`▶ ${msg.label ?? action.type} [${action.type}] from ${device.name}`);
         try {
-          await execute(action, { dryRun });
+          await execute(action, { dryRun, allowShell: settings.allowShell, shellAllowlist: settings.shellAllowlist });
           reply = { ok: true };
         } catch (err) {
           reply = { ok: false, error: err.message };
