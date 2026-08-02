@@ -33,18 +33,24 @@ export function isImageIcon(button: Pick<DeckButton, "icon" | "iconType">): bool
   return button.iconType === "image" && typeof button.icon === "string" && button.icon.startsWith("data:image/");
 }
 
-/** How many tiles a profile pins — the "top 9" the user wants to see. */
+/** How many tiles fit on one page — the "top 9" (3×3). Profiles hold multiple pages. */
 export const MAX_TILES_PER_PROFILE = 9;
 
+/** One page of a profile — up to MAX_TILES_PER_PROFILE tiles. */
+export type DeckPage = {
+  id: string;
+  buttons: DeckButton[];
+};
+
 /**
- * A named deck of pinned tiles. Users switch between profiles (Work, Streaming,
- * Home, …); only the active profile's tiles show. Persisted in AsyncStorage —
- * see deckStorage.ts. Mirrors the web app's DeckProfile.
+ * A named deck. Users switch between profiles (Work, Streaming, Home, …); only
+ * the active profile shows. Each profile holds one or more pages of tiles.
+ * Persisted in AsyncStorage — see deckStorage.ts. Mirrors the web app.
  */
 export type DeckProfile = {
   id: string;
   name: string;
-  buttons: DeckButton[];
+  pages: DeckPage[];
   /**
    * Frontmost-app names that auto-activate this profile in "intuitive" mode
    * (e.g. ["Safari", "Code"]). Matched case-insensitively against what the host
