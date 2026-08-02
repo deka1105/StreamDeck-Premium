@@ -35,6 +35,28 @@ native phone app  ──AES-256-GCM over HTTP (per-device key)──▶  desktop
 `keys` and `text` synthesize keystrokes (macOS AppleScript `System Events` /
 Windows PowerShell `SendKeys`) and need **macOS Accessibility permission**.
 
+## Deck features
+
+The deck is fully editable on the device — no code, no config files.
+
+- **Profiles** — group tiles into named decks (Work, Design, Home…) and switch
+  with a tap. Each profile is its own layout, saved per device.
+- **Pages** — each profile holds multiple **pages of up to 9 tiles**; flip
+  between them with the dots/arrows below the grid, add/remove pages in edit mode.
+- **🪄 Intuitive (Auto) mode** — the active profile **follows the app you're
+  focused on** on your computer. Map apps → profiles (with a "Use current app"
+  shortcut); it's edge-triggered, and an unmapped app leaves the deck where it is.
+- **Running-apps screen** — a live list of what's open on the host: tap to bring
+  an app to the front, or **＋** to pin it as a tile.
+- **Live tile state** — `app` tiles light up when that app is running and
+  highlight the one that's frontmost.
+- **Custom tile faces** — give a tile an **emoji**, short **text** (REC, 1, GG),
+  or an **uploaded image** (resized and stored on-device).
+- **Drag to reorder**, resize the grid (2–5 columns) and individual tiles
+  (2×1, 2×2…), plus icon/color quick-picks in the tile editor.
+
+macOS-only for now: focus detection (Auto mode) and the running-apps list.
+
 ## Security
 
 Pairing is **forward-secret** and the channel is authenticated + encrypted, so an
