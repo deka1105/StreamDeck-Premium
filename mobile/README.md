@@ -17,13 +17,19 @@ button presses over an **AES-256-GCM encrypted channel** (see
 - `src/rpc.ts` — seals a command → `POST /rpc` → unseals the reply.
 - `src/buttons.ts` / `src/keys.ts` — deck data model + shortcut parser (ported
   from the web app's `src/lib`).
-- `src/deckStorage.ts` — editable deck layout + column count, persisted in AsyncStorage.
+- `src/deckStorage.ts` — profiles → pages of tiles + column count, persisted in
+  AsyncStorage (migrates older single-deck / single-page layouts forward).
 - `src/layout.ts` — grid packing: places multi-cell tiles (w×h) first-fit into
   the chosen number of columns.
-- `src/TileEditor.tsx` — add/edit tile modal (label, emoji, action type, value,
-  color, **size in grid cells**; live shortcut preview).
-- `App.tsx` — pair screen (QR scanner) → editable deck screen with an adjustable
-  **layout size** (2–5 columns) and **resizable tiles**.
+- `src/TileEditor.tsx` — add/edit tile modal (label; **icon face**: emoji / text /
+  uploaded image via `expo-image-picker` + `-image-manipulator`; action type,
+  value, color, **size in grid cells**; live shortcut preview).
+- `src/ProfileSettings.tsx` / `src/NamePrompt.tsx` — profile rename + Auto-mode
+  trigger-app list; cross-platform name entry.
+- `src/RunningApps.tsx` — the host's running-apps screen (focus / pin-as-tile).
+- `App.tsx` — pair screen (QR scanner) → deck screen with **profiles**, **pages**
+  (dots/arrows), **🪄 Auto mode**, **live tile state**, **drag-to-reorder**, an
+  adjustable **layout size** (2–5 columns) and **resizable tiles**.
 
 ## Run it
 
