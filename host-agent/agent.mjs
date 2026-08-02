@@ -32,6 +32,14 @@ const FOREGROUND_POLL_MS = 1500;
 const APPS_POLL_MS = 3000;
 // When set, resolve each action to the command it *would* run, but don't run it.
 const DRY_RUN = ["1", "true", "yes"].includes((process.env.DECK_DRY_RUN ?? "").toLowerCase());
+// `shell` is arbitrary RCE, so it's OFF by default. Opt in with DECK_ALLOW_SHELL=1.
+// Optionally restrict to an exact-match allowlist via DECK_SHELL_ALLOWLIST
+// (newline- or comma-separated commands).
+const ALLOW_SHELL = ["1", "true", "yes"].includes((process.env.DECK_ALLOW_SHELL ?? "").toLowerCase());
+const SHELL_ALLOWLIST = (process.env.DECK_SHELL_ALLOWLIST ?? "")
+  .split(/[\n,]/)
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 // --- Action execution --------------------------------------------------------
 
@@ -67,7 +75,13 @@ async function openUrl(url) {
 }
 
 async function runShell(command) {
-  return sh(command); // intentionally raw — see security note in README
+  if (!ALLOW_SHELL) {
+    throw new Error("Shell commands are disabled. Start the agent with DECK_ALLOW_SHELL=1 to enable them.");
+  }
+  if (SHELL_ALLOWLIST.length > 0 && !SHELL_ALLOWLIST.includes(command.trim())) {
+    throw new Error("Command is not in DECK_SHELL_ALLOWLIST.");
+  }
+  return sh(command); // raw exec — now gated; see security note in README
 }
 
 async function sendKeys(combo) {
