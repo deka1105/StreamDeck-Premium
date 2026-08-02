@@ -69,6 +69,19 @@ attacker on the same Wi-Fi can't read, forge, replay, or hijack it:
   tamper fails the tag, any replay is rejected.
 - Each phone gets its own key and is individually revocable (Unpair).
 
+**`shell` commands are opt-in.** A `shell` tile runs arbitrary commands on the
+host, so it's **disabled by default** and only runs when the operator explicitly
+enables it:
+
+- **Desktop app**: tray menu → *Allow shell commands* (a confirmation dialog
+  guards it; the setting persists per host).
+- **Node agent / headless host**: start with `DECK_ALLOW_SHELL=1`.
+
+Optionally restrict *which* commands run, even when enabled, with an exact-match
+allowlist: `DECK_SHELL_ALLOWLIST="cmd one,cmd two"` for the agent (or a
+`shellAllowlist` array in the host's `settings.json`). With shell disabled, a
+paired phone (or a leaked token) still cannot execute code on your machine.
+
 Full protocol + threat model: [`SECURE-PAIRING-PLAN.md`](SECURE-PAIRING-PLAN.md).
 
 ## Install & run
