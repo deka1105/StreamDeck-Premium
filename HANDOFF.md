@@ -1,11 +1,23 @@
 # streamPhoneDeck — Handoff
 
-_Last updated: 2026-07-28_
+_Last updated: 2026-08-02_
 
 A running status document for whoever picks this up next (human or agent). For
 day-to-day architecture reference see [CLAUDE.md](./CLAUDE.md); for user-facing
 usage see [README.md](./README.md). This file captures **state, decisions, and
 open questions** those two don't.
+
+## Since the 07-28 snapshot (shipped)
+
+Both the native app and the legacy web deck gained, at parity: **profiles**,
+**pages** (multiple pages of ≤9 tiles per profile), **🪄 intuitive/Auto mode**
+(the active profile follows the host's focused app), a **running-apps screen**
+(focus / pin-as-tile), **live tile state** (running/frontmost dots), **custom
+tile faces** (emoji / text / uploaded image), and **drag-to-reorder**. Security:
+**`shell` is now opt-in** (off by default; tray toggle or `DECK_ALLOW_SHELL=1`,
+optional exact-match allowlist). Focus detection + the apps list are macOS-only.
+The sections below are the original 07-28 snapshot; some open items are now done
+(noted inline).
 
 ## In one line
 
