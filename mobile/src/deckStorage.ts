@@ -50,7 +50,11 @@ export async function saveCols(cols: number): Promise<void> {
 /** A fresh device: one "Default" profile seeded with the default tiles. */
 export function defaultProfilesState(): ProfilesState {
   const id = newProfileId();
-  return { profiles: [{ id, name: "Default", buttons: defaultButtons, apps: [] }], activeId: id, autoMode: false };
+  return {
+    profiles: [{ id, name: "Default", pages: [{ id: newPageId(), buttons: defaultButtons }], apps: [] }],
+    activeId: id,
+    autoMode: false,
+  };
 }
 
 /**
