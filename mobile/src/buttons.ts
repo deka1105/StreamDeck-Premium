@@ -191,3 +191,7 @@ export function newButtonId(): string {
 export function newProfileId(): string {
   return `prof-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
+
+export function newPageId(): string {
+  return `page-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
