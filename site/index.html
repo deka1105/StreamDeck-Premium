@@ -676,7 +676,7 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
         <div class="warn">⚠️</div>
         <div>
           <h3>One honest caveat</h3>
-          <p>A <b>shell</b> tile runs arbitrary commands on the host — that's the point, but only pair devices you control. For public distribution, sign the desktop app (Developer ID / Authenticode) so it installs without warnings.</p>
+          <p>A <b>shell</b> tile runs arbitrary commands on the host, so it's <b>off by default</b> — enable it explicitly (tray menu on desktop, or <code>DECK_ALLOW_SHELL=1</code> for the agent), optionally with an exact-match allowlist. For public distribution, sign the desktop app (Developer ID / Authenticode) so it installs without warnings.</p>
         </div>
       </div>
     </div>
