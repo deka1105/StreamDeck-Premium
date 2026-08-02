@@ -6,33 +6,62 @@ import { isImageIcon, type DeckButton as DeckButtonConfig } from "@/lib/buttons"
 type Props = {
   button: DeckButtonConfig;
   editing: boolean;
+  /** Live state: the app this tile launches is currently running on the host. */
+  running?: boolean;
+  /** Live state: that app is the focused (frontmost) one. */
+  frontmost?: boolean;
+  /** This tile is being dragged (reorder). */
+  dragging?: boolean;
   onPress: (button: DeckButtonConfig) => void;
   onEdit: (button: DeckButtonConfig) => void;
   onDelete: (button: DeckButtonConfig) => void;
 };
 
-export function DeckButton({ button, editing, onPress, onEdit, onDelete }: Props) {
+export function DeckButton({ button, editing, running, frontmost, dragging, onPress, onEdit, onDelete }: Props) {
   const [pressed, setPressed] = useState(false);
 
   return (
-    <div className="relative">
+    <div
+      className={["relative transition-[transform,opacity]", dragging ? "z-20 scale-105 opacity-90" : ""].join(" ")}
+      data-tile-id={button.id}
+    >
       {editing && (
-        <button
-          type="button"
-          onClick={() => onDelete(button)}
-          aria-label={`Delete ${button.label}`}
-          className="absolute -right-1.5 -top-1.5 z-10 flex size-6 items-center justify-center rounded-full bg-rose-600 text-sm font-bold text-white shadow-lg ring-2 ring-slate-950"
-        >
-          ✕
-        </button>
+        <>
+          <button
+            type="button"
+            data-no-drag
+            onClick={() => onDelete(button)}
+            aria-label={`Delete ${button.label}`}
+            className="absolute -right-1.5 -top-1.5 z-10 flex size-6 items-center justify-center rounded-full bg-rose-600 text-sm font-bold text-white shadow-lg ring-2 ring-slate-950"
+          >
+            ✕
+          </button>
+          <button
+            type="button"
+            data-no-drag
+            onClick={() => onEdit(button)}
+            aria-label={`Edit ${button.label}`}
+            className="absolute -left-1.5 -top-1.5 z-10 flex size-6 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white shadow-lg ring-2 ring-slate-950"
+          >
+            ✎
+          </button>
+        </>
       )}
+
+      {!editing && running && (
+        <span
+          title={frontmost ? "Frontmost app" : "Running"}
+          className={[
+            "absolute left-1.5 top-1.5 z-10 size-2 rounded-full",
+            frontmost ? "bg-sky-300 shadow-[0_0_6px] shadow-sky-300" : "bg-emerald-400",
+          ].join(" ")}
+        />
+      )}
+
       <button
         type="button"
         onClick={() => {
-          if (editing) {
-            onEdit(button);
-            return;
-          }
+          if (editing) return; // in edit mode the body is a drag handle; edit via the ✎ badge
           setPressed(true);
           onPress(button);
           window.setTimeout(() => setPressed(false), 180);
@@ -41,12 +70,14 @@ export function DeckButton({ button, editing, onPress, onEdit, onDelete }: Props
           "aspect-square w-full rounded-2xl bg-gradient-to-br p-3",
           "flex flex-col items-center justify-center gap-1.5 select-none",
           "shadow-lg ring-1 ring-white/10 transition-transform duration-100",
-          "active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
+          editing
+            ? "touch-none cursor-grab animate-pulse active:cursor-grabbing"
+            : "active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
           button.color,
           pressed ? "scale-95 brightness-125" : "",
-          editing ? "animate-pulse" : "",
+          frontmost && !editing ? "ring-2 ring-sky-300/70" : "",
         ].join(" ")}
-        aria-label={editing ? `Edit ${button.label}` : button.label}
+        aria-label={editing ? `Move or edit ${button.label}` : button.label}
       >
         {isImageIcon(button) ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -56,9 +87,7 @@ export function DeckButton({ button, editing, onPress, onEdit, onDelete }: Props
             {button.icon}
           </span>
         )}
-        <span className="text-xs font-semibold tracking-tight sm:text-sm">
-          {button.label}
-        </span>
+        <span className="text-xs font-semibold tracking-tight sm:text-sm">{button.label}</span>
       </button>
     </div>
   );
