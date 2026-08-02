@@ -342,13 +342,50 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     saveProfiles(next);
   }
 
-  /** Replace the active profile's tiles. */
+  /** Replace the active page's tiles. */
   function persistButtons(next: DeckButton[]) {
     if (!state || !active) return;
-    persistState({
-      ...state,
-      profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, buttons: next } : p)),
-    });
+    const nextPages = active.pages.map((pg, i) => (i === safeIdx ? { ...pg, buttons: next } : pg));
+    persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
+  }
+
+  function switchPage(i: number) {
+    if (pages.length === 0) return;
+    setPageIdx((i % pages.length + pages.length) % pages.length);
+  }
+
+  function addPage() {
+    if (!state || !active) return;
+    const nextPages = [...active.pages, { id: newPageId(), buttons: [] }];
+    persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
+    setPageIdx(nextPages.length - 1);
+  }
+
+  function confirmDeletePage() {
+    if (!state || !active || active.pages.length <= 1) return;
+    Alert.alert(`Delete page ${safeIdx + 1}?`, "Its tiles will be lost.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          const nextPages = active.pages.filter((_, i) => i !== safeIdx);
+          persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
+          setPageIdx(Math.max(0, safeIdx - 1));
+        },
+      },
+    ]);
+  }
+
+  // Reorder the current page's tiles (drag-and-drop moves fromId to toId's slot).
+  function reorderDeck(fromId: string, toId: string) {
+    const fromI = deck.findIndex((b) => b.id === fromId);
+    const toI = deck.findIndex((b) => b.id === toId);
+    if (fromI < 0 || toI < 0 || fromI === toI) return;
+    const copy = deck.slice();
+    const [item] = copy.splice(fromI, 1);
+    copy.splice(toI, 0, item);
+    persistButtons(copy);
   }
 
   async function refreshApps() {
