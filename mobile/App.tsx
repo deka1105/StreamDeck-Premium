@@ -892,6 +892,79 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   );
 }
 
+// One grid tile: press to send/edit, delete badge, live running/frontmost dot,
+// and PanResponder drag-to-reorder (claims only after the finger moves, so a tap
+// still opens the editor).
+function TileCell({
+  tile,
+  box,
+  editing,
+  dragging,
+  running,
+  frontmost,
+  onPress,
+  onDelete,
+  onPickUp,
+  onDrop,
+}: {
+  tile: DeckButton;
+  box: ViewStyle;
+  editing: boolean;
+  dragging: boolean;
+  running: boolean;
+  frontmost: boolean;
+  onPress: (t: DeckButton) => void;
+  onDelete: (t: DeckButton) => void;
+  onPickUp: (id: string) => void;
+  onDrop: (dx: number, dy: number) => void;
+}) {
+  const pan = useRef(new Animated.ValueXY()).current;
+  const responder = PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (_, g) => editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
+    onPanResponderGrant: () => onPickUp(tile.id),
+    onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
+    onPanResponderRelease: (_, g) => {
+      onDrop(g.dx, g.dy);
+      Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+    },
+    onPanResponderTerminate: () => {
+      onDrop(0, 0);
+      pan.setValue({ x: 0, y: 0 });
+    },
+  });
+  return (
+    <Animated.View style={[box, { transform: pan.getTranslateTransform() }, dragging && styles.tileCellDragging]} {...responder.panHandlers}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.tile,
+          { backgroundColor: tile.color },
+          pressed && styles.tilePressed,
+          frontmost && !editing && styles.tileFrontmost,
+        ]}
+        onPress={() => onPress(tile)}
+      >
+        {!editing && running && <View style={[styles.runDot, frontmost && styles.runDotFront]} />}
+        {isImageIcon(tile) ? (
+          <Image source={{ uri: tile.icon }} style={styles.tileImage} resizeMode="cover" alt="" />
+        ) : (
+          <Text style={[styles.tileIcon, tile.iconType === "text" && styles.tileIconText]} numberOfLines={1}>
+            {tile.icon}
+          </Text>
+        )}
+        <Text style={styles.tileLabel} numberOfLines={1}>
+          {tile.label}
+        </Text>
+      </Pressable>
+      {editing && (
+        <Pressable style={styles.badge} onPress={() => onDelete(tile)} hitSlop={8}>
+          <Text style={styles.badgeText}>✕</Text>
+        </Pressable>
+      )}
+    </Animated.View>
+  );
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#0b1120" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1120", padding: 24, gap: 12 },
