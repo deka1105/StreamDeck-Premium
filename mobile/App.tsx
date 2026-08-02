@@ -817,11 +817,37 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         </View>
       </ScrollView>
 
+      {(pages.length > 1 || editing) && (
+        <View style={styles.pageRow}>
+          <Pressable onPress={() => switchPage(safeIdx - 1)} disabled={pages.length <= 1} style={[styles.pageArrow, pages.length <= 1 && styles.pageArrowOff]}>
+            <Text style={styles.pageArrowText}>‹</Text>
+          </Pressable>
+          <View style={styles.pageDots}>
+            {pages.map((pg, i) => (
+              <Pressable key={pg.id} onPress={() => switchPage(i)} style={[styles.pageDot, i === safeIdx && styles.pageDotActive]} />
+            ))}
+            {editing && (
+              <Pressable onPress={addPage} style={styles.pageAdd}>
+                <Text style={styles.pageAddText}>＋</Text>
+              </Pressable>
+            )}
+          </View>
+          <Pressable onPress={() => switchPage(safeIdx + 1)} disabled={pages.length <= 1} style={[styles.pageArrow, pages.length <= 1 && styles.pageArrowOff]}>
+            <Text style={styles.pageArrowText}>›</Text>
+          </Pressable>
+        </View>
+      )}
+
       {editing && (
         <View style={styles.editFooter}>
           <Pressable style={styles.resetButton} onPress={confirmReset}>
-            <Text style={styles.resetText}>Reset tiles</Text>
+            <Text style={styles.resetText}>Reset page</Text>
           </Pressable>
+          {pages.length > 1 && (
+            <Pressable style={styles.resetButton} onPress={confirmDeletePage}>
+              <Text style={styles.resetText}>Delete page</Text>
+            </Pressable>
+          )}
           {state.profiles.length > 1 && (
             <Pressable style={styles.resetButton} onPress={confirmDeleteProfile}>
               <Text style={styles.resetText}>Delete profile</Text>
