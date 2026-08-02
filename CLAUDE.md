@@ -47,10 +47,10 @@ phone (/) ──POST /api/action──▶ bus (src/lib/bus.ts) ──SSE /api/ev
   several **profiles** — named decks of up to `MAX_TILES_PER_PROFILE` (9) pinned
   tiles; only the active one shows. This is the **live source of truth**;
   `defaultButtons` only seeds the "Default" profile on a fresh device. Loading
-  migrates a pre-profiles flat deck (`streamphonedeck.deck.v1`) into one profile.
-  Each profile also carries an `apps` trigger list, and the store a top-level
-  `autoMode` flag — both for intuitive auto-switching (see `profileForApp` in
-  `buttons.ts`).
+  migrates a pre-profiles flat deck (`streamphonedeck.deck.v1`) into one profile,
+  and a pre-pages profile (flat `buttons`) into a single `DeckPage`. Each profile
+  is `pages: DeckPage[]` (≥1) + an `apps` trigger list; the store carries a
+  top-level `autoMode` flag (see `profileForApp` in `buttons.ts`).
 - **`src/lib/bus.ts`** — the relay. Process-local `Set` of listeners stashed on
   `globalThis` (survives dev hot-reload). Defines `DeckAction` (`label` + typed
   `action` + `at`), shared by the API routes, the monitor page, and —
