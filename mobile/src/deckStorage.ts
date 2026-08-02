@@ -13,9 +13,11 @@ import {
   MIN_COLS,
   defaultButtons,
   newButtonId,
+  newPageId,
   newProfileId,
   validateAction,
   type DeckButton,
+  type DeckPage,
   type DeckProfile,
   type IconType,
 } from "./buttons";
