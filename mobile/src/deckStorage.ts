@@ -79,7 +79,10 @@ export async function loadProfiles(): Promise<ProfilesState> {
           .slice(0, MAX_TILES_PER_PROFILE);
         const id = newProfileId();
         const state: ProfilesState = {
-          profiles: [{ id, name: "Default", buttons: buttons.length ? buttons : defaultButtons, apps: [] }],
+          profiles: [{
+            id, name: "Default", apps: [],
+            pages: [{ id: newPageId(), buttons: buttons.length ? buttons : defaultButtons }],
+          }],
           activeId: id,
           autoMode: false,
         };
