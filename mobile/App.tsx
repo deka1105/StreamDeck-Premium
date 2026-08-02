@@ -478,6 +478,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         onPress: () => {
           const profiles = state.profiles.filter((p) => p.id !== active.id);
           persistState({ ...state, profiles, activeId: profiles[0].id });
+          setPageIdx(0);
           setShowSettings(false);
         },
       },
