@@ -92,11 +92,38 @@ function saveDevices(dir, devices) {
   writeFileSync(join(dir, "devices.json"), JSON.stringify(devices, null, 2), { mode: 0o600 });
 }
 
+// --- host settings (shell policy) --------------------------------------------
+// `shell` tiles are arbitrary RCE, so they are OFF by default and only run when
+// the host operator opts in. An optional allowlist restricts which commands run
+// even when enabled. Persisted next to devices.json.
+
+function loadSettings(dir) {
+  const p = join(dir, "settings.json");
+  const defaults = { allowShell: false, shellAllowlist: null };
+  if (!existsSync(p)) return defaults;
+  try {
+    const s = JSON.parse(readFileSync(p, "utf8"));
+    return {
+      allowShell: s.allowShell === true,
+      shellAllowlist: Array.isArray(s.shellAllowlist) ? s.shellAllowlist.filter((c) => typeof c === "string") : null,
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveSettings(dir, settings) {
+  writeFileSync(join(dir, "settings.json"), JSON.stringify(settings, null, 2), { mode: 0o600 });
+}
+
 // --- host --------------------------------------------------------------------
 
-export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false } = {}) {
+export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell } = {}) {
   mkdirSync(dir, { recursive: true });
   let devices = loadDevices(dir);
+  const settings = loadSettings(dir);
+  // An explicit `allowShell` option (e.g. from an env var) overrides the stored setting.
+  if (typeof allowShell === "boolean") settings.allowShell = allowShell;
   const pendings = new Map(); // pid -> { hostKp, hostRawPub, expiresAt }
 
   function startPairing(ttlMs = 120_000) {
