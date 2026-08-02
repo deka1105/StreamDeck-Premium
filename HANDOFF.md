@@ -97,18 +97,20 @@ relays whatever action the deck sends. See CLAUDE.md for the file-by-file map.
 4. **No test runner.** Logic has been verified manually and via ad-hoc scripts.
    `keys.ts`/`buttons.ts`/agent helpers are pure and importable — good first
    targets when adding a runner (e.g. `node --test` or Vitest).
-5. **No tile reordering.** Add/edit/delete only. Drag-reorder is the obvious next
-   UX addition.
+5. ~~No tile reordering.~~ **Done.** Drag-to-reorder in edit mode (pointer-based
+   on web, `PanResponder` on native).
 6. **Two key tables to keep in sync.** `keys.ts` (`parseCombo`, validation) and
    the agent's `comboToAppleScript` (`KEY_CODES`) list the same key names
    independently. Adding a key means editing both.
 
 ## Suggested next steps (rough priority)
 
-1. A test runner + tests for `parseCombo`, `validateAction`, agent dispatch,
-   and now `checkToken`.
-2. Tile reordering (drag or move controls).
-3. Windows/Linux keystroke support.
+1. A test runner + tests for the pure helpers (`parseCombo`, `validateAction`,
+   `coerceButton`/`coerceIcon`, `profileForApp`, `shellDecision`, `checkToken`,
+   `comboToAppleScript`/`comboToSendKeys`) — all currently verified via ad-hoc
+   headless scripts; formalize them. **← top priority.**
+2. Windows/Linux support for focus detection + the running-apps list (macOS-only
+   today), and Linux keystrokes.
 4. Optional server-backed deck storage for multi-device sync.
 5. Optionally gate `/api/events` too (query-param token) if observation leakage
    matters.
