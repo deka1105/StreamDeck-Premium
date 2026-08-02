@@ -13,6 +13,7 @@ import {
   MAX_TILES_PER_PROFILE,
   validateAction,
   type DeckButton,
+  type DeckPage,
   type DeckProfile,
   type IconType,
 } from "./buttons";
