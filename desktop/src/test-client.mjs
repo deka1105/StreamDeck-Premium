@@ -133,6 +133,14 @@ async function main() {
   assert(ra.status === 200 && ra.reply.ok, "apps command accepted over the paired channel");
   assert(Array.isArray(ra.reply.apps), `running apps reported: ${ra.reply.apps.length} app(s)`);
 
+  console.log("11. shell policy — depends on the host's allowShell setting");
+  const shell = await rpc({ cmd: "action", label: "Shell", action: { type: "shell", command: "echo spd-test" } });
+  if (process.env.EXPECT_SHELL === "on") {
+    assert(shell.status === 200 && shell.reply.ok, "shell ALLOWED (host opted in) — command ran");
+  } else {
+    assert(shell.status === 200 && shell.reply.ok === false && /disabled/i.test(shell.reply.error ?? ""), "shell BLOCKED by default (opt-in required)");
+  }
+
   console.log("\nAll checks passed. 🎉");
 }
 
