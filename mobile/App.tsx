@@ -580,7 +580,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function confirmReset() {
     if (!active) return;
-    Alert.alert(`Reset “${active.name}”?`, "Restore the default tiles in this profile. Your changes to it will be lost.", [
+    Alert.alert("Reset page?", "Restore the default tiles on this page. Its tiles will be lost.", [
       { text: "Cancel", style: "cancel" },
       { text: "Reset", style: "destructive", onPress: () => persistButtons(defaultButtons) },
     ]);
