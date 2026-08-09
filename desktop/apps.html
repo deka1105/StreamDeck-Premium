@@ -1,0 +1,126 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Allowed apps</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #0b1120;
+    color: #e2e8f0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  h1 { font-size: 16px; margin: 0 0 2px; }
+  .sub { color: #94a3b8; font-size: 12px; margin-bottom: 14px; }
+  input {
+    font: inherit; width: 100%; background: #1e293b; color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px;
+  }
+  input::placeholder { color: #64748b; }
+  .addRow { display: flex; gap: 8px; margin-top: 10px; }
+  .addRow input { flex: 1; }
+  button {
+    font: inherit; cursor: pointer; border: 0; border-radius: 10px; padding: 10px 16px;
+    font-weight: 600; color: #fff; background: #0284c7;
+  }
+  button:hover { background: #0369a1; }
+  .count { color: #64748b; font-size: 12px; margin: 14px 2px 8px; }
+  .list { flex: 1; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 4px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 10px; border-radius: 10px; cursor: pointer; }
+  .row:hover { background: rgba(255,255,255,0.04); }
+  .row .name { color: #cbd5e1; }
+  .row.on .name { color: #e2e8f0; font-weight: 600; }
+  .toggle { width: 44px; height: 26px; border-radius: 999px; background: #334155; position: relative; flex: none; transition: background .15s ease; }
+  .row.on .toggle { background: #0284c7; }
+  .knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: left .15s ease; box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  .row.on .knob { left: 21px; }
+  .empty { color: #64748b; font-size: 13px; padding: 16px; text-align: center; }
+  .hint { color: #64748b; font-size: 11px; margin-top: 12px; line-height: 1.5; }
+</style>
+
+<h1>Allowed apps</h1>
+<div class="sub">Only these apps can be launched from a paired phone. Everything else is blocked.</div>
+
+<input id="search" placeholder="Search installed apps…" autocomplete="off" />
+<div class="addRow">
+  <input id="addName" placeholder="Add by name (e.g. Spotify)" autocomplete="off" />
+  <button id="addBtn">Add</button>
+</div>
+
+<div id="count" class="count">—</div>
+<div id="list" class="list"></div>
+
+<div class="hint">
+  Tip: the name must match the app exactly (what you'd pass to <code>open -a</code>) — e.g. “Visual Studio Code”.
+  Manually-added apps that aren't installed here still work if present on this Mac.
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const norm = (s) => s.trim().toLowerCase();
+
+  let installed = [];
+  let allowedList = []; // display-cased names from the host
+  let allowedSet = new Set(); // normalized
+
+  async function load() {
+    const [inst, allw] = await Promise.all([window.deck.listInstalledApps(), window.deck.listAllowedApps()]);
+    installed = inst || [];
+    allowedList = allw || [];
+    allowedSet = new Set(allowedList.map(norm));
+    render();
+  }
+
+  function merged() {
+    const map = new Map(); // normalized -> display
+    for (const n of installed) map.set(norm(n), n);
+    for (const n of allowedList) if (!map.has(norm(n))) map.set(norm(n), n);
+    return [...map.values()].sort((a, b) => a.localeCompare(b));
+  }
+
+  function render() {
+    const q = norm($("search").value);
+    const items = merged().filter((n) => !q || norm(n).includes(q));
+    $("count").textContent =
+      `${allowedSet.size} allowed` + (installed.length ? ` · ${installed.length} installed` : "");
+
+    const list = $("list");
+    list.innerHTML = "";
+    if (!items.length) {
+      list.innerHTML = '<div class="empty">No apps match.</div>';
+      return;
+    }
+    for (const name of items) {
+      const on = allowedSet.has(norm(name));
+      const row = document.createElement("div");
+      row.className = "row" + (on ? " on" : "");
+      row.innerHTML = '<span class="name"></span><span class="toggle"><span class="knob"></span></span>';
+      row.querySelector(".name").textContent = name;
+      row.onclick = () => toggle(name, !on);
+      list.appendChild(row);
+    }
+  }
+
+  async function toggle(name, on) {
+    allowedList = (await window.deck.setAppAllowed(name, on)) || [];
+    allowedSet = new Set(allowedList.map(norm));
+    render();
+  }
+
+  $("search").addEventListener("input", render);
+  $("addBtn").onclick = () => {
+    const n = $("addName").value.trim();
+    if (!n) return;
+    $("addName").value = "";
+    toggle(n, true);
+  };
+  $("addName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("addBtn").click();
+  });
+
+  load();
+</script>
