@@ -143,7 +143,18 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   const settings = loadSettings(dir);
   // An explicit `allowShell` option (e.g. from an env var) overrides the stored setting.
   if (typeof allowShell === "boolean") settings.allowShell = allowShell;
+  let allowedApps = loadApps(dir);
   const pendings = new Map(); // pid -> { hostKp, hostRawPub, expiresAt }
+
+  const isAppAllowed = (n) => allowedApps.some((a) => a.toLowerCase() === String(n).toLowerCase());
+  function setAppAllowed(nameRaw, on) {
+    const nm = String(nameRaw).trim();
+    if (!nm) return allowedApps;
+    const without = allowedApps.filter((a) => a.toLowerCase() !== nm.toLowerCase());
+    allowedApps = (on ? [...without, nm] : without).sort((a, b) => a.localeCompare(b));
+    saveApps(dir, allowedApps);
+    return allowedApps;
+  }
 
   function startPairing(ttlMs = 120_000) {
     for (const [k, v] of pendings) if (v.expiresAt < Date.now()) pendings.delete(k);
