@@ -312,6 +312,8 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     startPairing,
     revoke,
     listDevices: () => devices.map(({ key, ...rest }) => rest),
+    listAllowedApps: () => [...allowedApps],
+    setAppAllowed,
     getAllowShell: () => settings.allowShell,
     setAllowShell: (on) => {
       settings.allowShell = !!on;
