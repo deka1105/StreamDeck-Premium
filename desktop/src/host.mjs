@@ -116,6 +116,25 @@ function saveSettings(dir, settings) {
   writeFileSync(join(dir, "settings.json"), JSON.stringify(settings, null, 2), { mode: 0o600 });
 }
 
+// --- allowed-apps store (which apps the phone is permitted to launch) ---------
+
+const DEFAULT_ALLOWED_APPS = ["Safari", "Finder", "Notes", "Visual Studio Code"];
+
+function loadApps(dir) {
+  const p = join(dir, "apps.json");
+  if (!existsSync(p)) return [...DEFAULT_ALLOWED_APPS];
+  try {
+    const list = JSON.parse(readFileSync(p, "utf8"));
+    return Array.isArray(list) ? list.filter((a) => typeof a === "string") : [...DEFAULT_ALLOWED_APPS];
+  } catch {
+    return [...DEFAULT_ALLOWED_APPS];
+  }
+}
+
+function saveApps(dir, apps) {
+  writeFileSync(join(dir, "apps.json"), JSON.stringify(apps, null, 2));
+}
+
 // --- host --------------------------------------------------------------------
 
 export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell } = {}) {
