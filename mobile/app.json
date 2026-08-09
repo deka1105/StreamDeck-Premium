@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "streamPhoneDeck",
-    "slug": "streamphonedeck",
-    "scheme": "streamphonedeck",
+    "name": "DeskAssist",
+    "slug": "deskassist",
+    "scheme": "deskassist",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
