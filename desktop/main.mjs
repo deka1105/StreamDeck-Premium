@@ -118,6 +118,7 @@ function buildTrayMenu() {
     { type: "separator" },
     { label: "Pair a phone…", click: createPairWindow },
     { label: "Paired devices", submenu: deviceItems },
+    { label: "Allowed apps…", click: createAppsWindow },
     { type: "separator" },
     {
       label: "Allow shell commands (⚠️ runs code)",
