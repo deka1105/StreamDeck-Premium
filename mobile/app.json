@@ -11,6 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dekisuki05.streamphonedeck",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSLocalNetworkUsageDescription": "streamPhoneDeck connects to your computer on your local network to send actions.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
