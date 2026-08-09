@@ -11,6 +11,7 @@
 import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, dialog } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readdirSync } from "node:fs";
 import qrcode from "qrcode";
 import { createHost } from "./src/host.mjs";
 
