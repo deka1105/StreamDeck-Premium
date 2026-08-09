@@ -31,6 +31,7 @@ if (!app.requestSingleInstanceLock()) {
 let host;
 let tray;
 let pairWindow;
+let appsWindow;
 
 function createPairWindow() {
   if (pairWindow && !pairWindow.isDestroyed()) {
