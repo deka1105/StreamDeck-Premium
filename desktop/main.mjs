@@ -58,6 +58,49 @@ function createPairWindow() {
   });
 }
 
+function createAppsWindow() {
+  if (appsWindow && !appsWindow.isDestroyed()) {
+    appsWindow.show();
+    appsWindow.focus();
+    return;
+  }
+  appsWindow = new BrowserWindow({
+    width: 440,
+    height: 640,
+    resizable: false,
+    fullscreenable: false,
+    title: "streamPhoneDeck — Allowed apps",
+    backgroundColor: "#0b1120",
+    webPreferences: { preload: join(__dirname, "preload.cjs"), contextIsolation: true, sandbox: true },
+  });
+  appsWindow.loadFile(join(__dirname, "apps.html"));
+  appsWindow.on("closed", () => {
+    appsWindow = null;
+  });
+}
+
+// Scan common macOS locations for launchable .app bundles.
+function listInstalledApps() {
+  if (process.platform !== "darwin") return [];
+  const dirs = [
+    "/Applications",
+    "/System/Applications",
+    "/System/Applications/Utilities",
+    join(app.getPath("home"), "Applications"),
+  ];
+  const names = new Set();
+  for (const d of dirs) {
+    try {
+      for (const entry of readdirSync(d)) {
+        if (entry.endsWith(".app")) names.add(entry.slice(0, -4));
+      }
+    } catch {
+      // directory may not exist — skip
+    }
+  }
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+
 function buildTrayMenu() {
   const devices = host.listDevices();
   const deviceItems = devices.length
