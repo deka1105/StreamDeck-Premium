@@ -14,4 +14,8 @@ contextBridge.exposeInMainWorld("deck", {
     ipcRenderer.on("devices:changed", handler);
     return () => ipcRenderer.removeListener("devices:changed", handler);
   },
+  // Allowed-apps management
+  listInstalledApps: () => ipcRenderer.invoke("apps:installed"),
+  listAllowedApps: () => ipcRenderer.invoke("apps:allowed"),
+  setAppAllowed: (name, on) => ipcRenderer.invoke("apps:set", name, on),
 });
