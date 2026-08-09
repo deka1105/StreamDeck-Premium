@@ -141,6 +141,14 @@ async function main() {
     assert(shell.status === 200 && shell.reply.ok === false && /disabled/i.test(shell.reply.error ?? ""), "shell BLOCKED by default (opt-in required)");
   }
 
+  console.log("12. app allowlist — an unlisted app is blocked");
+  const blockedApp = await rpc({ cmd: "action", label: "Calculator", action: { type: "app", target: "Calculator" } });
+  assert(blockedApp.status === 200 && blockedApp.reply.ok === false && /allowed/i.test(blockedApp.reply.error), "unlisted app rejected by the host");
+
+  console.log("13. app allowlist — a seeded app is allowed");
+  const allowedApp = await rpc({ cmd: "action", label: "Safari", action: { type: "app", target: "Safari" } });
+  assert(allowedApp.status === 200 && allowedApp.reply.ok, "allowed app (Safari) launches (dry-run)");
+
   console.log("\nAll checks passed. 🎉");
 }
 
