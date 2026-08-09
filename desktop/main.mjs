@@ -204,6 +204,10 @@ app.whenReady().then(async () => {
     return host.listDevices();
   });
 
+  ipcMain.handle("apps:installed", () => listInstalledApps());
+  ipcMain.handle("apps:allowed", () => host.listAllowedApps());
+  ipcMain.handle("apps:set", (_e, name, on) => host.setAppAllowed(name, on));
+
   createPairWindow();
 });
 
