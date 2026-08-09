@@ -38,6 +38,7 @@
       "main.mjs",
       "preload.cjs",
       "pair.html",
+      "apps.html",
       "src/host.mjs",
       "src/executor.mjs",
       "assets/**/*",
