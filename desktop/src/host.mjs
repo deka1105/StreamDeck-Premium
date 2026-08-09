@@ -239,6 +239,9 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       const action = validateAction(msg.action);
       if (!action) {
         reply = { ok: false, error: "invalid action" };
+      } else if (action.type === "app" && !isAppAllowed(action.target)) {
+        console.log(`⛔ blocked launch of "${action.target}" (not in Allowed apps)`);
+        reply = { ok: false, error: `“${action.target}” isn't allowed — enable it in the desktop app → Allowed apps.` };
       } else {
         console.log(`▶ ${msg.label ?? action.type} [${action.type}] from ${device.name}`);
         try {
