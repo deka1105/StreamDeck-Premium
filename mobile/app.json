@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dekisuki05.streamphonedeck",
+      "bundleIdentifier": "com.dekisuki05.deskassist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocalNetworkUsageDescription": "streamPhoneDeck connects to your computer on your local network to send actions.",
@@ -19,7 +19,7 @@
       }
     },
     "android": {
-      "package": "com.dekisuki05.streamphonedeck",
+      "package": "com.dekisuki05.deskassist",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
