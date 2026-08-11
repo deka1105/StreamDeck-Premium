@@ -245,7 +245,7 @@
   /* ---- premium carousel ---- */
   .carousel { position: relative; }
   .carousel-viewport { overflow: hidden; }
-  .carousel-track { display: flex; transition: transform .5s cubic-bezier(.4, 0, .2, 1); will-change: transform; }
+  .carousel-track { display: flex; transition: transform .5s var(--ease-in-out); will-change: transform; }
   .carousel-slide { flex: 0 0 100%; min-width: 0; }
   .carousel-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: clamp(22px, 4vw, 30px); }
   .carousel-arrow {
@@ -303,8 +303,10 @@
   /* ---- action cards ---- */
   .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   @media (max-width: 680px) { .cards { grid-template-columns: 1fr; } }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; transition: transform .15s ease, border-color .15s ease; }
-  .card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; transition: transform .15s var(--ease-out), border-color .15s var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
+  }
   .card .top { display: flex; align-items: center; gap: 12px; }
   .card .badge { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 1.2rem; flex: none; }
   .card h3 { margin: 0; font-size: 1.05rem; }
