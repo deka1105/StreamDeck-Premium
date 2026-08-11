@@ -306,6 +306,10 @@
   .node p { margin: 0; color: var(--muted); font-size: .86rem; }
   .node .arrow { position: absolute; right: -11px; top: 50%; transform: translateY(-50%); color: var(--muted-2); font-size: 1.1rem; z-index: 2; }
   @media (max-width: 760px) { .node .arrow { display: none; } }
+  /* stagger the row so nodes cascade in rather than popping together */
+  .path .node.reveal:nth-child(2) { transition-delay: .07s; }
+  .path .node.reveal:nth-child(3) { transition-delay: .14s; }
+  .path .node.reveal:nth-child(4) { transition-delay: .21s; }
 
   /* ---- action cards ---- */
   .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
@@ -406,7 +410,7 @@
       </div>
 
       <!-- live-ish deck -->
-      <div class="device" aria-label="Interactive demo — switch profiles, turn on Auto, tap a tile">
+      <div class="device hero-anim" style="animation-delay:.16s" aria-label="Interactive demo — switch profiles, turn on Auto, tap a tile">
         <div class="notch"></div>
         <div class="head">
           <span class="title">streamPhoneDeck</span>
