@@ -116,6 +116,13 @@
   .hero .grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(36px, 6vw, 56px); align-items: center; }
   @media (max-width: 860px) { .hero .grid { grid-template-columns: 1fr; } }
 
+  /* ---- hero entrance (first-paint delight — marketing tier) ---- */
+  @keyframes heroRise { from { opacity: 0; transform: translateY(20px); } }
+  @keyframes heroRiseDevice { from { opacity: 0; transform: translateY(28px) scale(.98); } }
+  .hero-anim { animation: heroRise .7s var(--ease-out) both; }
+  .hero .device.hero-anim { animation-name: heroRiseDevice; }
+  @media (prefers-reduced-motion: reduce) { .hero-anim { animation: none; } }
+
   h1 {
     font-size: clamp(2.3rem, 8.5vw, 4.1rem); line-height: 1.02; letter-spacing: -.035em;
     font-weight: 800; margin: 16px 0 0; text-wrap: balance;
@@ -252,10 +259,10 @@
     width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--line-strong);
     background: var(--panel); color: var(--ink); font-size: 1.5rem; line-height: 0; font-family: inherit;
     display: grid; place-items: center; cursor: pointer; padding: 0;
-    transition: border-color .15s ease, background .15s ease, transform .1s ease;
+    transition: border-color .15s ease, background .15s ease, transform .1s var(--ease-out);
   }
   .carousel-arrow:hover { border-color: var(--accent); background: var(--panel-2); text-decoration: none; }
-  .carousel-arrow:active { transform: scale(.9); }
+  .carousel-arrow:active { transform: scale(.94); }
   .carousel-dots { display: flex; align-items: center; gap: 9px; }
   .carousel-dot { width: 8px; height: 8px; border-radius: 999px; border: none; padding: 0; background: var(--line-strong); cursor: pointer; transition: background .2s ease, transform .2s ease, width .2s ease; }
   .carousel-dot.active { background: var(--accent); width: 22px; }
