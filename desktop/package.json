@@ -27,8 +27,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.streamphonedeck.host",
-    "productName": "streamPhoneDeck",
+    "appId": "com.deskassist.host",
+    "productName": "DeskAssist",
     "afterSign": "build/notarize.cjs",
     "directories": {
       "output": "dist",
