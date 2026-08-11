@@ -318,6 +318,11 @@
   @media (hover: hover) and (pointer: fine) {
     .card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
   }
+  /* stagger card-grid reveals */
+  .cards .card.reveal:nth-child(2) { transition-delay: .06s; }
+  .cards .card.reveal:nth-child(3) { transition-delay: .12s; }
+  .cards .card.reveal:nth-child(4) { transition-delay: .18s; }
+  .cards .card.reveal:nth-child(5) { transition-delay: .24s; }
   .card .top { display: flex; align-items: center; gap: 12px; }
   .card .badge { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 1.2rem; flex: none; }
   .card h3 { margin: 0; font-size: 1.05rem; }
