@@ -353,11 +353,13 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function switchPage(i: number) {
     if (pages.length === 0) return;
+    selectFeedback();
     setPageIdx((i % pages.length + pages.length) % pages.length);
   }
 
   function addPage() {
     if (!state || !active) return;
+    selectFeedback();
     const nextPages = [...active.pages, { id: newPageId(), buttons: [] }];
     persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
     setPageIdx(nextPages.length - 1);
@@ -444,6 +446,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function toggleAuto() {
     if (!state) return;
+    selectFeedback();
     handledAppRef.current = null; // re-evaluate the focused app when turning on
     const next = { ...state, autoMode: !state.autoMode };
     persistState(next);
@@ -452,6 +455,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function switchProfile(id: string) {
     if (!state) return;
+    selectFeedback();
     persistState({ ...state, activeId: id });
     setPageIdx(0);
   }
