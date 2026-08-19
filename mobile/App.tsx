@@ -403,15 +403,18 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   // Bring a running app to the front (sends an `app` action).
   async function focusAppByName(name: string) {
+    tapFeedback();
     if (busy) return;
     setBusy(true);
     setStatus(`Focusing ${name}…`);
     try {
       const r = await sendAction(pairing, name, { type: "app", target: name });
       setOk(r.ok);
+      resultFeedback(r.ok);
       setStatus(r.ok ? `${name} ✓` : `${name}: ${r.error ?? "failed"}`);
     } catch (e) {
       setOk(false);
+      resultFeedback(false);
       setStatus(`${name}: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBusy(false);
