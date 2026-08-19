@@ -771,7 +771,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             <Text style={styles.delayLabel}>sec before send</Text>
             <View style={{ flex: 1 }} />
             {["3", "5", "10"].map((s) => (
-              <Pressable key={s} onPress={() => setDelaySec(s)} style={[styles.delayChip, delaySec === s && styles.delayChipActive]}>
+              <Pressable key={s} onPress={() => { selectFeedback(); setDelaySec(s); }} style={[styles.delayChip, delaySec === s && styles.delayChipActive]}>
                 <Text style={[styles.delayChipText, delaySec === s && styles.delayChipTextActive]}>{s}</Text>
               </Pressable>
             ))}
