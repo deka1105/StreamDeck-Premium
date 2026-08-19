@@ -699,7 +699,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             return (
               <Pressable
                 key={p.id}
-                onPress={() => (editing && isActive ? setShowSettings(true) : switchProfile(p.id))}
+                onPress={() =>
+                  editing && isActive ? (selectFeedback(), setShowSettings(true)) : switchProfile(p.id)
+                }
                 style={[styles.profilePill, isActive && styles.profilePillActive]}
               >
                 <Text style={[styles.profilePillText, isActive && styles.profilePillTextActive]} numberOfLines={1}>
@@ -711,7 +713,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             );
           })}
           {editing && (
-            <Pressable onPress={() => setNamePrompt("add")} style={styles.profileAddPill}>
+            <Pressable onPress={() => { selectFeedback(); setNamePrompt("add"); }} style={styles.profileAddPill}>
               <Text style={styles.profileAddText}>＋ Profile</Text>
             </Pressable>
           )}
