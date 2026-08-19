@@ -618,6 +618,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   function onPickUp(id: string) {
     const pl = placements.find((pp) => pp.tile.id === id);
     if (!pl) return;
+    tapFeedback(); // a "lift" tick when a tile is picked up for reordering
     dragFromRef.current = { id, x: pl.x, y: pl.y, w: pl.w, h: pl.h };
     setDragId(id);
   }
@@ -804,7 +805,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               if (p.tile.id === "__add__") {
                 return (
                   <View key="__add__" style={box}>
-                    <Pressable style={styles.addTile} onPress={() => setEditor("new")}>
+                    <Pressable style={styles.addTile} onPress={() => { selectFeedback(); setEditor("new"); }}>
                       <Text style={styles.addPlus}>＋</Text>
                       <Text style={styles.addLabel}>Add</Text>
                     </Pressable>
