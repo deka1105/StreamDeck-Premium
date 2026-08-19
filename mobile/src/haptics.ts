@@ -15,3 +15,8 @@ export function resultFeedback(ok: boolean) {
     ok ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error,
   ).catch(() => {});
 }
+
+/** A subtle tick for navigation / toggles (page flips, profile switch, mode toggles). */
+export function selectFeedback() {
+  Haptics.selectionAsync().catch(() => {});
+}
