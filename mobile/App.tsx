@@ -653,25 +653,25 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         </View>
         <View style={styles.headerButtons}>
           {view === "apps" ? (
-            <Pressable style={styles.pill} onPress={() => setView("deck")}>
+            <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("deck"); }}>
               <Text style={styles.pillText}>← Deck</Text>
             </Pressable>
           ) : (
             <>
               {!editing && (
-                <Pressable style={styles.pill} onPress={onUnpair}>
+                <Pressable style={styles.pill} onPress={() => { selectFeedback(); onUnpair(); }}>
                   <Text style={styles.pillText}>Unpair</Text>
                 </Pressable>
               )}
               {!editing && (
-                <Pressable style={styles.pill} onPress={() => setView("apps")}>
+                <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("apps"); }}>
                   <Text style={styles.pillText}>Apps</Text>
                 </Pressable>
               )}
               <Pressable style={[styles.pill, autoMode && styles.pillActive]} onPress={toggleAuto}>
                 <Text style={[styles.pillText, autoMode && styles.pillTextActive]}>{autoMode ? "🪄 Auto" : "Auto"}</Text>
               </Pressable>
-              <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => setEditing((e) => !e)}>
+              <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => { selectFeedback(); setEditing((e) => !e); }}>
                 <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
               </Pressable>
             </>
