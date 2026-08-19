@@ -524,16 +524,19 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   async function sendTextNow() {
     if (busy || !textDraft.trim()) return;
+    tapFeedback();
     const value = textDraft;
     setBusy(true);
     setStatus("Sending text…");
     try {
       const r = await sendAction(pairing, "Text", { type: "text", text: value });
       setOk(r.ok);
+      resultFeedback(r.ok);
       setStatus(r.ok ? `Sent “${value.length > 24 ? value.slice(0, 24) + "…" : value}”` : `Text: ${r.error ?? "failed"}`);
       if (r.ok) setTextDraft("");
     } catch (e) {
       setOk(false);
+      resultFeedback(false);
       setStatus(`Text: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBusy(false);
