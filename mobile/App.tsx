@@ -18,7 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
 import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
-import { resultFeedback, tapFeedback } from "./src/haptics";
+import { resultFeedback, selectFeedback, tapFeedback } from "./src/haptics";
 import { apps as fetchApps, foreground, hello, pair, sendAction } from "./src/rpc";
 import { loadCols, loadProfiles, saveCols, saveProfiles, type ProfilesState } from "./src/deckStorage";
 import {
@@ -263,6 +263,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   const autoMode = state?.autoMode ?? false;
 
   function changeCols(n: number) {
+    selectFeedback();
     setCols(n);
     saveCols(n);
   }
