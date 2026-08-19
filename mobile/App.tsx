@@ -18,6 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
 import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
+import { resultFeedback, tapFeedback } from "./src/haptics";
 import { apps as fetchApps, foreground, hello, pair, sendAction } from "./src/rpc";
 import { loadCols, loadProfiles, saveCols, saveProfiles, type ProfilesState } from "./src/deckStorage";
 import {
@@ -486,6 +487,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   }
 
   async function press(tile: DeckButton) {
+    tapFeedback(); // crisp tap the instant the tile registers the press
     if (editing) {
       setEditor(tile);
       return;
@@ -496,9 +498,11 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     try {
       const r = await sendAction(pairing, tile.label, tile.action);
       setOk(r.ok);
+      resultFeedback(r.ok);
       setStatus(r.ok ? `${tile.label} ✓` : `${tile.label}: ${r.error ?? "failed"}`);
     } catch (e) {
       setOk(false);
+      resultFeedback(false);
       setStatus(`${tile.label}: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBusy(false);
