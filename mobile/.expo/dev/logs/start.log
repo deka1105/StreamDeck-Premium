@@ -194,3 +194,11 @@
 {"_e":"metro:bundling:done","_t":1790220381734,"id":"9","total":789,"ms":1750.260378}
 {"_e":"metro:client_log","_t":1790220384878,"level":"warn","data":["[purchases] RevenueCat TEST STORE key in use — purchases are simulated. Use an appl_ key for any build going to the App Store."]}
 {"_e":"metro:client_log","_t":1790220384948,"level":"warn","data":["[RevenueCat] ⚠️ Using a Test Store API key.\nThe Test Store is for development only. Never use a Test Store API key in production. Test Store purchases are simulated, do not use StoreKit, and generate no revenue. Apps submitted with a Test Store API key will be rejected during App Review."]}
+{"_e":"metro:bundling:started","_t":1790220444530,"id":"b","platform":"ios","environment":null,"entry":"index.ts"}
+{"_e":"metro:bundling:done","_t":1790220444673,"id":"b","total":1,"ms":143.366058}
+{"_e":"metro:bundling:started","_t":1790220444679,"id":"c","platform":"ios","environment":null,"entry":"index.ts"}
+{"_e":"metro:bundling:done","_t":1790220444817,"id":"c","total":1,"ms":138.416102}
+{"_e":"metro:client_log","_t":1790220446937,"level":"warn","data":["[purchases] RevenueCat TEST STORE key in use — purchases are simulated. Use an appl_ key for any build going to the App Store."]}
+{"_e":"metro:client_log","_t":1790220446937,"level":"warn","data":["[RevenueCat] ⚠️ Using a Test Store API key.\nThe Test Store is for development only. Never use a Test Store API key in production. Test Store purchases are simulated, do not use StoreKit, and generate no revenue. Apps submitted with a Test Store API key will be rejected during App Review."]}
+{"_e":"metro:bundling:started","_t":1790220614763,"id":"d","platform":"ios","environment":null,"entry":"index.ts"}
+{"_e":"metro:bundling:done","_t":1790220615039,"id":"d","total":1,"ms":265.738484}
