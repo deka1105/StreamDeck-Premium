@@ -111,7 +111,7 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
   const doPair = useCallback(
     async (info: any): Promise<boolean> => {
       if (info?.proto !== "spd2" || !info.pid || !info.hpk || !info.host) {
-        setError("That doesn't look like streamPhoneDeck pairing data.");
+        setError("That doesn’t look like DeskAssist pairing data.");
         return false;
       }
       try {
@@ -1268,8 +1268,9 @@ const styles = StyleSheet.create({
   demoButton: { marginTop: 12, borderWidth: 1, borderColor: "rgba(56,189,248,0.45)", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 13 },
   demoButtonText: { color: "#7dd3fc", fontWeight: "700", fontSize: 15 },
   demoNote: { color: "#64748b", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
-  demoBanner: { backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
-  demoBannerText: { color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
+  demoBanner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12 },
+  demoBannerText: { flexShrink: 1, color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
+  demoBannerLink: { color: "#fde68a", fontSize: 11.5, fontWeight: "800" },
   manualInput: {
     width: "100%",
     minHeight: 120,
