@@ -122,11 +122,20 @@ export function TileEditor({
 
             <Text style={styles.fieldLabel}>Icon</Text>
             <View style={styles.typeRow}>
-              {ICON_TYPES.map((t) => (
-                <Pressable key={t.type} onPress={() => setIconType(t.type)} style={[styles.typeChip, iconType === t.type && styles.typeChipActive]}>
-                  <Text style={[styles.typeChipText, iconType === t.type && styles.typeChipTextActive]}>{t.label}</Text>
-                </Pressable>
-              ))}
+              {ICON_TYPES.map((t) => {
+                const locked = t.type === "image" && !limits.imageIcons;
+                return (
+                  <Pressable
+                    key={t.type}
+                    onPress={() => (locked ? showPaywall("imageIcons") : setIconType(t.type))}
+                    style={[styles.typeChip, iconType === t.type && styles.typeChipActive]}
+                  >
+                    <Text style={[styles.typeChipText, iconType === t.type && styles.typeChipTextActive]}>
+                      {locked ? `${t.label} ✦` : t.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
 
             {iconType === "emoji" && (
