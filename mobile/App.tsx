@@ -1030,6 +1030,10 @@ const styles = StyleSheet.create({
   pillActive: { backgroundColor: "#0284c7" },
   pillText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
   pillTextActive: { color: "#fff" },
+  // Amber is reserved for Pro — the only non-sky accent in the app, so the
+  // upgrade affordance never reads as just another control.
+  proPill: { backgroundColor: "rgba(251,191,36,0.14)" },
+  proPillText: { color: "#fbbf24", fontWeight: "700" },
   sendArea: { marginBottom: 16 },
   sendRow: { flexDirection: "row", gap: 8, alignItems: "center" },
   sendInput: { flex: 1, backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15 },
