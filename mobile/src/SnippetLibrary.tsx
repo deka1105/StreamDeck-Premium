@@ -113,12 +113,13 @@ export function SnippetLibrary({
               >
                 <Text style={styles.iconBtnText}>✎</Text>
               </Pressable>
+              {/* Deliberately still pressable when the page is full: the handler
+                  explains which limit was hit, which a disabled button can't. */}
               <Pressable
-                style={[styles.pinBtn, full && styles.rowDisabled]}
+                style={[styles.pinBtn, full && styles.pinBtnFull]}
                 onPress={() => onPin(s)}
-                disabled={full}
               >
-                <Text style={styles.pinText}>＋ Tile</Text>
+                <Text style={[styles.pinText, full && styles.pinTextFull]}>＋ Tile</Text>
               </Pressable>
             </View>
           ))}
@@ -269,6 +270,9 @@ const styles = StyleSheet.create({
   iconBtnText: { color: "#e2e8f0", fontSize: 15, fontWeight: "700" },
   pinBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 14, paddingHorizontal: 14, justifyContent: "center" },
   pinText: { color: "#e2e8f0", fontSize: 13, fontWeight: "700" },
+  // Muted, not disabled — it still explains itself on press.
+  pinBtnFull: { backgroundColor: "rgba(255,255,255,0.05)" },
+  pinTextFull: { color: "#64748b" },
 
   empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 40, paddingHorizontal: 24 },
   emptyIcon: { fontSize: 28, color: "#475569" },
