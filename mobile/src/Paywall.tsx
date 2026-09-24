@@ -19,7 +19,7 @@ import {
   Text,
   View,
 } from "react-native";
-import Purchases, { type PurchasesPackage } from "react-native-purchases";
+import Purchases, { PACKAGE_TYPE, type PurchasesPackage } from "react-native-purchases";
 
 import { selectFeedback, resultFeedback } from "./haptics";
 import {

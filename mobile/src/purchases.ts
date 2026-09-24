@@ -140,9 +140,9 @@ export async function fetchOffering(): Promise<PurchasesOffering | null> {
 export function sortPackages(packages: PurchasesPackage[]): PurchasesPackage[] {
   const rank = (p: PurchasesPackage) => {
     switch (p.packageType) {
-      case "MONTHLY": return 0;
-      case "ANNUAL": return 1;
-      case "LIFETIME": return 2;
+      case PACKAGE_TYPE.MONTHLY: return 0;
+      case PACKAGE_TYPE.ANNUAL: return 1;
+      case PACKAGE_TYPE.LIFETIME: return 2;
       default: return 3;
     }
   };
