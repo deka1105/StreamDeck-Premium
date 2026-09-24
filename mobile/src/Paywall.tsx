@@ -264,16 +264,16 @@ export function Paywall({
 /** "Monthly" / "Yearly" / "Lifetime" — falls back to the store's own title. */
 function packageLabel(p: PurchasesPackage): string {
   switch (p.packageType) {
-    case "MONTHLY": return "Monthly";
-    case "ANNUAL": return "Yearly";
-    case "LIFETIME": return "Lifetime";
-    case "WEEKLY": return "Weekly";
+    case PACKAGE_TYPE.MONTHLY: return "Monthly";
+    case PACKAGE_TYPE.ANNUAL: return "Yearly";
+    case PACKAGE_TYPE.LIFETIME: return "Lifetime";
+    case PACKAGE_TYPE.WEEKLY: return "Weekly";
     default: return p.product.title || p.identifier;
   }
 }
 
 function ctaLabel(p: PurchasesPackage): string {
-  return p.packageType === "LIFETIME" ? "Unlock Pro forever" : "Start Pro";
+  return p.packageType === PACKAGE_TYPE.LIFETIME ? "Unlock Pro forever" : "Start Pro";
 }
 
 const styles = StyleSheet.create({
