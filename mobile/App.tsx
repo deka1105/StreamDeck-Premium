@@ -282,6 +282,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   useEffect(() => {
     loadProfiles().then(setState);
     loadCols().then(setCols);
+    loadSnippets().then(setSnippets);
   }, []);
 
   // The active profile (always defined once state loads — there's ≥1 profile).
@@ -567,18 +568,19 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   useEffect(() => clearCountdown, []); // stop any pending countdown on unmount
 
-  async function sendTextNow() {
-    if (busy || !textDraft.trim()) return;
+  /** Type `value` on the host. Shared by the composer and the snippet library. */
+  async function sendTextValue(value: string, { clearDraft = false } = {}) {
+    if (busy || !value.trim()) return;
     tapFeedback();
-    const value = textDraft;
     setBusy(true);
     setStatus("Sending text…");
     try {
       const r = await sendAction(pairing, "Text", { type: "text", text: value });
       setOk(r.ok);
       resultFeedback(r.ok);
-      setStatus(r.ok ? `Sent “${value.length > 24 ? value.slice(0, 24) + "…" : value}”` : `Text: ${r.error ?? "failed"}`);
-      if (r.ok) setTextDraft("");
+      const shown = value.replace(/\s+/g, " ").trim();
+      setStatus(r.ok ? `Sent “${shown.length > 24 ? shown.slice(0, 24) + "…" : shown}”` : `Text: ${r.error ?? "failed"}`);
+      if (r.ok && clearDraft) setTextDraft("");
     } catch (e) {
       setOk(false);
       resultFeedback(false);
@@ -586,6 +588,10 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     } finally {
       setBusy(false);
     }
+  }
+
+  function sendTextNow() {
+    return sendTextValue(textDraft, { clearDraft: true });
   }
 
   // Tap Send: if a delay is set, count down first (tap again to cancel).
