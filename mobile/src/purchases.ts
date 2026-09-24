@@ -84,7 +84,7 @@ export const PAYWALL_COPY: Record<PaywallReason, { title: string; body: string }
   },
   generic: {
     title: "DeskAssist Pro",
-    body: "Unlimited profiles and pages, a saved snippet library, and custom image faces for every tile.",
+    body: "Unlimited profiles, pages, and snippets, plus custom image faces for every tile.",
   },
 };
 
