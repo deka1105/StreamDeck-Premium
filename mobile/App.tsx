@@ -1251,7 +1251,8 @@ const styles = StyleSheet.create({
   scanError: { color: "#fca5a5", textAlign: "center", marginTop: 12, fontWeight: "600" },
   linkText: { color: "#7dd3fc", fontWeight: "600", marginTop: 10 },
   linkTextStrong: { color: "#e0f2fe", fontWeight: "700", marginTop: 10 },
-  scanLinks: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20, marginTop: 6 },
+  // Pinned to the bottom of the camera overlay so the reticle stays centred.
+  scanLinks: { position: "absolute", bottom: 48, flexDirection: "row", alignItems: "center", gap: 20 },
   // Demo entry on the pair screen — deliberately a real button, not a link: a
   // reviewer with no host must be able to see the product, not just a scanner.
   demoButton: { marginTop: 12, borderWidth: 1, borderColor: "rgba(56,189,248,0.45)", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 13 },
