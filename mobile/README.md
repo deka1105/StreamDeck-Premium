@@ -76,6 +76,37 @@ eas build -p ios --profile development-simulator # simulator, no Apple account
 3. Tap a tile — the Mac runs the action. Same Wi-Fi is required; an attacker on
    that Wi-Fi still can't read, forge, replay, or tamper (no key, no QR).
 
+## Demo mode
+
+Tap **Explore the demo** on the pair screen and the whole app becomes usable with
+no computer, no host install, and no network: a simulated Mac accepts every
+action, reports a rotating frontmost app so Auto mode visibly reacts, and lists
+running apps so tiles light their live dots.
+
+It exists for App Review as much as for curiosity. A companion app that opens to
+nothing but a QR scanner gets rejected under guideline 2.1 — *unable to review, no
+hardware* — and that costs a whole review cycle. A reviewer can now operate the
+product end to end.
+
+A demo session is a real `Pairing` carrying the sentinel `kid` `__demo__`, so it
+persists across launches and **Unpair** leaves it exactly like a real pairing. A
+standing amber banner says it's a simulation on every screen.
+
+## Snippets
+
+The snippet library is the long tail of text you retype: addresses, commands,
+boilerplate. Save it once, tap to type it into whatever's focused on your Mac.
+
+- The composer's **✎** button saves what you typed without sending it.
+- Tapping a snippet sends it, honouring the **Delay** setting — that pause is the
+  window in which you go click the app on your Mac that should receive the typing.
+  Sending returns to the deck so the countdown's Cancel stays reachable.
+- **＋ Tile** promotes a snippet you reach for constantly onto the deck as a `text`
+  tile. Tiles are the nine things you grab without thinking; the library is
+  everything else.
+
+Free keeps three snippets, Pro unlimited — see below for why it isn't zero.
+
 ## Pro (RevenueCat)
 
 The free tier is a complete product — one profile, one page, nine tiles, and
