@@ -16,7 +16,8 @@
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }
-      }
+      },
+      "buildNumber": "5"
     },
     "android": {
       "package": "com.dekisuki05.deskassist",
