@@ -144,6 +144,15 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
     await doPair(info);
   }
 
+  // Demo mode: a simulated Mac, so the whole app is usable with nothing
+  // installed. Persisted like a real pairing, so it survives a relaunch and
+  // "Unpair" exits it.
+  const startDemo = useCallback(async () => {
+    const p = demoPairing();
+    await savePairing(p);
+    onPaired(p);
+  }, [onPaired]);
+
   // Manual entry — needed on the Simulator (no camera), handy as a fallback.
   if (manual) {
     return (
@@ -195,6 +204,10 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
         <Pressable style={styles.grantButton} onPress={requestPermission}>
           <Text style={styles.grantText}>Grant camera access</Text>
         </Pressable>
+        <Pressable style={styles.demoButton} onPress={startDemo}>
+          <Text style={styles.demoButtonText}>Explore the demo instead</Text>
+        </Pressable>
+        <Text style={styles.demoNote}>No computer needed — try the whole app with a simulated Mac.</Text>
         <Pressable onPress={() => setManual(true)}>
           <Text style={styles.linkText}>Enter pairing data manually</Text>
         </Pressable>
