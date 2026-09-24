@@ -165,6 +165,11 @@ export function Paywall({
               >
                 <Text style={styles.proBadgeText}>PRO</Text>
               </Pressable>
+              {__DEV__ && onTestStore() ? (
+                <View style={styles.testBadge}>
+                  <Text style={styles.testBadgeText}>TEST STORE</Text>
+                </View>
+              ) : null}
             </View>
 
             <Text style={styles.title}>{copy.title}</Text>
@@ -299,6 +304,8 @@ const styles = StyleSheet.create({
   eyebrow: { color: "#64748b", fontSize: 11, fontWeight: "700", letterSpacing: 1.6 },
   proBadge: { backgroundColor: "rgba(251,191,36,0.14)", borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   proBadgeText: { color: "#fbbf24", fontSize: 11, fontWeight: "800", letterSpacing: 1.2 },
+  testBadge: { backgroundColor: "rgba(232,112,95,0.16)", borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  testBadgeText: { color: "#fb7185", fontSize: 9.5, fontWeight: "800", letterSpacing: 0.8 },
 
   title: { color: "#f1f5f9", fontSize: 25, fontWeight: "800", letterSpacing: -0.5, lineHeight: 30 },
   subtitle: { color: "#94a3b8", fontSize: 14.5, lineHeight: 21, marginTop: 8 },
