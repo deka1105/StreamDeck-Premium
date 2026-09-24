@@ -39,6 +39,7 @@ export function TileEditor({
   onCancel: () => void;
   onDelete?: () => void;
 }) {
+  const { limits, showPaywall } = usePro();
   const [label, setLabel] = useState(initial?.label ?? "");
   const [icon, setIcon] = useState(initial?.icon ?? "⭐");
   const [iconType, setIconType] = useState<IconType>(initial?.iconType ?? "emoji");
