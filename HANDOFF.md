@@ -50,6 +50,51 @@ create → save → send (status confirmed `Sent "…"`), free-tier counters.
    `REPLACE_WITH_SUPPORT_EMAIL` and `REPLACE_WITH_JURISDICTION`.
 5. **Rotate any secret key** that has been pasted into a chat or terminal.
 
+### Store + RevenueCat state (2026-09-24)
+
+**RevenueCat** (project `4e6b3d24`) is fully wired for the App Store:
+
+- App Store app `app47fbf519df`, bundle `com.dekisuki05.deskassist`, public key
+  `appl_…` in `mobile/.env.local` and registered with EAS `production` (sensitive).
+- Products `2f5b54` (monthly sub), `2f5b54_Y` (yearly sub), `2f5b54_One`
+  (non-consumable), all attached to entitlement **`deskassist_pro`**.
+- Offering `default` has `$rc_monthly` / `$rc_annual` / `$rc_lifetime`. Verified
+  via `GET /v1/subscribers/<id>/offerings` with the appl_ key: 3 packages.
+- Products show "Store Status: Could not check" — RevenueCat has the In-App
+  Purchase key (receipt validation) but no App Store Connect API key (catalog
+  reads). Cosmetic; does not affect purchases.
+
+**App Store Connect** app `6800168772`, version 1.0 `PREPARE_FOR_SUBMISSION`,
+14 of 15 submission items complete. Only the **build** is missing. Done:
+description, subtitle, keywords, promotional text, support/marketing/privacy
+URLs, copyright `2026 Parag A. D.`, Productivity/Utilities categories, age
+rating 4+, review contact + notes (`APP-REVIEW-NOTES.txt`), 6 screenshots
+(`APP_IPHONE_61` ×3, `APP_IPHONE_67` ×3), all 3 IAPs `READY_TO_SUBMIT`.
+
+Territory availability: `2f5b54` has all 175; `2f5b54_Y` and `2f5b54_One` are
+USA-only — Apple's API refuses to replace an availability once created, so widen
+them in the dashboard.
+
+### Two traps that cost real time
+
+1. **A `test_` RevenueCat key cannot be used in a Release build.** The SDK
+   detects it, alerts "Wrong API Key", and deliberately terminates the app on
+   launch. A build with *no* key runs but sells nothing. Release builds need the
+   `appl_` key, full stop.
+2. **`eas.json` build profiles need an `environment` key** or EAS injects none of
+   the `EXPO_PUBLIC_*` variables. Without it the production build would have
+   shipped with no RevenueCat key and silently taken no purchases.
+
+### Still open
+
+- EAS free-plan build quota is exhausted until 2026-10-01 (after the deadline);
+  local builds (`eas build --local`, needs fastlane) or a paid plan.
+- The purchase flow has **not** been verified against real StoreKit products —
+  only against the Test Store. That needs a device with a sandbox Apple ID or a
+  TestFlight build.
+- Rotate the `test_` key before making the repo public: it reached git history
+  twice, via `mobile/.expo/dev/logs/start.log` and a `.env.local.bak`.
+
 ### Gotcha for local dev
 
 `mobile/ios/` is generated and gitignored, and it goes stale: it predated
