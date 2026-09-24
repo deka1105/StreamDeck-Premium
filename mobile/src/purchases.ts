@@ -25,8 +25,12 @@ import Purchases, {
   type PurchasesPackage,
 } from "react-native-purchases";
 
-/** The single entitlement that unlocks everything. Must match RevenueCat exactly. */
-export const ENTITLEMENT_ID = "pro";
+/**
+ * The single entitlement that unlocks everything. Must match the identifier in
+ * RevenueCat → Entitlements *exactly* — a mismatch means purchases succeed and
+ * grant nothing, which `explainMissingEntitlement` below exists to diagnose.
+ */
+export const ENTITLEMENT_ID = "deskassist_pro";
 
 /** What the deck checks before letting the user grow past the free tier. */
 export type Limits = {
