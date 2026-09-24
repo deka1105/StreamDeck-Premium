@@ -27,6 +27,12 @@ button presses over an **AES-256-GCM encrypted channel** (see
 - `src/ProfileSettings.tsx` / `src/NamePrompt.tsx` — profile rename + Auto-mode
   trigger-app list; cross-platform name entry.
 - `src/RunningApps.tsx` — the host's running-apps screen (focus / pin-as-tile).
+- `src/purchases.ts` — RevenueCat: the `pro` entitlement, the free-tier `Limits`
+  the deck enforces, and the `usePro()` context. Pure logic + types, no UI.
+- `src/ProProvider.tsx` — owns entitlement state (CustomerInfo is the only source
+  of truth) and hosts the paywall. Wraps the whole app in `App.tsx`.
+- `src/Paywall.tsx` — the Pro sheet. Its headline changes with *why* it opened;
+  packages come from RevenueCat's current offering, so pricing is dashboard-driven.
 - `App.tsx` — pair screen (QR scanner) → deck screen with **profiles**, **pages**
   (dots/arrows), **🪄 Auto mode**, **live tile state**, **drag-to-reorder**, an
   adjustable **layout size** (2–5 columns) and **resizable tiles**.
