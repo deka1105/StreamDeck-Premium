@@ -364,6 +364,11 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function addPage() {
     if (!state || !active) return;
+    if (active.pages.length >= limits.maxPagesPerProfile) {
+      selectFeedback();
+      showPaywall("pages");
+      return;
+    }
     selectFeedback();
     const nextPages = [...active.pages, { id: newPageId(), buttons: [] }];
     persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
@@ -467,6 +472,11 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function submitName(name: string) {
     if (!state) return;
+    if (state.profiles.length >= limits.maxProfiles) {
+      setNamePrompt(null);
+      showPaywall("profiles");
+      return;
+    }
     const id = newProfileId();
     persistState({ ...state, profiles: [...state.profiles, { id, name, pages: [{ id: newPageId(), buttons: [] }], apps: [] }], activeId: id });
     setNamePrompt(null);
