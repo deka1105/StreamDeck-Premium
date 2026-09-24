@@ -23,6 +23,7 @@ import Purchases, { PACKAGE_TYPE, type PurchasesPackage } from "react-native-pur
 
 import { selectFeedback, resultFeedback } from "./haptics";
 import {
+  explainMissingEntitlement,
   fetchOffering,
   hasPro,
   onTestStore,
@@ -115,7 +116,12 @@ export function Paywall({
         resultFeedback(true);
         onPurchased();
       } else {
-        setError("That purchase went through but didn't unlock Pro. Try Restore, or contact support.");
+        // Purchase succeeded, entitlement didn't arrive — a store-config problem.
+        if (__DEV__) console.warn("[purchases]", explainMissingEntitlement(customerInfo));
+        setError(
+          "That purchase went through but didn't unlock Pro. Try Restore — if that " +
+            "doesn't help, the store's entitlement isn't set up yet.",
+        );
       }
     } catch (e) {
       if (!wasCancelled(e)) {
