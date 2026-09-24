@@ -786,7 +786,12 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               )}
               {!editing && (
                 <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("apps"); }}>
-                  <Text style={styles.pillText}>Apps</Text>
+                  <Text style={styles.pillText}>🖥</Text>
+                </Pressable>
+              )}
+              {!editing && (
+                <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("snippets"); }}>
+                  <Text style={styles.pillText}>Snippets</Text>
                 </Pressable>
               )}
               <Pressable style={[styles.pill, autoMode && styles.pillActive]} onPress={toggleAuto}>
@@ -800,6 +805,15 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         </View>
       </View>
 
+      {/* Demo sessions say so, on every screen, for as long as they last. */}
+      {isDemo(pairing) && (
+        <View style={styles.demoBanner}>
+          <Text style={styles.demoBannerText} numberOfLines={2}>
+            Demo — a simulated Mac. Nothing is sent to a real computer. Unpair to connect yours.
+          </Text>
+        </View>
+      )}
+
       {view === "apps" ? (
         <RunningApps
           data={runningApps}
@@ -808,6 +822,18 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           full={full}
           onRefresh={refreshApps}
           loading={appsLoading}
+        />
+      ) : view === "snippets" ? (
+        <Snippets
+          snippets={snippets}
+          limit={limits.maxSnippets}
+          busy={busy}
+          full={full}
+          onSend={sendSnippet}
+          onSave={saveSnippet}
+          onDelete={deleteSnippet}
+          onPin={pinSnippet}
+          onNeedPro={() => showPaywall("snippets")}
         />
       ) : (
       <>
