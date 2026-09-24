@@ -36,22 +36,26 @@ export type Limits = {
   maxPagesPerProfile: number;
   /** Uploaded-image tile faces (emoji and text faces are always free). */
   imageIcons: boolean;
-  /** The saved snippet library (ad-hoc text sending is always free). */
-  snippetLibrary: boolean;
+  /**
+   * How many snippets may be saved. Free gets a few rather than none on purpose:
+   * a feature nobody can try is a feature nobody buys, and three is enough to
+   * feel why you'd want the fourth. Ad-hoc text sending is always unlimited.
+   */
+  maxSnippets: number;
 };
 
 export const FREE_LIMITS: Limits = {
   maxProfiles: 1,
   maxPagesPerProfile: 1,
   imageIcons: false,
-  snippetLibrary: false,
+  maxSnippets: 3,
 };
 
 export const PRO_LIMITS: Limits = {
   maxProfiles: Infinity,
   maxPagesPerProfile: Infinity,
   imageIcons: true,
-  snippetLibrary: true,
+  maxSnippets: Infinity,
 };
 
 export function limitsFor(isPro: boolean): Limits {
