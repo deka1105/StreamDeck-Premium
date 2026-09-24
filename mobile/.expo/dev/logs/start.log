@@ -166,3 +166,5 @@
 {"_e":"env:load","_t":1790219449742,"mode":"development","files":["../../../.env.local"],"env":{"EXPO_PUBLIC_REVENUECAT_ANDROID_KEY":"test_MewTHtwkqjUFXqLpWXDDjPfxpOO","EXPO_PUBLIC_REVENUECAT_IOS_KEY":"test_MewTHtwkqjUFXqLpWXDDjPfxpOO"}}
 {"_e":"devserver:start","_t":1790219451113,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../../../app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
 {"_e":"metro:config","_t":1790219452390,"serverRoot":"../../..","projectRoot":"../../..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790219453122,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790219454193,"atlas":false,"workers":10,"host":"::","port":8081}
