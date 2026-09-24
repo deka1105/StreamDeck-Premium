@@ -45,7 +45,7 @@ import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
 import { ProProvider } from "./src/ProProvider";
 import { usePro } from "./src/purchases";
-import { Snippets } from "./src/Snippets";
+import { SnippetLibrary } from "./src/SnippetLibrary";
 import {
   loadSnippets,
   newSnippetId,
@@ -824,7 +824,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           loading={appsLoading}
         />
       ) : view === "snippets" ? (
-        <Snippets
+        <SnippetLibrary
           snippets={snippets}
           limit={limits.maxSnippets}
           busy={busy}
