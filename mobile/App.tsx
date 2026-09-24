@@ -761,8 +761,10 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   return (
     <View style={styles.deck}>
       <View style={styles.header}>
-        <View style={{ flexShrink: 1 }}>
-          <Text style={styles.title}>streamPhoneDeck</Text>
+        {/* Own row: the status line reports every send result and must never be
+            squeezed out by the controls below it. */}
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>DeskAssist</Text>
           <Text style={[styles.status, { color: ok ? "#94a3b8" : "#fca5a5" }]} numberOfLines={1}>
             {status}
           </Text>
