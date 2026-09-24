@@ -18,3 +18,6 @@ mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-maccataly
 mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-maccatalyst/React.framework/Versions/A/React
 mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-maccatalyst/React.framework/Versions/Current/React
 mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-simulator/React.framework/React
+
+# macOS
+.DS_Store

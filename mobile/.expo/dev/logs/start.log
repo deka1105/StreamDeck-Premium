@@ -206,3 +206,4 @@
 {"_e":"metro:bundling:done","_t":1790220621496,"id":"e","total":1,"ms":174.190525}
 {"_e":"metro:client_log","_t":1790220623995,"level":"warn","data":["[purchases] RevenueCat TEST STORE key in use — purchases are simulated. Use an appl_ key for any build going to the App Store."]}
 {"_e":"metro:client_log","_t":1790220623995,"level":"warn","data":["[RevenueCat] ⚠️ Using a Test Store API key.\nThe Test Store is for development only. Never use a Test Store API key in production. Test Store purchases are simulated, do not use StoreKit, and generate no revenue. Apps submitted with a Test Store API key will be rejected during App Review."]}
+{"_e":"metro:client_log","_t":1790221323659,"level":"warn","data":["bundle scheme is file - unable to connect to sharedPackageConnection from EXDevLauncherController."]}
