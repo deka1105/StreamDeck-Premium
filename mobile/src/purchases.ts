@@ -63,7 +63,7 @@ export function limitsFor(isPro: boolean): Limits {
 }
 
 /** Why the paywall opened — drives its headline, so the ask matches the moment. */
-export type PaywallReason = "profiles" | "pages" | "imageIcons" | "snippetLibrary" | "generic";
+export type PaywallReason = "profiles" | "pages" | "imageIcons" | "snippets" | "generic";
 
 export const PAYWALL_COPY: Record<PaywallReason, { title: string; body: string }> = {
   profiles: {
@@ -78,9 +78,9 @@ export const PAYWALL_COPY: Record<PaywallReason, { title: string; body: string }
     title: "Use your own artwork",
     body: "Pro lets a tile wear any image — an app icon, a logo, a screenshot — instead of an emoji.",
   },
-  snippetLibrary: {
-    title: "Stop retyping the same thing",
-    body: "Pro saves your snippets — addresses, commands, boilerplate, emoji-free em-dashes — and types any of them into your Mac with one tap.",
+  snippets: {
+    title: "Room for every snippet",
+    body: "Free keeps three. Pro saves as many as you like — addresses, commands, boilerplate, that one paragraph you retype every week — and types any of them into your Mac with one tap.",
   },
   generic: {
     title: "DeskAssist Pro",
