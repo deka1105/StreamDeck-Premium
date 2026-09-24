@@ -74,6 +74,15 @@ export function snippetPreview(s: Snippet, max = 80): string {
   return flat.length > max ? `${flat.slice(0, max)}…` : flat;
 }
 
+/**
+ * True when the body says something the title doesn't already show — i.e. the
+ * snippet is labelled, or its text runs past the first line. An unlabelled
+ * one-liner's title *is* its text, so rendering both just repeats it.
+ */
+export function snippetHasMore(s: Snippet): boolean {
+  return snippetPreview(s, Infinity) !== snippetTitle(s);
+}
+
 /** Promote a snippet to a deck tile that types it. */
 export function snippetToTile(s: Snippet): DeckButton {
   return {

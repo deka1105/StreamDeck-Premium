@@ -97,9 +97,11 @@ export function SnippetLibrary({
                 <Text style={styles.snipTitle} numberOfLines={1}>
                   {snippetTitle(s)}
                 </Text>
-                <Text style={styles.snipPreview} numberOfLines={1}>
-                  {snippetPreview(s)}
-                </Text>
+                {snippetHasMore(s) ? (
+                  <Text style={styles.snipPreview} numberOfLines={1}>
+                    {snippetPreview(s)}
+                  </Text>
+                ) : null}
               </Pressable>
               <Pressable
                 style={styles.iconBtn}
