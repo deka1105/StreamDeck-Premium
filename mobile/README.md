@@ -105,6 +105,11 @@ boilerplate. Save it once, tap to type it into whatever's focused on your Mac.
   tile. Tiles are the nine things you grab without thinking; the library is
   everything else.
 
+Note the free tier's arithmetic: nine tiles and one page means the seed deck fills
+every slot, so `＋ Tile` has nowhere to go until a tile is freed. Rather than a
+dead button, pressing it names the wall it hit — and offers Pro, since Pro is what
+adds pages.
+
 Free keeps three snippets, Pro unlimited — see below for why it isn't zero.
 
 ## Pro (RevenueCat)
