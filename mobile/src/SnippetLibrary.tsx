@@ -21,6 +21,7 @@ import {
   MAX_SNIPPET_LABEL_LEN,
   MAX_SNIPPET_LEN,
   newSnippetId,
+  snippetHasMore,
   snippetPreview,
   snippetTitle,
   type Snippet,
