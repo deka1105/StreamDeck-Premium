@@ -30,8 +30,11 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files — note .env*.local does NOT match .env.local.bak,
+# which is how a dev key once reached git history.
 .env*.local
+.env.local*
+*.bak
 
 # typescript
 *.tsbuildinfo
