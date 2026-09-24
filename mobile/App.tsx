@@ -70,20 +70,22 @@ export default function App() {
   }
 
   return (
-    <View style={styles.root}>
-      {pairing ? (
-        <DeckScreen
-          pairing={pairing}
-          onUnpair={async () => {
-            await clearPairing();
-            setPairing(null);
-          }}
-        />
-      ) : (
-        <PairScreen onPaired={setPairing} />
-      )}
-      <StatusBar style="light" />
-    </View>
+    <ProProvider>
+      <View style={styles.root}>
+        {pairing ? (
+          <DeckScreen
+            pairing={pairing}
+            onUnpair={async () => {
+              await clearPairing();
+              setPairing(null);
+            }}
+          />
+        ) : (
+          <PairScreen onPaired={setPairing} />
+        )}
+        <StatusBar style="light" />
+      </View>
+    </ProProvider>
   );
 }
 
@@ -226,6 +228,7 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
 type EditorState = null | "new" | DeckButton;
 
 function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => void }) {
+  const { isPro, limits, showPaywall } = usePro();
   const [state, setState] = useState<ProfilesState | null>(null);
   const [namePrompt, setNamePrompt] = useState<null | "add">(null);
   const [showSettings, setShowSettings] = useState(false);
