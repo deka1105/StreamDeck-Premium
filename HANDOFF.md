@@ -1,6 +1,6 @@
 # streamPhoneDeck — Handoff
 
-_Last updated: 2026-09-23_
+_Last updated: 2026-09-24_
 
 A running status document for whoever picks this up next (human or agent). For
 day-to-day architecture reference see [CLAUDE.md](./CLAUDE.md); for user-facing

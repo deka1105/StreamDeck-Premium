@@ -37,7 +37,7 @@ button presses over an **AES-256-GCM encrypted channel** (see
 - `src/SnippetLibrary.tsx` — the snippets screen (send / edit / delete / pin) plus
   its editor sheet. Named in PascalCase to avoid colliding with `snippets.ts` on
   case-insensitive filesystems.
-- `src/purchases.ts` — RevenueCat: the `pro` entitlement, the free-tier `Limits`
+- `src/purchases.ts` — RevenueCat: the `deskassist_pro` entitlement, free-tier `Limits`
   the deck enforces, and the `usePro()` context. Pure logic + types, no UI.
 - `src/ProProvider.tsx` — owns entitlement state (CustomerInfo is the only source
   of truth) and hosts the paywall. Wraps the whole app in `App.tsx`.
