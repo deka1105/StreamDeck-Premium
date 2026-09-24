@@ -782,11 +782,6 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
                 </Pressable>
               )}
               {!editing && (
-                <Pressable style={styles.pill} onPress={() => { selectFeedback(); onUnpair(); }}>
-                  <Text style={styles.pillText}>Unpair</Text>
-                </Pressable>
-              )}
-              {!editing && (
                 <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("apps"); }}>
                   <Text style={styles.pillText}>🖥</Text>
                 </Pressable>
@@ -802,6 +797,13 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => { selectFeedback(); setEditing((e) => !e); }}>
                 <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
               </Pressable>
+              {/* Unpair is a management action, so it lives in edit mode. Demo
+                  sessions get their own exit via the banner below. */}
+              {editing && (
+                <Pressable style={styles.pill} onPress={() => { selectFeedback(); onUnpair(); }}>
+                  <Text style={styles.pillText}>Unpair</Text>
+                </Pressable>
+              )}
             </>
           )}
         </View>
