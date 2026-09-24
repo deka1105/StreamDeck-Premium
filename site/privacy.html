@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — DeskAssist</title>
+<style>
+  :root {
+    --ground: #070b14;
+    --panel: #0e1626;
+    --line: rgba(255,255,255,.09);
+    --ink: #e8eef9;
+    --muted: #8a99b2;
+    --muted-2: #6b7a94;
+    --accent: #46bdf6;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16.5px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 44rem; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+  a { color: var(--accent); }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.5rem); letter-spacing: -0.025em; margin: 0 0 .5rem; line-height: 1.15; }
+  h2 { font-size: 1.15rem; letter-spacing: -0.01em; margin: 2.6rem 0 .6rem; }
+  p, li { color: #cdd7e8; margin: 0 0 1rem; }
+  ul { padding-left: 1.2rem; }
+  li { margin-bottom: .5rem; }
+  .meta { font-family: var(--mono); font-size: .78rem; color: var(--muted-2); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 2.5rem; }
+  .lede { font-size: 1.08rem; color: var(--muted); margin-bottom: 2rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem 1.3rem; margin: 1.5rem 0; }
+  .panel p:last-child { margin-bottom: 0; }
+  code { font-family: var(--mono); font-size: .88em; background: rgba(255,255,255,.06); padding: .1em .35em; border-radius: 3px; }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted-2); }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta">Effective 23 September 2026</p>
+  <h1>Privacy Policy</h1>
+  <p class="lede">DeskAssist turns your phone into a control surface for your own computer. It is built so that your data has nowhere to go — there is no DeskAssist account, and no DeskAssist server in the path.</p>
+
+  <h2>The short version</h2>
+  <div class="panel">
+    <p>Your deck layout, your snippets, and your pairing key never leave your devices. Commands travel directly from your phone to your computer over your own network, encrypted end to end. We do not operate a server that sees any of it, and we do not collect analytics.</p>
+  </div>
+
+  <h2>What stays on your device</h2>
+  <ul>
+    <li><strong>Deck layout</strong> — your profiles, pages, tiles, labels, and any images you choose for tile faces. Stored in the app's local storage on the phone.</li>
+    <li><strong>Snippets</strong> — any text you save to send to your computer. Stored locally in the same way.</li>
+    <li><strong>Pairing key</strong> — the shared secret established with your computer, held in the operating system's secure store (iOS Keychain / Android Keystore).</li>
+  </ul>
+  <p>Deleting the app removes all of it. Nothing is backed up to us.</p>
+
+  <h2>What travels, and where</h2>
+  <p>When you press a tile, DeskAssist sends that single command directly to the host application running on your computer, over your local network. The connection is encrypted with AES-256-GCM using a key agreed during pairing (X25519 key exchange). It does not pass through any server we control.</p>
+  <p>Your computer sends back only what the deck needs to draw itself: which applications are running, and which one is focused. That reply is encrypted the same way and is not stored anywhere but in memory on the phone.</p>
+
+  <h2>Device permissions</h2>
+  <ul>
+    <li><strong>Camera</strong> — used solely to scan the pairing QR code shown by the host application. No photo or video is recorded, stored, or transmitted.</li>
+    <li><strong>Photo library</strong> — used only when you explicitly choose an image for a tile face. The chosen image is resized on-device and stored in your local deck layout. It is never uploaded.</li>
+    <li><strong>Local network</strong> — required to reach your own computer. Used for nothing else.</li>
+  </ul>
+
+  <h2>Purchases</h2>
+  <p>DeskAssist Pro is sold as an in-app purchase. Payment is handled entirely by Apple or Google; we never see your payment details.</p>
+  <p>We use <strong>RevenueCat</strong> to verify purchase receipts and tell the app whether Pro is active. For this, RevenueCat receives a randomly generated anonymous identifier, your purchase receipt, and basic device and country information from the store. It does not receive your name, email address, deck contents, or snippets. RevenueCat acts as our data processor; see <a href="https://www.revenuecat.com/privacy" rel="noopener">RevenueCat's privacy policy</a>.</p>
+
+  <h2>What we do not do</h2>
+  <ul>
+    <li>No analytics, telemetry, crash reporting, or advertising SDKs.</li>
+    <li>No tracking across apps or websites, and no advertising identifier is read.</li>
+    <li>No sale or sharing of personal information. There is nothing collected to sell.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>DeskAssist is not directed at children under 13 and we do not knowingly collect information from them.</p>
+
+  <h2>Your rights</h2>
+  <p>Because we hold no personal data about you, there is no account to access, export, or delete on our side. You can remove everything the app stores by deleting the app. For questions about purchases, contact the store that processed them, or reach us at the address below.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes materially, the updated version will be posted here with a new effective date.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy: <a href="mailto:REPLACE_WITH_SUPPORT_EMAIL">REPLACE_WITH_SUPPORT_EMAIL</a></p>
+
+  <footer>
+    <p>DeskAssist · <a href="./index.html">Home</a> · <a href="./terms.html">Terms of Use</a></p>
+  </footer>
+</main>
+</body>
+</html>
