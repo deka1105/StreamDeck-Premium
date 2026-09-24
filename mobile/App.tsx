@@ -1260,7 +1260,6 @@ const styles = StyleSheet.create({
   demoNote: { color: "#64748b", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
   demoBanner: { backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
   demoBannerText: { color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
-  manualLink: { position: "absolute", bottom: 48 },
   manualInput: {
     width: "100%",
     minHeight: 120,
