@@ -27,6 +27,16 @@ button presses over an **AES-256-GCM encrypted channel** (see
 - `src/ProfileSettings.tsx` / `src/NamePrompt.tsx` — profile rename + Auto-mode
   trigger-app list; cross-platform name entry.
 - `src/RunningApps.tsx` — the host's running-apps screen (focus / pin-as-tile).
+- `src/demo.ts` — the simulated host behind **demo mode**: a fake `Pairing` with a
+  sentinel `kid`, a rotating frontmost app, and a plausible running-apps list.
+- `src/host.ts` — the single switch between the real encrypted transport and the
+  demo simulation. The UI imports this instead of `rpc.ts`, so no call site knows
+  which is live and no demo code can reach `sendCmd`.
+- `src/snippets.ts` — the snippet model + AsyncStorage persistence, validated on
+  load like `deckStorage`. `snippetToTile` promotes one onto the deck.
+- `src/SnippetLibrary.tsx` — the snippets screen (send / edit / delete / pin) plus
+  its editor sheet. Named in PascalCase to avoid colliding with `snippets.ts` on
+  case-insensitive filesystems.
 - `src/purchases.ts` — RevenueCat: the `pro` entitlement, the free-tier `Limits`
   the deck enforces, and the `usePro()` context. Pure logic + types, no UI.
 - `src/ProProvider.tsx` — owns entitlement state (CustomerInfo is the only source
