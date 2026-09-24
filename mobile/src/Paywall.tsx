@@ -47,12 +47,15 @@ export function Paywall({
   ready,
   onPurchased,
   onClose,
+  onDevUnlock,
 }: {
   reason: PaywallReason;
   /** SDK is configured — when false we explain rather than show a broken store. */
   ready: boolean;
   onPurchased: () => void;
   onClose: () => void;
+  /** Dev builds only: long-press the PRO badge to unlock the gates locally. */
+  onDevUnlock?: () => void;
 }) {
   const [packages, setPackages] = useState<PurchasesPackage[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
