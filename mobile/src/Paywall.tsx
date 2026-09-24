@@ -117,10 +117,15 @@ export function Paywall({
         onPurchased();
       } else {
         // Purchase succeeded, entitlement didn't arrive — a store-config problem.
-        if (__DEV__) console.warn("[purchases]", explainMissingEntitlement(customerInfo));
+        // Dev builds show the full diagnosis inline, because the alternative is
+        // hunting for it in a buffered Metro log.
+        const detail = explainMissingEntitlement(customerInfo);
+        if (__DEV__) console.warn("[purchases]", detail);
         setError(
-          "That purchase went through but didn't unlock Pro. Try Restore — if that " +
-            "doesn't help, the store's entitlement isn't set up yet.",
+          __DEV__
+            ? `Purchase completed but Pro didn't unlock.\n\n${detail}`
+            : "That purchase went through but didn't unlock Pro. Try Restore — if " +
+              "that doesn't help, the store's entitlement isn't set up yet.",
         );
       }
     } catch (e) {
