@@ -627,6 +627,60 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     startSend(textDraft, true);
   }
 
+  function persistSnippets(next: Snippet[]) {
+    setSnippets(next);
+    saveSnippets(next);
+  }
+
+  /** Send a snippet, then return to the deck so the countdown's Cancel is reachable. */
+  function sendSnippet(s: Snippet) {
+    setView("deck");
+    startSend(s.text, false);
+  }
+
+  function saveSnippet(s: Snippet) {
+    const idx = snippets.findIndex((x) => x.id === s.id);
+    if (idx < 0 && snippets.length >= limits.maxSnippets) {
+      showPaywall("snippets");
+      return;
+    }
+    persistSnippets(idx >= 0 ? snippets.map((x) => (x.id === s.id ? s : x)) : [...snippets, s]);
+  }
+
+  function deleteSnippet(s: Snippet) {
+    persistSnippets(snippets.filter((x) => x.id !== s.id));
+  }
+
+  /** Promote a snippet onto the active deck page as a text tile. */
+  function pinSnippet(s: Snippet) {
+    if (full) {
+      setOk(false);
+      setStatus(`Page is full — ${MAX_TILES_PER_PROFILE} tiles max.`);
+      return;
+    }
+    selectFeedback();
+    persistButtons([...deck, snippetToTile(s)]);
+    setView("deck");
+    setOk(true);
+    setStatus(`Pinned “${snippetTitle(s)}”`);
+  }
+
+  /** Save whatever is in the composer as a snippet, without sending it. */
+  function saveDraftAsSnippet() {
+    const text = textDraft.trim();
+    if (!text) return;
+    if (snippets.length >= limits.maxSnippets) {
+      selectFeedback();
+      showPaywall("snippets");
+      return;
+    }
+    selectFeedback();
+    persistSnippets([...snippets, { id: newSnippetId(), label: "", text, createdAt: Date.now() }]);
+    setTextDraft("");
+    setOk(true);
+    setStatus("Saved to snippets");
+  }
+
   function saveTile(tile: DeckButton) {
     const list = deck;
     const idx = list.findIndex((b) => b.id === tile.id);
