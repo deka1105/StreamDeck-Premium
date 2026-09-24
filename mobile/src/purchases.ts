@@ -155,6 +155,33 @@ export function hasPro(info: CustomerInfo | null): boolean {
 }
 
 /**
+ * Explain, in dev, why a completed purchase didn't unlock anything. Nearly always
+ * a dashboard wiring problem rather than a code one: the entitlement doesn't
+ * exist, the products aren't attached to it, or it's spelled differently than
+ * ENTITLEMENT_ID. Printing what the SDK actually returned turns that from a
+ * mystery into a one-line fix.
+ */
+export function explainMissingEntitlement(info: CustomerInfo | null): string {
+  const all = Object.keys(info?.entitlements.all ?? {});
+  const active = Object.keys(info?.entitlements.active ?? {});
+  const skus = info?.allPurchasedProductIdentifiers ?? [];
+  return [
+    `expected entitlement "${ENTITLEMENT_ID}" was not active.`,
+    `entitlements defined: ${all.length ? all.join(", ") : "(none)"}`,
+    `entitlements active:  ${active.length ? active.join(", ") : "(none)"}`,
+    `products purchased:   ${skus.length ? skus.join(", ") : "(none)"}`,
+    all.length === 0
+      ? "→ No entitlement exists in RevenueCat. Create one with the exact id " +
+        `"${ENTITLEMENT_ID}" and attach the store products to it.`
+      : active.length === 0
+        ? "→ Entitlement(s) exist but no product is attached to one. Attach the " +
+          "purchased product in RevenueCat → Entitlements."
+        : `→ An entitlement is active but not named "${ENTITLEMENT_ID}". Either ` +
+          "rename it in RevenueCat or update ENTITLEMENT_ID to match.",
+  ].join("\n  ");
+}
+
+/**
  * The offering to show. Prefers RevenueCat's `current` offering so pricing and
  * package mix stay dashboard-controlled — no app release needed to run a
  * pricing experiment.
