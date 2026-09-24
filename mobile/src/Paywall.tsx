@@ -38,7 +38,7 @@ const PRIVACY_URL = "https://deka1105.github.io/streamPhoneDeck/privacy.html";
 const FEATURES = [
   { icon: "▦", title: "Unlimited profiles", body: "A deck per context — and Auto mode switches as you change apps." },
   { icon: "❯", title: "Unlimited pages", body: "Grow past nine tiles without deleting anything." },
-  { icon: "✎", title: "Snippet library", body: "Save text once, type it into your Mac with one tap." },
+  { icon: "✎", title: "Unlimited snippets", body: "Free keeps three. Pro keeps every one you'll ever retype." },
   { icon: "◈", title: "Image tile faces", body: "Any artwork on any tile, not just emoji." },
 ];
 
