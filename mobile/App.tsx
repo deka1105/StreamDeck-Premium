@@ -1159,7 +1159,9 @@ function TileCell({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#0b1120" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1120", padding: 24, gap: 12 },
-  deck: { flex: 1, paddingTop: 64, paddingHorizontal: 16 },
+  // paddingBottom keeps bottom-anchored content (the Apps/Snippets hint lines)
+  // clear of the home indicator.
+  deck: { flex: 1, paddingTop: 64, paddingHorizontal: 16, paddingBottom: 24 },
   // Two stacked rows: identity/status, then controls. Keeping them on separate
   // rows means neither can crowd the other out as controls come and go.
   header: { flexDirection: "column", marginBottom: 16, gap: 12 },
