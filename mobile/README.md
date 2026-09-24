@@ -128,7 +128,7 @@ with no logic of our own.
 
 **Setup.** Copy `.env.example` → `.env.local` and fill in the public SDK keys
 from RevenueCat → Project settings → API keys. In the RevenueCat dashboard,
-create an entitlement with the exact identifier **`pro`**, attach the store
+create an entitlement whose identifier matches `ENTITLEMENT_ID` in `src/purchases.ts` (currently **`deskassist_pro`**), attach the store
 products to it, and add them to the **current** offering (the app reads
 `offerings.current`, so pricing and package mix change without an app release).
 

@@ -14,7 +14,7 @@ bundle `com.dekisuki05.deskassist`, App Store Connect record `6800168772`,
 never publicly released). Three things landed:
 
 - **RevenueCat** (`mobile/src/purchases.ts`, `ProProvider.tsx`, `Paywall.tsx`).
-  One `pro` entitlement; entitlement truth always read from `CustomerInfo`,
+  One entitlement (`deskassist_pro`); truth always read from `CustomerInfo`,
   never a local flag. Free tier is a complete product — 1 profile, 1 page,
   9 tiles, 3 snippets, unlimited ad-hoc text. Pro sells growth. Paywall pricing
   comes from `offerings.current`, so it changes without an app release.
@@ -34,7 +34,7 @@ create → save → send (status confirmed `Sent "…"`), free-tier counters.
 
 ### Blocked on the owner
 
-1. **RevenueCat dashboard**: create the `pro` entitlement, attach products, add
+1. **RevenueCat dashboard**: confirm the `deskassist_pro` entitlement, attach products, add
    them to the *current* offering. The `sk_` key supplied was a legacy v1 key
    and cannot configure a project via API v2 — needs either the dashboard UI or
    a v2 API key.
