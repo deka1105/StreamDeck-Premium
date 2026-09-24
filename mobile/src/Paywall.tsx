@@ -75,7 +75,7 @@ export function Paywall({
         const list = sortPackages(offering?.availablePackages ?? []);
         setPackages(list);
         // Preselect annual when present — the tier we actually want chosen.
-        const annual = list.find((p) => p.packageType === "ANNUAL");
+        const annual = list.find((p) => p.packageType === PACKAGE_TYPE.ANNUAL);
         setSelectedId((annual ?? list[0])?.identifier ?? null);
       } catch (e) {
         if (!alive) return;
@@ -195,8 +195,8 @@ export function Paywall({
               <View style={styles.packages}>
                 {packages?.map((p) => {
                   const active = p.identifier === selectedId;
-                  const annual = p.packageType === "ANNUAL";
-                  const lifetime = p.packageType === "LIFETIME";
+                  const annual = p.packageType === PACKAGE_TYPE.ANNUAL;
+                  const lifetime = p.packageType === PACKAGE_TYPE.LIFETIME;
                   return (
                     <Pressable
                       key={p.identifier}
