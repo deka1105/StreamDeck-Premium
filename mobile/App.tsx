@@ -184,6 +184,9 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
             <Text style={styles.pillText}>Back</Text>
           </Pressable>
         </View>
+        <Pressable onPress={startDemo}>
+          <Text style={styles.linkText}>Explore the demo instead</Text>
+        </Pressable>
       </View>
     );
   }
@@ -233,9 +236,14 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
             {error}
           </Text>
         ) : null}
-        <Pressable style={styles.manualLink} onPress={() => setManual(true)}>
-          <Text style={styles.linkText}>Enter pairing data manually</Text>
-        </Pressable>
+        <View style={styles.scanLinks}>
+          <Pressable onPress={() => setManual(true)}>
+            <Text style={styles.linkText}>Enter pairing data manually</Text>
+          </Pressable>
+          <Pressable onPress={startDemo}>
+            <Text style={styles.linkTextStrong}>Explore the demo</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
