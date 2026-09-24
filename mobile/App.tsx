@@ -19,7 +19,10 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 
 import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
 import { resultFeedback, selectFeedback, tapFeedback } from "./src/haptics";
-import { apps as fetchApps, foreground, hello, pair, sendAction } from "./src/rpc";
+// Everything host-facing goes through host.ts, which routes to the encrypted
+// transport or the demo simulation — so no call site below knows the difference.
+import { apps as fetchApps, foreground, hello, pair, sendAction } from "./src/host";
+import { demoPairing, isDemo } from "./src/demo";
 import { loadCols, loadProfiles, saveCols, saveProfiles, type ProfilesState } from "./src/deckStorage";
 import {
   DEFAULT_COLS,
