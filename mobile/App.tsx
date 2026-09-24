@@ -45,6 +45,15 @@ import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
 import { ProProvider } from "./src/ProProvider";
 import { usePro } from "./src/purchases";
+import { Snippets } from "./src/Snippets";
+import {
+  loadSnippets,
+  newSnippetId,
+  saveSnippets,
+  snippetTitle,
+  snippetToTile,
+  type Snippet,
+} from "./src/snippets";
 
 // How often the phone polls the host's focused app while Auto mode is on.
 const FOREGROUND_POLL_MS = 1500;
@@ -759,7 +768,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           </Text>
         </View>
         <View style={styles.headerButtons}>
-          {view === "apps" ? (
+          {view !== "deck" ? (
             <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("deck"); }}>
               <Text style={styles.pillText}>← Deck</Text>
             </Pressable>
