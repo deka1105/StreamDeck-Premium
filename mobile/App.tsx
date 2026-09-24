@@ -809,13 +809,16 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         </View>
       </View>
 
-      {/* Demo sessions say so, on every screen, for as long as they last. */}
+      {/* Demo sessions say so, on every screen, for as long as they last — and
+          the banner itself is the way out, so leaving the demo never means
+          hunting for a control. */}
       {isDemo(pairing) && (
-        <View style={styles.demoBanner}>
+        <Pressable style={styles.demoBanner} onPress={() => { selectFeedback(); onUnpair(); }}>
           <Text style={styles.demoBannerText} numberOfLines={2}>
-            Demo — a simulated Mac. Nothing is sent to a real computer. Unpair to connect yours.
+            Demo — a simulated Mac. Nothing is actually sent.
           </Text>
-        </View>
+          <Text style={styles.demoBannerLink}>Connect your own Mac →</Text>
+        </Pressable>
       )}
 
       {view === "apps" ? (
@@ -1157,8 +1160,11 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#0b1120" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1120", padding: 24, gap: 12 },
   deck: { flex: 1, paddingTop: 64, paddingHorizontal: 16 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, gap: 12 },
-  headerButtons: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 8 },
+  // Two stacked rows: identity/status, then controls. Keeping them on separate
+  // rows means neither can crowd the other out as controls come and go.
+  header: { flexDirection: "column", marginBottom: 16, gap: 12 },
+  titleRow: { gap: 2 },
+  headerButtons: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 8 },
   title: { color: "#e2e8f0", fontSize: 20, fontWeight: "700" },
   dim: { color: "#94a3b8", textAlign: "center" },
   status: { fontSize: 13, marginTop: 4 },
