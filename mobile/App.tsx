@@ -594,17 +594,19 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     return sendTextValue(textDraft, { clearDraft: true });
   }
 
-  // Tap Send: if a delay is set, count down first (tap again to cancel).
-  function onSendPress() {
+  // Tap Send: if a delay is set, count down first (tap again to cancel). The
+  // delay is the whole point of the feature — it's the window in which you go
+  // click the app on your Mac that should receive the typing.
+  function startSend(value: string, clearDraft: boolean) {
     if (countdown !== null) {
       clearCountdown();
       setStatus("Send cancelled");
       return;
     }
-    if (busy || !textDraft.trim()) return;
+    if (busy || !value.trim()) return;
     let remaining = Math.min(60, Math.max(0, parseInt(delaySec, 10) || 0));
     if (remaining <= 0) {
-      sendTextNow();
+      sendTextValue(value, { clearDraft });
       return;
     }
     setCountdown(remaining);
@@ -613,12 +615,16 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       remaining -= 1;
       if (remaining <= 0) {
         clearCountdown();
-        sendTextNow();
+        sendTextValue(value, { clearDraft });
       } else {
         setCountdown(remaining);
         setStatus(`Sending in ${remaining}s…`);
       }
     }, 1000);
+  }
+
+  function onSendPress() {
+    startSend(textDraft, true);
   }
 
   function saveTile(tile: DeckButton) {
