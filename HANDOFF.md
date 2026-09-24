@@ -1,11 +1,62 @@
 # streamPhoneDeck — Handoff
 
-_Last updated: 2026-08-02_
+_Last updated: 2026-09-23_
 
 A running status document for whoever picks this up next (human or agent). For
 day-to-day architecture reference see [CLAUDE.md](./CLAUDE.md); for user-facing
 usage see [README.md](./README.md). This file captures **state, decisions, and
 open questions** those two don't.
+
+## 09-23: monetization, demo mode, snippets (Shipaton run)
+
+The phone app now ships under the name **DeskAssist** (`mobile/app.json`;
+bundle `com.dekisuki05.deskassist`, App Store Connect record `6800168772`,
+never publicly released). Three things landed:
+
+- **RevenueCat** (`mobile/src/purchases.ts`, `ProProvider.tsx`, `Paywall.tsx`).
+  One `pro` entitlement; entitlement truth always read from `CustomerInfo`,
+  never a local flag. Free tier is a complete product — 1 profile, 1 page,
+  9 tiles, 3 snippets, unlimited ad-hoc text. Pro sells growth. Paywall pricing
+  comes from `offerings.current`, so it changes without an app release.
+- **Demo mode** (`mobile/src/demo.ts` + `host.ts`). A simulated Mac so the app
+  is fully usable with nothing installed. `host.ts` is the only switch between
+  it and the encrypted transport; the branch happens before `sendCmd`, so no
+  demo path can reach the crypto. Exists primarily to avoid an App Review 2.1
+  rejection ("unable to review, no hardware") — a companion app that opens to
+  only a QR scanner gets rejected.
+- **Snippet library** (`mobile/src/snippets.ts`, `SnippetLibrary.tsx`). Saved
+  reusable text, sent with one tap, honouring the existing Delay. `＋ Tile`
+  promotes a snippet onto the deck as a `text` action.
+
+**Verified on an iPhone 17 Pro simulator** (dev build, Test Store key): demo
+mode from cold launch, deck render with live running/frontmost dots, snippet
+create → save → send (status confirmed `Sent "…"`), free-tier counters.
+
+### Blocked on the owner
+
+1. **RevenueCat dashboard**: create the `pro` entitlement, attach products, add
+   them to the *current* offering. The `sk_` key supplied was a legacy v1 key
+   and cannot configure a project via API v2 — needs either the dashboard UI or
+   a v2 API key.
+2. **App Store Connect**: create the IAP products. A non-consumable lifetime
+   unlock has the fewest metadata rejection surfaces; add subscriptions after.
+3. **`appl_` SDK key** for any build going to the App Store. The repo is wired
+   for a `test_` Test Store key, which simulates purchases and must not ship —
+   `isTestStoreKey()` warns at configure time and the paywall shows a TEST STORE
+   badge in dev builds.
+4. **Host `site/`** so `site/terms.html` and `site/privacy.html` resolve, then
+   set `SITE_BASE` in `mobile/src/Paywall.tsx`. Apple rejects a subscription
+   paywall with dead Terms/Privacy links. Both pages still contain
+   `REPLACE_WITH_SUPPORT_EMAIL` and `REPLACE_WITH_JURISDICTION`.
+5. **Rotate any secret key** that has been pasted into a chat or terminal.
+
+### Gotcha for local dev
+
+`mobile/ios/` is generated and gitignored, and it goes stale: it predated
+`expo-image-picker` and the DeskAssist rename, which crashed the app at launch
+(`Cannot find native module 'ExponentImagePicker'`) and built the wrong bundle
+id. Run `npx expo prebuild --clean -p ios` after changing native deps or
+`app.json`. EAS builds prebuild fresh in the cloud and are unaffected.
 
 ## Since the 07-28 snapshot (shipped)
 
