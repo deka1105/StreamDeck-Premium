@@ -157,9 +157,13 @@ export function Paywall({
           <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
             <View style={styles.badgeRow}>
               <Text style={styles.eyebrow}>DESKASSIST</Text>
-              <View style={styles.proBadge}>
+              <Pressable
+                style={styles.proBadge}
+                onLongPress={onDevUnlock ? () => { resultFeedback(true); onDevUnlock(); onClose(); } : undefined}
+                delayLongPress={800}
+              >
                 <Text style={styles.proBadgeText}>PRO</Text>
-              </View>
+              </Pressable>
             </View>
 
             <Text style={styles.title}>{copy.title}</Text>

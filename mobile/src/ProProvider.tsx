@@ -91,11 +91,7 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
             // action they were blocked on.
             setPaywall(null);
           }}
-          onClose={() => {
-            // Long-press the close button in a dev build to unlock the gates
-            // locally — never reachable in a release build.
-            setPaywall(null);
-          }}
+          onClose={() => setPaywall(null)}
           onDevUnlock={__DEV__ ? () => setDevPro(true) : undefined}
         />
       ) : null}
