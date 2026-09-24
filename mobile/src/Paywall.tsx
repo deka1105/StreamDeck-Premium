@@ -33,12 +33,11 @@ import {
   type PaywallReason,
 } from "./purchases";
 
-// LAUNCH BLOCKER: these must resolve before submitting. Apple rejects a screen
-// selling an auto-renewable subscription if its Terms/Privacy links are dead.
-// The pages exist at site/terms.html and site/privacy.html — point SITE_BASE at
-// wherever they get hosted (GitHub Pages, Vercel, anywhere) and verify both open
-// in a browser.
-const SITE_BASE = "https://deka1105.github.io/streamPhoneDeck";
+// Apple rejects a screen selling an auto-renewable subscription if its
+// Terms/Privacy links are dead, so these must stay reachable. Source lives in
+// site/; deploy it with `cd site && vercel deploy --prod`. Both pages verified
+// returning 200 publicly with no auth wall.
+const SITE_BASE = "https://deskassist.vercel.app";
 
 const TERMS_URL = `${SITE_BASE}/terms.html`;
 const PRIVACY_URL = `${SITE_BASE}/privacy.html`;
