@@ -40,6 +40,8 @@ import { TileEditor } from "./src/TileEditor";
 import { NamePrompt } from "./src/NamePrompt";
 import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
+import { ProProvider } from "./src/ProProvider";
+import { usePro } from "./src/purchases";
 
 // How often the phone polls the host's focused app while Auto mode is on.
 const FOREGROUND_POLL_MS = 1500;
