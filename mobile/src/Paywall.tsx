@@ -76,10 +76,10 @@ export function Paywall({
 
   useEffect(() => {
     let alive = true;
-    if (!ready) {
-      setPackages([]);
-      return;
-    }
+    // Nothing to fetch without a configured SDK. `packages` stays null and the
+    // render picks the "store isn't configured" branch — no setState needed here
+    // (`loadingPrices` below already requires `ready`).
+    if (!ready) return;
     (async () => {
       try {
         const offering = await fetchOffering();
