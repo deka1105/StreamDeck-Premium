@@ -663,8 +663,15 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   /** Promote a snippet onto the active deck page as a text tile. */
   function pinSnippet(s: Snippet) {
     if (full) {
-      setOk(false);
-      setStatus(`Page is full — ${MAX_TILES_PER_PROFILE} tiles max.`);
+      selectFeedback();
+      // A full page is a dead end on the free tier (nine tiles, one page), so
+      // say which wall was hit rather than leaving a button that does nothing.
+      if (active && active.pages.length >= limits.maxPagesPerProfile) {
+        showPaywall("pages");
+      } else {
+        setOk(false);
+        setStatus(`Page ${safeIdx + 1} is full — add a page or free a tile.`);
+      }
       return;
     }
     selectFeedback();
