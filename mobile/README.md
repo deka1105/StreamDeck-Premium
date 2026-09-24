@@ -66,6 +66,29 @@ eas build -p ios --profile development-simulator # simulator, no Apple account
 3. Tap a tile — the Mac runs the action. Same Wi-Fi is required; an attacker on
    that Wi-Fi still can't read, forge, replay, or tamper (no key, no QR).
 
+## Pro (RevenueCat)
+
+The free tier is a complete product — one profile, one page, nine tiles, and
+ad-hoc text sending all work forever. Pro sells *growth*: unlimited profiles and
+pages, the saved snippet library, and image tile faces. Nothing that works on day
+one stops working.
+
+Entitlement truth always comes from RevenueCat's `CustomerInfo`, never a local
+flag, so lapses, refunds, and restores on a second device all resolve correctly
+with no logic of our own.
+
+**Setup.** Copy `.env.example` → `.env.local` and fill in the public SDK keys
+from RevenueCat → Project settings → API keys. In the RevenueCat dashboard,
+create an entitlement with the exact identifier **`pro`**, attach the store
+products to it, and add them to the **current** offering (the app reads
+`offerings.current`, so pricing and package mix change without an app release).
+
+With no key set, the app runs entirely on the free tier and the paywall explains
+why rather than crashing — so the repo stays runnable by anyone who clones it.
+
+In a dev build, long-press the **PRO** badge on the paywall to unlock the gates
+locally without a sandbox purchase. That path is compiled out of release builds.
+
 ## CI
 
 - `.github/workflows/mobile-android.yml` — `expo prebuild` + `gradlew
