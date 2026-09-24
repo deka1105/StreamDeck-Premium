@@ -32,8 +32,15 @@ import {
   type PaywallReason,
 } from "./purchases";
 
-const TERMS_URL = "https://deka1105.github.io/streamPhoneDeck/terms.html";
-const PRIVACY_URL = "https://deka1105.github.io/streamPhoneDeck/privacy.html";
+// LAUNCH BLOCKER: these must resolve before submitting. Apple rejects a screen
+// selling an auto-renewable subscription if its Terms/Privacy links are dead.
+// The pages exist at site/terms.html and site/privacy.html — point SITE_BASE at
+// wherever they get hosted (GitHub Pages, Vercel, anywhere) and verify both open
+// in a browser.
+const SITE_BASE = "https://deka1105.github.io/streamPhoneDeck";
+
+const TERMS_URL = `${SITE_BASE}/terms.html`;
+const PRIVACY_URL = `${SITE_BASE}/privacy.html`;
 
 /** What Pro actually buys, in the order it matters to a daily user. */
 const FEATURES = [
