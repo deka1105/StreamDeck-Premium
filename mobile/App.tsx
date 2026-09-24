@@ -674,6 +674,11 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             </Pressable>
           ) : (
             <>
+              {!editing && !isPro && (
+                <Pressable style={[styles.pill, styles.proPill]} onPress={() => { selectFeedback(); showPaywall("generic"); }}>
+                  <Text style={[styles.pillText, styles.proPillText]}>✦ Pro</Text>
+                </Pressable>
+              )}
               {!editing && (
                 <Pressable style={styles.pill} onPress={() => { selectFeedback(); onUnpair(); }}>
                   <Text style={styles.pillText}>Unpair</Text>
@@ -729,8 +734,19 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             );
           })}
           {editing && (
-            <Pressable onPress={() => { selectFeedback(); setNamePrompt("add"); }} style={styles.profileAddPill}>
-              <Text style={styles.profileAddText}>＋ Profile</Text>
+            <Pressable
+              onPress={() => {
+                selectFeedback();
+                // Ask before they bother naming it — the wall belongs in front of
+                // the intent, not after the effort.
+                if (state.profiles.length >= limits.maxProfiles) showPaywall("profiles");
+                else setNamePrompt("add");
+              }}
+              style={styles.profileAddPill}
+            >
+              <Text style={styles.profileAddText}>
+                {state.profiles.length >= limits.maxProfiles ? "＋ Profile ✦" : "＋ Profile"}
+              </Text>
             </Pressable>
           )}
         </ScrollView>
