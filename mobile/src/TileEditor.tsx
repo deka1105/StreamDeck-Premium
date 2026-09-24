@@ -17,6 +17,7 @@ import {
   type IconType,
 } from "./buttons";
 import { parseCombo } from "./keys";
+import { usePro } from "./purchases";
 
 const EMOJI = ["🧭", "💻", "📁", "🔍", "📸", "🔒", "🐙", "▶️", "🔇", "🎵", "🎨", "⚙️", "📝", "🚀", "⭐", "💬", "📅", "🖥️", "🔔", "☕"];
 
@@ -66,6 +67,12 @@ export function TileEditor({
   }
 
   async function pickImage() {
+    // Reachable while editing a tile that already wears an image (e.g. after a
+    // subscription lapses). Existing faces keep rendering — we only gate *new* ones.
+    if (!limits.imageIcons) {
+      showPaywall("imageIcons");
+      return;
+    }
     try {
       // launchImageLibraryAsync uses the iOS PHPicker (iOS 14+) / Android photo
       // picker, which need NO runtime permission. We deliberately do NOT call
