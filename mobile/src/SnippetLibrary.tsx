@@ -26,7 +26,7 @@ import {
   type Snippet,
 } from "./snippets";
 
-export function Snippets({
+export function SnippetLibrary({
   snippets,
   limit,
   busy,
