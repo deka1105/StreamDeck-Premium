@@ -1250,6 +1250,15 @@ const styles = StyleSheet.create({
   scanHint: { color: "#fff", textAlign: "center", marginTop: 24, fontSize: 15 },
   scanError: { color: "#fca5a5", textAlign: "center", marginTop: 12, fontWeight: "600" },
   linkText: { color: "#7dd3fc", fontWeight: "600", marginTop: 10 },
+  linkTextStrong: { color: "#e0f2fe", fontWeight: "700", marginTop: 10 },
+  scanLinks: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20, marginTop: 6 },
+  // Demo entry on the pair screen — deliberately a real button, not a link: a
+  // reviewer with no host must be able to see the product, not just a scanner.
+  demoButton: { marginTop: 12, borderWidth: 1, borderColor: "rgba(56,189,248,0.45)", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 13 },
+  demoButtonText: { color: "#7dd3fc", fontWeight: "700", fontSize: 15 },
+  demoNote: { color: "#64748b", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
+  demoBanner: { backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
+  demoBannerText: { color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
   manualLink: { position: "absolute", bottom: 48 },
   manualInput: {
     width: "100%",
