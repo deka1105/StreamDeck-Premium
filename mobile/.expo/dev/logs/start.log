@@ -168,3 +168,4 @@
 {"_e":"metro:config","_t":1790219452390,"serverRoot":"../../..","projectRoot":"../../..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
 {"_e":"expo:dev-tools-plugin:load","_t":1790219453122,"plugins":[]}
 {"_e":"metro:instantiate","_t":1790219454193,"atlas":false,"workers":10,"host":"::","port":8081}
+{"_e":"root:init","_t":1790219908146,"format":"v0-jsonl","version":"57.0.10"}
