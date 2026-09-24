@@ -63,7 +63,7 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       alive = false;
-      Purchases.removeCustomerInfoUpdateListener(onUpdate);
+      if (listening) Purchases.removeCustomerInfoUpdateListener(onUpdate);
     };
   }, []);
 
