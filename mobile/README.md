@@ -109,10 +109,13 @@ Free keeps three snippets, Pro unlimited — see below for why it isn't zero.
 
 ## Pro (RevenueCat)
 
-The free tier is a complete product — one profile, one page, nine tiles, and
-ad-hoc text sending all work forever. Pro sells *growth*: unlimited profiles and
-pages, the saved snippet library, and image tile faces. Nothing that works on day
-one stops working.
+The free tier is a complete product — one profile, one page, nine tiles, three
+snippets, and unlimited ad-hoc text sending all work forever. Pro sells *growth*:
+unlimited profiles, pages, and snippets, plus image tile faces. Nothing that works
+on day one stops working.
+
+Free gets three snippets rather than none deliberately: a feature nobody can try
+is a feature nobody buys, and three is enough to feel why you'd want the fourth.
 
 Entitlement truth always comes from RevenueCat's `CustomerInfo`, never a local
 flag, so lapses, refunds, and restores on a second device all resolve correctly
