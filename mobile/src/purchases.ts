@@ -98,7 +98,22 @@ export function apiKey(): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+/**
+ * True for a RevenueCat **Test Store** key. Purchases then route to RevenueCat's
+ * simulated store instead of StoreKit — right for development, wrong for the
+ * App Store build, where an `appl_` key is required. Surfaced on the paywall in
+ * dev builds so which store is live is never a guess.
+ */
+export function isTestStoreKey(key: string | null): boolean {
+  return !!key && key.startsWith("test_");
+}
+
 let configured = false;
+let usingTestStore = false;
+
+export function onTestStore(): boolean {
+  return usingTestStore;
+}
 
 /**
  * Bring up the SDK once. Safe to call repeatedly; returns false when there's no
@@ -113,6 +128,15 @@ export async function configurePurchases(): Promise<boolean> {
     if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.WARN);
     Purchases.configure({ apiKey: key });
     configured = true;
+    usingTestStore = isTestStoreKey(key);
+    if (usingTestStore) {
+      // Loud on purpose: shipping this key would mean a live app whose purchases
+      // never reach Apple.
+      console.warn(
+        "[purchases] RevenueCat TEST STORE key in use — purchases are simulated. " +
+          "Use an appl_ key for any build going to the App Store.",
+      );
+    }
     return true;
   } catch (e) {
     // Missing native module (Expo Go) or a bad key: run free rather than die.

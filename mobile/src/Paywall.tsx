@@ -25,6 +25,7 @@ import { selectFeedback, resultFeedback } from "./haptics";
 import {
   fetchOffering,
   hasPro,
+  onTestStore,
   PAYWALL_COPY,
   sortPackages,
   wasCancelled,
