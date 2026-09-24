@@ -19,6 +19,7 @@ import { createContext, useContext } from "react";
 import { Platform } from "react-native";
 import Purchases, {
   LOG_LEVEL,
+  PACKAGE_TYPE,
   type CustomerInfo,
   type PurchasesOffering,
   type PurchasesPackage,
