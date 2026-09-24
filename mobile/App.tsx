@@ -905,6 +905,12 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               onSubmitEditing={onSendPress}
               editable={countdown === null}
             />
+            {/* Keep what you just typed without sending it. */}
+            {countdown === null && !!textDraft.trim() && (
+              <Pressable style={styles.saveSnipBtn} onPress={saveDraftAsSnippet}>
+                <Text style={styles.saveSnipText}>✎</Text>
+              </Pressable>
+            )}
             <Pressable
               style={[
                 styles.sendBtn,
@@ -1165,6 +1171,8 @@ const styles = StyleSheet.create({
   sendInput: { flex: 1, backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15 },
   sendBtn: { backgroundColor: "#0284c7", borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11, minWidth: 92, alignItems: "center" },
   cancelBtn: { backgroundColor: "#e11d48" },
+  saveSnipBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, paddingHorizontal: 13, justifyContent: "center", alignItems: "center" },
+  saveSnipText: { color: "#e2e8f0", fontSize: 15, fontWeight: "700" },
   sendBtnDisabled: { opacity: 0.4 },
   sendBtnText: { color: "#fff", fontWeight: "700" },
   delayRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
