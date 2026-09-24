@@ -1,0 +1,27 @@
+IMPORTANT: you do not need a Mac to review this app.
+
+DeskAssist is a companion app for a Mac. To review it without one, tap "Explore
+the demo instead" on the first screen. The whole app then runs against a
+simulated Mac: the deck renders and responds to taps, the running-apps list
+populates, Auto mode reacts to a rotating focused app, and the snippet library
+sends text. A standing banner makes clear it is a simulation, and no pairing or
+network access is needed.
+
+IN-APP PURCHASE
+Tap the "Pro" pill in the header to open the paywall, or reach any free-tier
+limit: adding a second profile, a second page, a fourth snippet, or choosing an
+image tile face.
+
+WITH A MAC (optional)
+The free DeskAssist host app displays a QR code. Scanning it performs an X25519
+key exchange; every command afterwards is AES-256-GCM encrypted and sent
+directly from the phone to the Mac over the local network. There is no account,
+and no server of ours is in the path. Host download: https://deskassist.vercel.app
+
+PLATFORM NOTES
+Launching applications and opening URLs work on macOS and Windows. Sending
+keyboard shortcuts and detecting the focused application are macOS-only and
+require macOS Accessibility permission, which the host application requests on
+the computer.
+
+No demo account is required.
