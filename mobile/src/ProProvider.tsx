@@ -31,6 +31,10 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let alive = true;
+    // Only true once the listener is actually attached. Without this, unmounting
+    // after a failed configure (no key, or Expo Go with no native module) would
+    // call into a missing native module and throw during teardown.
+    let listening = false;
 
     const onUpdate = (info: CustomerInfo) => {
       if (alive) setIsPro(hasPro(info));
@@ -45,6 +49,7 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       Purchases.addCustomerInfoUpdateListener(onUpdate);
+      listening = true;
       try {
         const info = await Purchases.getCustomerInfo();
         if (alive) setIsPro(hasPro(info));
