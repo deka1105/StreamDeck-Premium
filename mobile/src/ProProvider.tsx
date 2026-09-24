@@ -92,8 +92,11 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
           reason={paywall}
           ready={ready}
           onPurchased={() => {
-            // The listener sets isPro; closing here just returns the user to the
-            // action they were blocked on.
+            // The paywall only reports success once it has seen an active `pro`
+            // entitlement in CustomerInfo, so flip the gate now rather than
+            // waiting on the update listener — otherwise the action the user was
+            // blocked on can still be blocked for a frame after they pay.
+            setIsPro(true);
             setPaywall(null);
           }}
           onClose={() => setPaywall(null)}
