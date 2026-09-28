@@ -1,10 +1,23 @@
-# streamPhoneDeck
+# DeskAssist
+
+_Ships on the App Store as **DeskAssist**; the repo keeps its original
+`streamPhoneDeck` name._
 
 Turn your phone into a [Stream Deck](https://www.elgato.com/stream-deck)-style
 control surface. Tap a button on your phone and it **launches an app, opens a URL,
 sends a keyboard shortcut, or types text on your computer** — in real time over
 your local network, on an **end-to-end encrypted** connection you set up by
 **scanning a QR code**.
+
+<p align="center">
+  <img src="docs/screenshots/deck.png" width="30%" alt="The deck: a 3×3 grid of tiles with live running-app indicators">
+  <img src="docs/screenshots/snippets.png" width="30%" alt="The snippet library: saved text sent with one tap">
+  <img src="docs/screenshots/pair.png" width="30%" alt="Pairing screen, with demo mode available without a computer">
+</p>
+
+**No computer to hand?** Tap **Explore the demo** on the pairing screen and the
+whole app runs against a simulated Mac — no install, no pairing, no network. It
+exists so anyone can evaluate the product without owning the other half of it.
 
 ## The two apps
 
