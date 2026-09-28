@@ -1,41 +1,94 @@
+<div align="center">
+
+<img src="docs/app-icon.png" width="96" alt="DeskAssist app icon">
+
 # DeskAssist
 
-_Ships on the App Store as **DeskAssist**; the repo keeps its original
-`streamPhoneDeck` name._
+### Your phone is the button.
 
-Turn your phone into a [Stream Deck](https://www.elgato.com/stream-deck)-style
-control surface. Tap a button on your phone and it **launches an app, opens a URL,
-sends a keyboard shortcut, or types text on your computer** — in real time over
-your local network, on an **end-to-end encrypted** connection you set up by
-**scanning a QR code**.
+Tap a tile on your phone and your Mac **launches an app, opens a URL, fires a
+keyboard shortcut, or types saved text** — in real time, over your own Wi-Fi, on
+an **end-to-end encrypted** link you set up by scanning a QR code.
+
+[![Watch the 20-second demo](docs/demo-poster.jpg)](docs/demo.mp4)
+
+<sub>▶︎ **Click the image to play the demo** (20s, with sound)</sub>
+
+</div>
+
+---
+
+## Download
+
+| | Platform | |
+| --- | --- | --- |
+| 🖥️ | **macOS host app** — the half that does the work | [**Download the `.dmg`**][latest-release] |
+| 📱 | **iPhone app** | App Store — *in review* |
+| 🧪 | **No Mac to hand?** | Tap **Explore the demo** in the app — see [Demo mode](#demo-mode) |
+
+[latest-release]: https://github.com/deka1105/StreamDeck-Premium/releases/latest
+
+> [!NOTE]
+> **The release isn't cut yet.** The `.dmg` is built and sitting at
+> `desktop/dist/DeskAssist-0.1.0.dmg`; publishing it takes one command —
+> see [Publishing the download](#publishing-the-download). Until then, use
+> [Build it yourself](#build-it-yourself), which works today.
+
+**First launch on macOS.** The app is **not signed or notarized**, so Gatekeeper
+blocks it:
+
+1. Open the `.dmg` → drag **DeskAssist** to Applications.
+2. **System Settings → Privacy & Security → Open Anyway.**
+3. If macOS calls it *"damaged"*:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/DeskAssist.app
+   ```
+
+For `keys` and `text` tiles, also grant **Accessibility**
+(System Settings → Privacy & Security → Accessibility).
+
+---
+
+## What it looks like
 
 <p align="center">
-  <img src="docs/screenshots/deck.png" width="30%" alt="The deck: a 3×3 grid of tiles with live running-app indicators">
+  <img src="docs/screenshots/pair.png" width="30%" alt="Pairing screen: scan a QR code, or explore the demo without a computer">
+  <img src="docs/screenshots/deck.png" width="30%" alt="The deck: a 3x3 grid of tiles with live running-app indicators">
   <img src="docs/screenshots/snippets.png" width="30%" alt="The snippet library: saved text sent with one tap">
-  <img src="docs/screenshots/pair.png" width="30%" alt="Pairing screen, with demo mode available without a computer">
 </p>
+<p align="center">
+  <sub><b>Pair once</b> · <b>nine tiles, one tap each</b> · <b>snippets that type themselves</b></sub>
+</p>
+
+### Demo mode
 
 **No computer to hand?** Tap **Explore the demo** on the pairing screen and the
 whole app runs against a simulated Mac — no install, no pairing, no network. It
 exists so anyone can evaluate the product without owning the other half of it.
 
-## The two apps
+---
+
+## How it works
+
+Three parts. The phone is the surface, the Mac app is the executor, and nothing
+in between touches a server you don't own.
+
+```
+native phone app  ──AES-256-GCM over your LAN──▶  macOS host app  ──▶  macOS / Windows
+   scan QR to pair       per-device key, X25519 handshake,           tray + pairing window
+                         monotonic replay counter
+```
 
 | Part | What it is | Tech | Folder |
 | --- | --- | --- | --- |
 | **Phone app** | Native iOS/Android deck — scans a QR to pair; editable, **resizable** grid of tiles | Expo / React Native (TS) | [`mobile/`](mobile/) |
-| **Desktop host** | Installable menu-bar/tray app that pairs with the phone and runs the actions | Electron + electron-builder | [`desktop/`](desktop/) |
-
-```
-native phone app  ──AES-256-GCM over HTTP (per-device key)──▶  desktop host  ──▶  macOS / Windows
-   scan QR to pair          monotonic counter, X25519 handshake        tray + pairing window
-```
+| **Desktop host** | Menu-bar/tray app that pairs with the phone and runs the actions | Electron + electron-builder | [`desktop/`](desktop/) |
 
 > There's also a **legacy browser-based deck** (Next.js) in `src/` + `host-agent/`
 > — the original version. It still works but is superseded by the native app +
-> desktop host below. See [Legacy web deck](#legacy-web-deck).
+> desktop host. See [Legacy web deck](#legacy-web-deck).
 
-## Action types
+### Action types
 
 | Type | Example | What it does | Platforms |
 | --- | --- | --- | --- |
@@ -48,6 +101,8 @@ native phone app  ──AES-256-GCM over HTTP (per-device key)──▶  desktop
 `keys` and `text` synthesize keystrokes (macOS AppleScript `System Events` /
 Windows PowerShell `SendKeys`) and need **macOS Accessibility permission**.
 
+---
+
 ## Deck features
 
 The deck is fully editable on the device — no code, no config files.
@@ -57,18 +112,21 @@ The deck is fully editable on the device — no code, no config files.
 - **Pages** — each profile holds multiple **pages of up to 9 tiles**; flip
   between them with the dots/arrows below the grid, add/remove pages in edit mode.
 - **🪄 Intuitive (Auto) mode** — the active profile **follows the app you're
-  focused on** on your computer. Map apps → profiles (with a "Use current app"
-  shortcut); it's edge-triggered, and an unmapped app leaves the deck where it is.
+  focused on**. Map apps → profiles (with a "Use current app" shortcut); it's
+  edge-triggered, and an unmapped app leaves the deck where it is.
 - **Running-apps screen** — a live list of what's open on the host: tap to bring
   an app to the front, or **＋** to pin it as a tile.
 - **Live tile state** — `app` tiles light up when that app is running and
   highlight the one that's frontmost.
+- **Snippet library** — saved text, sent with one tap; pin any snippet as a tile.
 - **Custom tile faces** — give a tile an **emoji**, short **text** (REC, 1, GG),
   or an **uploaded image** (resized and stored on-device).
 - **Drag to reorder**, resize the grid (2–5 columns) and individual tiles
   (2×1, 2×2…), plus icon/color quick-picks in the tile editor.
 
 macOS-only for now: focus detection (Auto mode) and the running-apps list.
+
+---
 
 ## Security
 
@@ -97,33 +155,44 @@ paired phone (or a leaked token) still cannot execute code on your machine.
 
 Full protocol + threat model: [`SECURE-PAIRING-PLAN.md`](SECURE-PAIRING-PLAN.md).
 
-## Install & run
+---
 
-### Desktop host
+## Pair & use
 
-**Option A — download a prebuilt installer (easiest).** The
-[`desktop-build`](.github/workflows/desktop-build.yml) GitHub Actions workflow
-builds a macOS `.dmg` and a Windows `.exe` on every push to `desktop/**` (or run
-it manually). Download from the run's **Artifacts**, then install:
+1. On the Mac: launch DeskAssist → click **Pair a phone** (shows a QR).
+2. On the phone: open the app → **scan the QR** with the camera.
+3. You land on the deck. Tap tiles to fire actions, or use the **Send text** bar
+   (with an optional countdown delay) to type onto your computer. In **Edit** mode
+   you can add/edit/delete and **drag to reorder** tiles, add **pages** and
+   **profiles**, set the layout size (2–5 columns) and resize tiles. Turn on
+   **🪄 Auto** to have the profile follow your focused app, or open **Apps** to
+   focus/pin what's running.
 
-- **macOS:** open the `.dmg` → drag **streamPhoneDeck** to Applications. It's
-  **unsigned**, so the first launch is blocked → **System Settings → Privacy &
-  Security → Open Anyway**. If it says *"damaged"*:
-  `xattr -dr com.apple.quarantine /Applications/streamPhoneDeck.app`.
-- **Windows:** run the `.exe` (NSIS). SmartScreen → **More info → Run anyway**.
+Both devices must be on the **same Wi-Fi**. On iOS, allow the **Local Network**
+permission prompt.
 
-**Option B — build it yourself:**
+---
+
+## Build it yourself
+
+### macOS host
+
 ```bash
 cd desktop && npm install
-npm run dist:mac   # .dmg   (or dist:win / dist)
+npm run dist:mac    # → desktop/dist/DeskAssist-<version>.dmg
 ```
 
-**Option C — run from source (dev):**
+Other targets: `npm run dist:win` (NSIS `.exe`), `npm run dist` (current
+platform), `npm run pack` (unpacked app, no installer).
+
+Run from source instead — tray app + pairing window, no packaging:
+
 ```bash
-cd desktop && npm install && npm start   # tray app + pairing window
+cd desktop && npm install && npm start
 ```
 
-See [`desktop/README.md`](desktop/README.md) for details.
+Details, including **optional code signing + notarization**, in
+[`desktop/README.md`](desktop/README.md#code-signing-optional).
 
 ### Phone app
 
@@ -136,36 +205,27 @@ npx expo start --dev-client    # serves the JS while you use it
 ```
 
 For a **standalone** build (runs without your computer): `eas build -p android
---profile preview` (Android is easiest — no Apple account). Full instructions,
-including CI, in [`mobile/README.md`](mobile/README.md).
+--profile preview` (Android is easiest — no Apple account). Full instructions in
+[`mobile/README.md`](mobile/README.md).
 
-## Pair & use
+### Publishing the download
 
-1. On the computer: launch the host → click **Pair a phone** (shows a QR).
-2. On the phone: open the app → **scan the QR** with the camera.
-3. You land on the deck — tap tiles to fire actions, or use the **Send text** bar
-   (with an optional countdown delay) to type onto your computer. In **Edit** mode
-   you can add/edit/delete and **drag to reorder** tiles, add **pages** and
-   **profiles**, set the layout size (2–5 columns) and resize tiles. Turn on
-   **🪄 Auto** to have the profile follow your focused app, or open **Apps** to
-   focus/pin what's running. See [Deck features](#deck-features).
+The macOS `.dmg` is a build artifact, so it isn't committed. To make the
+[Download](#download) link live, cut a release and attach it:
 
-Both devices must be on the **same Wi-Fi**. On iOS, allow the **Local Network**
-permission prompt. For `keys`/`text`, grant the host **Accessibility** (macOS:
-System Settings → Privacy & Security → Accessibility).
+```bash
+cd desktop && npm run dist:mac          # if you don't already have the .dmg
+gh release create v0.1.0 \
+  desktop/dist/DeskAssist-0.1.0.dmg \
+  --title "DeskAssist 0.1.0 (macOS host)" \
+  --notes "macOS host app. Unsigned — see the README for the Gatekeeper steps."
+```
 
-## Build & CI
+The link resolves to whatever the newest release is, so it keeps working for
+every version after this one. Note that release assets on a **private** repo are
+only downloadable by people with repo access.
 
-| Workflow | Builds | Runner |
-| --- | --- | --- |
-| [`desktop-build`](.github/workflows/desktop-build.yml) | macOS `.dmg` + Windows `.exe` installers | macOS + Windows |
-| [`mobile-android`](.github/workflows/mobile-android.yml) | Android **standalone release APK** (runs without Metro) | Ubuntu |
-| [`mobile-ios-eas`](.github/workflows/mobile-ios-eas.yml) | iOS build via EAS | Ubuntu → EAS cloud |
-
-The desktop pipeline **signs + notarizes automatically** once you add the code
--signing secrets (macOS Developer ID + Apple creds, Windows Authenticode) — and
-falls back to **unsigned** until then. Setup + secret names:
-[`desktop/README.md` → Code signing](desktop/README.md#code-signing-optional).
+---
 
 ## Legacy web deck
 
@@ -179,18 +239,25 @@ npm run agent    # host agent that executes actions
 
 Open `http://<your-computer-ip>:3000/` on your phone. It's gated by an optional
 `DECK_TOKEN` (plaintext header over HTTP) — fine on trusted Wi-Fi, but the native
-app + desktop host above replace it with real end-to-end encryption. Architecture
-notes for this version are in [`CLAUDE.md`](CLAUDE.md). (Shell tiles are opt-in
-here too — see [Security](#security).)
+app + desktop host replace it with real end-to-end encryption. Architecture notes
+for this version are in [`CLAUDE.md`](CLAUDE.md). (Shell tiles are opt-in here
+too — see [Security](#security).)
+
+---
 
 ## Repository layout
 
 ```
-desktop/   Electron host — pairing window, tray, OS executor, installer packaging
-mobile/    Expo phone app — QR pairing, crypto, resizable deck, send-text
-site/      Landing page (static site/index.html)
-src/       Legacy Next.js web deck (+ src/lib shared model)
-host-agent/ Legacy Node agent for the web deck
-.github/workflows/  CI: desktop installers + mobile builds
+desktop/     Electron host — pairing window, tray, OS executor, installer packaging
+mobile/      Expo phone app — QR pairing, crypto, resizable deck, snippets, send-text
+site/        Landing page + privacy/terms (static HTML)
+docs/        Screenshots and the demo video used by this README
+src/         Legacy Next.js web deck (+ src/lib shared model)
+host-agent/  Legacy Node agent for the web deck
+brag-output/ Launch-video composition (Hyperframes) and its render
 SECURE-PAIRING-PLAN.md   Protocol, threat model, and build stages
 ```
+
+## License
+
+[MIT](LICENSE)
