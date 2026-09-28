@@ -23,19 +23,13 @@ function box(lines) {
 
 // Which certificate actually signed the bundle? An Apple Development or Apple
 // Distribution cert cannot be notarized and will not pass Gatekeeper.
+// NOTE: `codesign -dvv` writes its report to STDERR, not stdout — reading only
+// stdout silently yields "" and this check never fires. Read both.
 function signingAuthority(appPath) {
-  try {
-    const out = execFileSync("codesign", ["-dvv", appPath], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    const m = out.match(/^Authority=(.+)$/m);
-    return m ? m[1].trim() : null;
-  } catch (err) {
-    const text = `${err.stdout || ""}${err.stderr || ""}`;
-    const m = text.match(/^Authority=(.+)$/m);
-    return m ? m[1].trim() : null;
-  }
+  const res = spawnSync("codesign", ["-dvv", appPath], { encoding: "utf8" });
+  const text = `${res.stdout || ""}\n${res.stderr || ""}`;
+  const m = text.match(/^Authority=(.+)$/m);
+  return m ? m[1].trim() : null;
 }
 
 exports.default = async function notarizing(context) {
