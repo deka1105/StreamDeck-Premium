@@ -41,13 +41,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow streamPhoneDeck to scan pairing QR codes."
+          "cameraPermission": "Allow DeskAssist to scan pairing QR codes."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow streamPhoneDeck to pick an image for a tile."
+          "photosPermission": "Allow DeskAssist to pick an image for a tile."
         }
       ],
       [
