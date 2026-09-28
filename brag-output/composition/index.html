@@ -243,10 +243,12 @@
              src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3"></audio>
 
       <!-- grid completes — beat-locked 8.74s -->
-      <audio id="sfx-grid" data-start="8.70" data-duration="0.6" data-volume="0.55"
+      <!-- durations below match each source's real length; a longer slot is just
+           clamped back to the media by the compiler, which logs a warning. -->
+      <audio id="sfx-grid" data-start="8.70" data-duration="0.12" data-volume="0.55"
              data-track-index="11" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
       <!-- the tap -->
-      <audio id="sfx-tap" data-start="12.55" data-duration="0.4" data-volume="0.60"
+      <audio id="sfx-tap" data-start="12.55" data-duration="0.01" data-volume="0.60"
              data-track-index="12" src="assets/sfx/interface/click_003.ogg"></audio>
       <!-- typing texture: 8 hits across the 1.9s type, fixed files (deterministic) -->
       <audio id="sfx-key-1" data-start="13.15" data-duration="0.3" data-volume="0.30" data-track-index="13" src="assets/sfx/keyboard/keypress-003.wav"></audio>
