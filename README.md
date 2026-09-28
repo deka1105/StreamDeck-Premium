@@ -215,7 +215,7 @@ cd desktop && npm install && npm start
 ```
 
 Details, including **optional code signing + notarization**, in
-[`desktop/README.md`](desktop/README.md#code-signing-optional).
+[`desktop/README.md`](desktop/README.md#code-signing).
 
 ### Phone app
 
