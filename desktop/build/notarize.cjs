@@ -11,7 +11,7 @@
 // successful and could not launch on any Mac. The warnings below exist so that
 // cannot happen quietly again. See `npm run check:signing`.
 
-const { execFileSync } = require("node:child_process");
+const { execFileSync, spawnSync } = require("node:child_process");
 
 function box(lines) {
   const w = Math.max(...lines.map((l) => l.length));
