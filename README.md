@@ -23,7 +23,7 @@ an **end-to-end encrypted** link you set up by scanning a QR code.
 | | Platform | |
 | --- | --- | --- |
 | 🖥️ | **macOS host app** — the half that does the work | [**Download the `.dmg`**][latest-release] |
-| 📱 | **iPhone app** | App Store — *in review* |
+| 📱 | **iPhone app** | App Store — *coming soon* |
 | 🧪 | **No Mac to hand?** | Tap **Explore the demo** in the app — see [Demo mode](#demo-mode) |
 
 [latest-release]: https://github.com/deka1105/StreamDeck-Premium/releases/latest
