@@ -69,7 +69,11 @@ export default function App() {
   const [pairing, setPairing] = useState<Pairing | null | "loading">("loading");
 
   useEffect(() => {
-    loadPairing().then((p) => setPairing(p));
+    // loadPairing never rejects, but belt-and-braces: the UI shows a spinner
+    // until this resolves, so failing to set state at all would hang the launch.
+    loadPairing()
+      .then((p) => setPairing(p))
+      .catch(() => setPairing(null));
   }, []);
 
   if (pairing === "loading") {
