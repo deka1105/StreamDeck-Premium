@@ -1,0 +1,7 @@
+Introducing DeskAssist: your phone is the button. Tap a tile and your Mac
+launches an app, fires a shortcut, or types saved text — nine tiles, one tap each.
+
+Scan once to pair, then every press is sealed end-to-end with X25519 and
+AES-256-GCM. No cloud, no account, nothing leaves your network.
+
+Built with Expo and React Native, an Electron host, and RevenueCat.
