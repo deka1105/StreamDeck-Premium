@@ -15,9 +15,23 @@ export type Pairing = {
 const PAIR_KEY = "spd.pairing";
 const CTR_KEY = "spd.ctr";
 
+/**
+ * The stored pairing, or null if there isn't one *or* it can't be read.
+ *
+ * Never throws. The launch path renders a spinner until this resolves, so a
+ * rejection here used to hang the app on that spinner forever — which happens
+ * whenever the keystore is unreachable (an unsigned build has no keychain
+ * entitlement; on device the keychain is also unavailable before first unlock)
+ * or the stored JSON is corrupt. Degrading to "not paired" is recoverable: the
+ * user lands on the pair screen and can re-pair or open the demo.
+ */
 export async function loadPairing(): Promise<Pairing | null> {
-  const raw = await SecureStore.getItemAsync(PAIR_KEY);
-  return raw ? (JSON.parse(raw) as Pairing) : null;
+  try {
+    const raw = await SecureStore.getItemAsync(PAIR_KEY);
+    return raw ? (JSON.parse(raw) as Pairing) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function savePairing(p: Pairing): Promise<void> {
