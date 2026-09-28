@@ -27,3 +27,10 @@ mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-simulator
 
 # Local AI session transcripts — contain personal paths/emails, not part of the project
 session-logs/
+
+# Hyperframes render scratch — thousands of throwaway frame JPGs per render.
+# The watcher committed one of these mid-render last time; excluding it also
+# keeps the capture workers' temp dirs out of the tree.
+brag-output/work-*/
+brag-output/composition/renders/
+brag-output/composition/.debug/
