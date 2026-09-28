@@ -12,7 +12,7 @@
       "bundleIdentifier": "com.dekisuki05.deskassist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocalNetworkUsageDescription": "streamPhoneDeck connects to your computer on your local network to send actions.",
+        "NSLocalNetworkUsageDescription": "DeskAssist connects to your computer on your local network to send actions.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }
