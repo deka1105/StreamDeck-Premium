@@ -202,11 +202,18 @@ permission prompt.
 
 ```bash
 cd desktop && npm install
-npm run dist:mac    # → desktop/dist/DeskAssist-<version>.dmg
+npm run check:signing   # is this machine able to produce a distributable app?
+npm run dist:mac        # → desktop/dist/DeskAssist-<version>.dmg
 ```
 
 Other targets: `npm run dist:win` (NSIS `.exe`), `npm run dist` (current
 platform), `npm run pack` (unpacked app, no installer).
+
+> [!WARNING]
+> `dist:mac` succeeds even when it cannot produce a *launchable* app — see
+> [the note above](#download). Use **`npm run dist:mac:release`** for anything
+> you intend to distribute; it refuses to build unless a Developer ID
+> certificate and notarization credentials are both present.
 
 Run from source instead — tray app + pairing window, no packaging:
 
@@ -214,8 +221,8 @@ Run from source instead — tray app + pairing window, no packaging:
 cd desktop && npm install && npm start
 ```
 
-Details, including **optional code signing + notarization**, in
-[`desktop/README.md`](desktop/README.md#code-signing).
+Signing and notarization setup:
+[`desktop/README.md` → Code signing](desktop/README.md#code-signing).
 
 ### Phone app
 
