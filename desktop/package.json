@@ -16,7 +16,9 @@
     "pack": "npm run gen:icon && electron-builder --dir",
     "dist": "npm run gen:icon && electron-builder",
     "dist:mac": "npm run gen:icon && electron-builder --mac",
-    "dist:win": "npm run gen:icon && electron-builder --win"
+    "dist:mac:release": "node scripts/check-signing.mjs --strict && npm run dist:mac",
+    "dist:win": "npm run gen:icon && electron-builder --win",
+    "check:signing": "node scripts/check-signing.mjs"
   },
   "dependencies": {
     "qrcode": "^1.5.4"

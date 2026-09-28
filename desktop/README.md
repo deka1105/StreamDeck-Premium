@@ -32,34 +32,93 @@ npm run test:client       # prove forge/tamper/replay are rejected (host must ru
 
 ## Package installers
 
-**In CI (recommended):** the [`desktop-build`](../.github/workflows/desktop-build.yml)
-GitHub Actions workflow builds the macOS `.dmg` and Windows `.exe` on native
-runners and uploads them as downloadable **artifacts** — no need to build locally,
-and it covers the OS you're not on. Runs on push to `desktop/**` or via manual
-dispatch.
-
-**Locally:**
 ```bash
-npm run pack       # unpacked .app/.exe dir in dist/ (fast, for testing)
-npm run dist:mac   # .dmg   (macOS)
-npm run dist:win   # .exe   (NSIS, Windows)
-npm run dist       # host-OS target
+npm run pack              # unpacked .app/.exe dir in dist/ (fast, for testing)
+npm run dist:mac          # .dmg   (macOS)       — dev build, may be unsigned
+npm run dist:mac:release  # .dmg   (macOS)       — refuses to build unless signable
+npm run dist:win          # .exe   (NSIS, Windows)
+npm run dist              # host-OS target
+npm run check:signing     # report macOS signing/notarization readiness
 ```
 
-Builds are unsigned by default (`mac.identity` is `null`), so users hit a
-Gatekeeper/SmartScreen warning on first launch (**Open Anyway** / **Run anyway**;
-if macOS says *"damaged"*, `xattr -dr com.apple.quarantine` the `.app`). Each
-installer must be built on its own OS (locally or in CI). For warning-free
-distribution, sign them — see below.
+Each installer must be built on its own OS. There is no CI workflow in this repo
+— `.github/` does not exist, so build locally.
 
-## Code signing (optional)
+> [!IMPORTANT]
+> **`dist:mac` does not guarantee a distributable app.** `build.mac.identity` is
+> not pinned, so electron-builder signs with whatever codesigning identity it
+> finds first in your keychain. If that's an *Apple Development* certificate, the
+> build succeeds and the `.app` **cannot be launched on any Mac** — Gatekeeper
+> only accepts `Developer ID Application` + notarization for apps distributed
+> outside the App Store.
+>
+> That is exactly what happened to `DeskAssist-0.1.0.dmg`. Run
+> `npm run check:signing` before you ship anything, or use `dist:mac:release`,
+> which gates the build on it.
 
-The [`desktop-build`](../.github/workflows/desktop-build.yml) workflow **signs and
-notarizes automatically when these repo secrets are set** (Settings → Secrets and
-variables → Actions) and builds unsigned otherwise — nothing else to change.
+For a **development** build you intend to run only on this machine, ad-hoc
+signing sidesteps the certificate question entirely:
 
-**macOS** — needs a paid Apple Developer account with a **Developer ID
-Application** certificate:
+```bash
+codesign --force --deep --sign - dist/mac/DeskAssist.app
+```
+
+## Code signing
+
+Run `npm run check:signing` for a live report of what's present and what's
+missing. It classifies every certificate in your keychain, since the names are
+easy to confuse — **`Apple Distribution` is App Store submission only and will
+not work here.**
+
+### Creating the Developer ID certificate
+
+Needs a paid Apple Developer Program membership, and only the **Account Holder**
+can create one:
+
+1. **Keychain Access** → *Certificate Assistant* → *Request a Certificate From a
+   Certificate Authority* → fill in your email → **Saved to disk** → save the
+   `.certSigningRequest`.
+2. [developer.apple.com](https://developer.apple.com/account/resources/certificates/list)
+   → Certificates → **+** → **Developer ID Application** → upload the CSR.
+3. Download the `.cer`, double-click to install into the login keychain.
+4. `npm run check:signing` — it should now list it as usable.
+
+Then pin it so electron-builder can't pick the wrong one:
+
+```json
+"mac": { "identity": "Developer ID Application: Your Name (TEAMID)" }
+```
+
+### Notarization credentials
+
+`build/notarize.cjs` accepts either style; set one before `npm run dist:mac`:
+
+| Style | Variables |
+| --- | --- |
+| **A** — Apple ID | `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` |
+| **B** — API key | `APPLE_API_KEY` (path to `.p8`), `APPLE_API_KEY_ID`, `APPLE_API_ISSUER` |
+
+App-specific passwords come from [appleid.apple.com](https://appleid.apple.com)
+→ Sign-In and Security → App-Specific Passwords. Never commit the `.p8`.
+
+The hook now **refuses to notarize** a bundle signed with the wrong certificate
+rather than uploading a build that cannot pass, and prints a loud warning when
+credentials are absent instead of skipping quietly.
+
+### Verifying the result
+
+```bash
+spctl -a -vvv -t exec dist/mac/DeskAssist.app   # accepted, source=Notarized Developer ID
+xcrun stapler validate dist/mac/DeskAssist.app  # The validate action worked!
+```
+
+Both must pass. `codesign --verify` passing is **not** sufficient — a
+development-signed app verifies fine and still won't launch.
+
+### CI secrets
+
+If you later add a GitHub Actions workflow, these are the secret names the
+scripts expect (Settings → Secrets and variables → Actions):
 
 | Secret | What |
 | --- | --- |
