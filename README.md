@@ -34,18 +34,41 @@ an **end-to-end encrypted** link you set up by scanning a QR code.
 > see [Publishing the download](#publishing-the-download). Until then, use
 > [Build it yourself](#build-it-yourself), which works today.
 
-**First launch on macOS.** The app is **not signed or notarized**, so Gatekeeper
-blocks it:
+**First launch on macOS.** The current build is **not notarized**, so macOS
+refuses it until you override:
 
 1. Open the `.dmg` → drag **DeskAssist** to Applications.
-2. **System Settings → Privacy & Security → Open Anyway.**
-3. If macOS calls it *"damaged"*:
+2. **System Settings → Privacy & Security →** scroll to *Security* →
+   **Open Anyway** → authenticate.
+   *(Right-click → Open stopped working as a bypass in macOS 15.)*
+3. If it still won't start, clear the download flag and re-sign it locally:
    ```bash
    xattr -dr com.apple.quarantine /Applications/DeskAssist.app
+   codesign --force --deep --sign - /Applications/DeskAssist.app
    ```
+   The second command replaces the build's signature with an ad-hoc one, which
+   drops the distribution-certificate requirement.
 
 For `keys` and `text` tiles, also grant **Accessibility**
 (System Settings → Privacy & Security → Accessibility).
+
+<details>
+<summary>Why, and how it gets fixed properly</summary>
+
+Gatekeeper accepts exactly one thing for apps distributed outside the App Store:
+a **Developer ID Application** certificate **plus notarization**. Release 0.1.0
+has neither — `build.mac.identity` wasn't pinned, so electron-builder signed with
+the first identity in the keychain, which was an *Apple Development* certificate.
+The build succeeded and produced an app that won't launch anywhere.
+
+`codesign --verify` passes on that build, which is why it went unnoticed;
+`spctl -a` and `xcrun stapler validate` are the checks that catch it.
+
+Signing it properly needs a certificate only the account holder can create. The
+steps, plus `npm run check:signing` which reports exactly what's missing, are in
+[`desktop/README.md` → Code signing](desktop/README.md#code-signing).
+
+</details>
 
 ---
 

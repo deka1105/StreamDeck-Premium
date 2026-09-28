@@ -141,9 +141,10 @@ then `base64 -i DeveloperID.p12 | pbcopy` and paste as `MAC_CSC_LINK`.
 `base64 -i cert.pfx | pbcopy` → paste as `WIN_CSC_LINK`.
 
 macOS signing uses the hardened runtime (`build/entitlements.mac.plist`) and
-notarizes via the `build/notarize.cjs` afterSign hook, which no-ops when the Apple
-creds are absent. To sign a **local** mac build, export the same `MAC_*`/`APPLE_*`
-vars (as `CSC_LINK`/`CSC_KEY_PASSWORD`/`APPLE_*`) before `npm run dist:mac`.
+notarizes via the `build/notarize.cjs` afterSign hook. To sign a **local** mac
+build without installing the cert into your keychain, export the same
+`MAC_*`/`APPLE_*` values as `CSC_LINK` / `CSC_KEY_PASSWORD` / `APPLE_*` before
+`npm run dist:mac`.
 
 ## Notes
 
