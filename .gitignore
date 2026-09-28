@@ -24,3 +24,6 @@ mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-simulator
 
 # Vercel
 .vercel
+
+# Local AI session transcripts — contain personal paths/emails, not part of the project
+session-logs/
