@@ -1321,6 +1321,19 @@ const styles = StyleSheet.create({
   linkTextStrong: { color: "#e0f2fe", fontWeight: "700", marginTop: 10 },
   // Pinned to the bottom of the camera overlay so the reticle stays centred.
   scanLinks: { position: "absolute", bottom: 48, flexDirection: "row", alignItems: "center", gap: 20 },
+  // Top-left escape hatch out of the camera. Absolute so it doesn't shift the
+  // reticle; `top` clears the status bar / Dynamic Island. Tinted because it
+  // sits over a live camera feed and must stay legible on any background.
+  scanBack: {
+    position: "absolute",
+    top: 56,
+    left: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: "rgba(15,23,42,0.72)",
+  },
+  scanBackText: { color: "#e0f2fe", fontWeight: "700", fontSize: 15 },
   // Demo entry on the pair screen — deliberately a real button, not a link: a
   // reviewer with no host must be able to see the product, not just a scanner.
   demoButton: { marginTop: 12, borderWidth: 1, borderColor: "rgba(56,189,248,0.45)", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 13 },
