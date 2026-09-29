@@ -19,7 +19,18 @@ Three things to do, in this order. Only step 2 is the actual reply.
 | `2f5b54_Y` | Auto-renewable, 1 year | Yearly | READY_TO_SUBMIT |
 | `2f5b54_One` | Non-consumable | One-time | READY_TO_SUBMIT |
 
-This matters because Apple is asking you to demonstrate "accessing paid content
+This is confirmed, not inferred. The open review submission contains exactly one
+item — the app version — and no in-app-purchase or subscription items:
+
+```
+submission 801f7439-7bb2-49bc-96de-9df0ebadfc82
+  state     = UNRESOLVED_ISSUES     (this is the one you reply to)
+  submitted = 2026-09-28T12:58:52Z
+  items (1) = REJECTED  <app version only>
+  >>> NO IAP / SUBSCRIPTION ITEMS IN THIS SUBMISSION
+```
+
+It matters because Apple is asking you to demonstrate "accessing paid content
 or features," and their own note flags it:
 
 > Guideline 3.1.1 – In-App Purchase: In-App Purchase products should be
@@ -32,6 +43,15 @@ App Store Connect → **App Store** tab → the **1.0.0** version page → scrol
 **In-App Purchases and Subscriptions** → **Add** → select all three → Save.
 
 They then go to review together with the build.
+
+**Other confirmed submission facts:**
+
+| | |
+| --- | --- |
+| Version 1.0.0 | `REJECTED` — editable, so you can fix and reply |
+| Submission `801f7439…` | `UNRESOLVED_ISSUES` — still open; **reply to it, don't create a new one** |
+| Build attached | **build 1**, uploaded 24 Sep, `VALID`, not expired |
+| Build 1 on TestFlight | yes — `IN_BETA_TESTING`, group "Team (Expo)" → install and record this one |
 
 ---
 
