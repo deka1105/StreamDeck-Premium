@@ -261,6 +261,17 @@ computer; the default tiles use standard Unicode emoji as icons, not any
 third-party logos, trademarks or artwork. All code and assets are our own or
 open-source under permissive licenses.
 
+**Additional notes on the points under "Prevent Common Issues"**
+
+- **Testing on physical devices:** the submitted build (build 1) was installed
+  from TestFlight and exercised on a physical iPhone and a physical iPad running
+  the current iOS/iPadOS release, covering the full flow shown in the recording.
+- **Demo account:** none is needed. The app has no accounts, so there are no
+  credentials to provide. "Demo Account Required" is set to No accordingly.
+- **Distribution model:** DeskAssist is a general-consumer utility sold on the
+  public App Store. It is not built for specific businesses, organizations or
+  employees, so no alternative distribution programme applies.
+
 Please let us know if anything further would help.
 
 ---
