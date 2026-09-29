@@ -171,8 +171,21 @@ See `APP-REVIEW-NOTES.txt` in the repository root — paste its contents verbati
 ## Screen recording shot list
 
 Apple requires a **physical device** on the **latest iOS** — not the simulator.
-Install the submitted build through TestFlight so the recording matches what is
-in review.
+
+**Record build 1, via TestFlight.** Build 1 (uploaded 24 Sep) is the build
+attached to version 1.0.0, and it is already live in TestFlight internal testing
+(group "Team (Expo)") — open the TestFlight app on your iPhone and install it.
+Do not record a local `expo run:ios` build; that is a different binary from the
+one in review, which is exactly what Apple is asking you to test.
+
+Two timing details that will make or break the take:
+
+- **Auto mode changes the focused app every 6 seconds**, on an arbitrary phase
+  (`ROTATE_MS = 6000` in `src/demo.ts`). Hold that screen 12–15s so at least one
+  change is definitely captured — a 5-second hold can show nothing and look
+  broken.
+- **The snippet limit is 3 and you currently have 1.** The paywall appears on the
+  *fourth* snippet, so you need three saves to reach it.
 
 Start the recording **before** launching the app, keep it in one continuous
 take, and don't rush: let each screen settle for about two seconds so the
@@ -192,7 +205,7 @@ reviewer can read it. Target 2–3 minutes.
 | 10 | Still in Edit, try to add a **second page** → paywall opens | **Paid feature, triggered by a limit** |
 | 11 | On the paywall, show all three options (monthly / yearly / one-time) | Shows the IAP products |
 | 12 | Close the paywall, tap the **Pro** pill in the header → paywall again | Second, direct route to purchase |
-| 13 | Add a 4th **snippet** → paywall opens with the snippet-limit message | Shows limits are real and consistent |
+| 13 | Snippets → keep tapping **＋ New** and saving. The 2nd and 3rd save fine; the **4th** opens the paywall | Shows limits are real and consistent |
 | 14 | Return to the deck and end on it | Clean close |
 
 Things to avoid: don't show the simulator, don't cut between takes, don't leave
