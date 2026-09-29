@@ -110,6 +110,11 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
   const [error, setError] = useState<string | null>(null);
   const [manual, setManual] = useState(false);
   const [manualText, setManualText] = useState("");
+  // The camera is an explicit step, not the default view. Before this, a granted
+  // camera permission meant every launch opened straight into the scanner with
+  // no way back — the landing screen below only ever rendered when permission
+  // was *denied*, so there was nothing to go back to.
+  const [scanning, setScanning] = useState(false);
   const handled = useRef(false);
 
   const doPair = useCallback(
