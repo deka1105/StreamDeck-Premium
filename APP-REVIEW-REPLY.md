@@ -187,7 +187,7 @@ reviewer can read it. Target 2–3 minutes.
 | 5 | Type into the **Send text** bar, tap **Send** | The send-text feature |
 | 6 | Header → **Snippets**. Tap a snippet to send it. Tap **＋ New**, save one | Shows snippets are local-only, no sharing surface |
 | 7 | Header → display icon (**Apps**). Tap an app to focus, **＋** to pin one | Live host state |
-| 8 | Header → **Auto**. Wait ~5s for the simulated foreground app to change | Auto mode, the headline feature |
+| 8 | Header → **Auto**. **Hold for a full 12–15 seconds** without touching anything | Auto mode, the headline feature |
 | 9 | Header → **Edit**. Add a tile, edit one, drag to reorder, delete one | Full editing |
 | 10 | Still in Edit, try to add a **second page** → paywall opens | **Paid feature, triggered by a limit** |
 | 11 | On the paywall, show all three options (monthly / yearly / one-time) | Shows the IAP products |
