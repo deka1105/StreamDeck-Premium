@@ -86,8 +86,37 @@ async function openUrl(url) {
   return sh(`xdg-open ${q(url)}`);
 }
 
+// macOS returns error 1002 ("not allowed to send keystrokes") when the host
+// process lacks Accessibility permission. Raw, that reads as "the tile is
+// broken" on the phone, which is what it looked like in testing. Translate it
+// into the one instruction that actually fixes it.
+//
+// Note the permission is bound to the app's *code signature*: re-signing the
+// host (or installing a differently-signed build) invalidates an existing grant,
+// and the stale System Settings entry can appear enabled while being denied.
+// Removing and re-adding the entry is what clears that.
+export const ACCESSIBILITY_HINT =
+  "macOS blocked this: DeskAssist needs Accessibility permission. " +
+  "Open System Settings → Privacy & Security → Accessibility, remove DeskAssist " +
+  "if it is listed, then add it again and switch it on.";
+
+function isAccessibilityDenial(err) {
+  const m = `${err?.message ?? err}`;
+  return m.includes("(1002)") || m.includes("not allowed to send keystrokes") ||
+         m.includes("(-1719)") || m.includes("not allowed assistive access");
+}
+
+async function osaKeystroke(script) {
+  try {
+    return await sh(`osascript -e ${q(script)}`);
+  } catch (err) {
+    if (isAccessibilityDenial(err)) throw new Error(ACCESSIBILITY_HINT);
+    throw err;
+  }
+}
+
 async function sendKeys(combo) {
-  if (platform === "darwin") return sh(`osascript -e ${q(comboToAppleScript(combo))}`);
+  if (platform === "darwin") return osaKeystroke(comboToAppleScript(combo));
   if (platform === "win32") return winSendKeys(comboToSendKeys(combo));
   throw new Error(`Key shortcuts aren't implemented for ${platform}`);
 }
@@ -96,7 +125,7 @@ async function sendKeys(combo) {
 async function typeText(text) {
   if (platform === "darwin") {
     const escaped = text.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-    return sh(`osascript -e ${q(`tell application "System Events" to keystroke "${escaped}"`)}`);
+    return osaKeystroke(`tell application "System Events" to keystroke "${escaped}"`);
   }
   if (platform === "win32") {
     // Escape SendKeys metacharacters; turn newlines into Enter presses.
