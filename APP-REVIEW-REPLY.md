@@ -37,12 +37,40 @@ or features," and their own note flags it:
 > configured and submitted alongside the app.
 
 If you reply without fixing this, the reviewer reaches a paywall whose products
-aren't in review with the build. Fix it first:
+aren't in review with the build.
 
-App Store Connect → **App Store** tab → the **1.0.0** version page → scroll to
-**In-App Purchases and Subscriptions** → **Add** → select all three → Save.
+### This must be done in the web UI — there is no API route
 
-They then go to review together with the build.
+Both API approaches were tried and neither works:
+
+1. **`reviewSubmissionItems`** has no IAP relationship. It accepts only
+   `appStoreVersion`, `appEvent`, `appCustomProductPageVersion`,
+   `appStoreVersionExperiment`, `appStoreVersionExperimentV2` — confirmed by
+   probing each name. Attempts returned
+   `409 ENTITY_ERROR.RELATIONSHIP.UNKNOWN`.
+2. **`inAppPurchaseSubmissions` / `subscriptionSubmissions`** returned
+   `409 STATE_ERROR.INVALID_REQUEST_ENTITY_STATE_INVALID` for all three. Those
+   endpoints submit a product *standalone*, which requires an app that is
+   already approved on the App Store. 1.0.0 is a first version and is
+   `REJECTED`, so there is nothing to attach a standalone product submission to.
+
+Nothing was changed by either attempt — all three products remain
+`READY_TO_SUBMIT` and the submission still holds one item.
+
+**The products themselves are complete**, so the UI route will not hit a
+validation wall:
+
+| Product | Localization | Price | Review screenshot |
+| --- | --- | --- | --- |
+| `2f5b54_One` | "Pro Lifetime" + description | schedule set | `COMPLETE` |
+| `2f5b54` | "Pro Monthly" + description | all countries | `COMPLETE` |
+| `2f5b54_Y` | "Pro Yearly" + description | all countries | `COMPLETE` |
+
+Subscription group localization ("DeskAssist Pro") is present.
+
+**Do this:** App Store Connect → **App Store** tab → the **1.0.0** version page
+→ scroll to **In-App Purchases and Subscriptions** → **Add** → select all three
+→ Save. They then go to review together with the build.
 
 **Other confirmed submission facts:**
 
