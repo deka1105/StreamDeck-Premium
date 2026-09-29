@@ -50,6 +50,7 @@
       "target": ["dmg"],
       "category": "public.app-category.utilities",
       "icon": "build/icon.png",
+      "identity": "Developer ID Application: Parag Arunji Dekate (4LX3D498MB)",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
