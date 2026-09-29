@@ -1,10 +1,54 @@
 # App Review — Guideline 2.1 reply (DeskAssist 1.0.0)
 
-Three things to do, in this order. Only step 2 is the actual reply.
+Four things to do, in this order. Only step 3 is the actual reply.
 
 1. **Attach the In-App Purchases to the submission** — see [Before you reply](#before-you-reply).
-2. **Paste [the reply](#the-reply) into Resolution Center**, with the screen recording attached.
-3. **Paste [the notes](#notes-field) into** App Store Connect → App Review Information → Notes.
+2. **Replace the Notes field** — the text currently live in App Store Connect is
+   the old version and contains a broken claim. See [Notes field](#notes-field).
+3. **Paste [the reply](#the-reply) into Resolution Center**, with the screen recording attached.
+4. Consider the two [open risks](#open-risks) below.
+
+## Open risks
+
+Found by auditing the live submission via the App Store Connect API on
+29 Sep 2026. Neither blocks the reply, but both are cheap to fix and both sit on
+guidelines Apple named in this rejection.
+
+**The Notes field in App Store Connect is stale.** It still holds the earlier
+1,287-character version, which tells the reviewer:
+
+> Host download: https://deskassist.vercel.app
+
+That page has no download link, and its only outbound link points at a private
+GitHub repository that 404s for anyone else. A reviewer who follows it finds
+nothing. Replace the field with `APP-REVIEW-NOTES.txt`, which drops the claim
+and states the Mac host is optional.
+
+**All three screenshot sets include the pairing screen.** `sc_00.png`
+(iPhone 6.1"), `67_pair.png` (iPhone 6.7") and `ipad_67_pair.png` (iPad 12.9")
+are the same near-empty permission screen — a title, one line of text, and a
+"Grant camera access" button. Guideline 2.3.3, listed in this rejection, says
+screenshots must show the actual app in use and "not merely the title art, login
+page, or splash screen."
+
+It is the third of three in each set and the other two (deck, snippets) do show
+real UI, so it is not fatal. But it is the weakest asset in the listing and the
+easiest thing to improve: replace it with the **Apps** screen, **edit mode**, or
+the **paywall**, all of which show the product working.
+
+Verified and *not* a problem: every screenshot is correctly sized for its slot
+(iPhone 6.1" 1179×2556, iPhone 6.7" 1290×2796, iPad 2048×2732 — the `ipad_67_`
+filenames are misleading but the images are genuine iPad dimensions). Demo
+account correctly set to not-required, contact name/phone/email present, age
+rating 4+.
+
+**Still worth knowing:** the app declares `supportsTablet: true` and has iPad
+screenshots, so **App Review will test it on iPad**. Apple's note says to test
+each supported platform. If the iPad layout has not been exercised, do that
+before replying — an untested iPad layout is a 2.1 bug rejection waiting to
+happen. Also, build 1 declares `usesNonExemptEncryption = False` while the app
+performs X25519 and AES-256-GCM; changing that needs a new build, so it stays a
+next-version item.
 
 ---
 
