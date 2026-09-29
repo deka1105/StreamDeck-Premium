@@ -68,9 +68,67 @@ validation wall:
 
 Subscription group localization ("DeskAssist Pro") is present.
 
-**Do this:** App Store Connect → **App Store** tab → the **1.0.0** version page
-→ scroll to **In-App Purchases and Subscriptions** → **Add** → select all three
-→ Save. They then go to review together with the build.
+### Steps
+
+1. Open **[appstoreconnect.apple.com](https://appstoreconnect.apple.com)** and
+   sign in. Use the Apple ID that has access to team **4LX3D498MB** — your own
+   (`dekisuki05@gmail.com`, Admin) is sufficient; this does not need the Account
+   Holder.
+
+2. **Apps** → **DeskAssist**.
+
+3. Make sure you are on the **App Store** tab (top row, next to *TestFlight*).
+
+4. In the **left sidebar**, under the **iOS App** heading, click the version
+   row — it reads **1.0.0** and is marked *Rejected*. Rejected versions stay
+   editable, so this page will let you change things.
+
+5. Scroll down that page to the section titled **In-App Purchases and
+   Subscriptions**. It sits below *Build* and above *App Review Information*.
+   (On some accounts it is still labelled just **In-App Purchases**.)
+
+6. Click the **＋** button in that section — or **Select In-App Purchases and
+   Subscriptions** if the section is currently empty.
+
+7. A picker opens listing everything eligible. Tick **all three**:
+
+   | Shown as | Product ID |
+   | --- | --- |
+   | Pro Monthly | `2f5b54` |
+   | Pro Yearly | `2f5b54_Y` |
+   | Pro Lifetime | `2f5b54_One` |
+
+   All three are `READY_TO_SUBMIT` and fully configured, so all three will
+   appear. If any is missing from the list, stop — something changed since this
+   was written and it needs re-checking.
+
+8. Confirm with **Done** / **Add**.
+
+9. Click **Save** at the top right. Wait for the confirmation before leaving the
+   page — navigating away early silently discards it.
+
+10. Reload the page and check the section still lists all three. ASC will
+    occasionally accept a Save and drop it.
+
+### Then reply
+
+Attaching them is a change to the submission, so do it **before** replying in
+Resolution Center, and reply afterwards.
+
+One thing to watch for at that point: if, after saving, the version page shows
+an active **Add for Review** / **Submit for Review** button, App Store Connect
+wants the amended submission re-sent rather than just a Resolution Center
+message. In that case reply in Resolution Center **and** press it. If no such
+button appears, the Resolution Center reply alone is correct — the review is
+paused waiting on your response, not on a new submission.
+
+### Verifying it worked
+
+The clean signal is the product state. All three currently read
+`READY_TO_SUBMIT`; once they are attached and the submission goes in, they move
+to `WAITING_FOR_REVIEW` (then `IN_REVIEW`). That is checkable without the UI —
+ask Claude to re-run the state check, or watch the badges next to each product
+under **Monetization → Subscriptions / In-App Purchases**.
 
 **Other confirmed submission facts:**
 
