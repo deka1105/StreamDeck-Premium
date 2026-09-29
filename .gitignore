@@ -22,6 +22,18 @@ mobile/ios/Pods/React-Core-prebuilt/React.xcframework/ios-arm64_x86_64-simulator
 # macOS
 .DS_Store
 
+# Signing material — private keys and certificates must never be committed.
+# mobile/.gitignore covered these already; the repo root did not, so a .p12
+# exported next to the desktop build would have been committable.
+*.p12
+*.pfx
+*.p8
+*.pem
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+
 # Vercel
 .vercel
 
