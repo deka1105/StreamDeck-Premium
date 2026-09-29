@@ -217,14 +217,39 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
     );
   }
 
-  if (!permission.granted) {
+  // Landing screen. Shown whether or not the camera has been granted, so it is
+  // always the first thing seen and always reachable back from the scanner.
+  if (!scanning) {
+    const granted = permission.granted;
     return (
       <View style={styles.center}>
         <Text style={styles.title}>Pair with your Mac</Text>
-        <Text style={styles.dim}>We need the camera to scan the pairing QR code.</Text>
-        <Pressable style={styles.grantButton} onPress={requestPermission}>
-          <Text style={styles.grantText}>Grant camera access</Text>
+        <Text style={styles.dim}>
+          {granted
+            ? "Scan the QR code in the desktop app’s “Pair a phone” window."
+            : "We need the camera to scan the pairing QR code."}
+        </Text>
+        <Pressable
+          style={styles.grantButton}
+          onPress={async () => {
+            setError(null);
+            if (granted) {
+              handled.current = false;
+              setScanning(true);
+              return;
+            }
+            const res = await requestPermission();
+            // Go straight into the scanner if they just allowed it, so granting
+            // still costs one tap rather than two.
+            if (res?.granted) {
+              handled.current = false;
+              setScanning(true);
+            }
+          }}
+        >
+          <Text style={styles.grantText}>{granted ? "Scan QR code" : "Grant camera access"}</Text>
         </Pressable>
+        {error ? <Text style={styles.scanError}>{error}</Text> : null}
         <Pressable style={styles.demoButton} onPress={startDemo}>
           <Text style={styles.demoButtonText}>Explore the demo instead</Text>
         </Pressable>
@@ -236,6 +261,12 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
     );
   }
 
+  const leaveScanner = () => {
+    handled.current = false;
+    setError(null);
+    setScanning(false);
+  };
+
   return (
     <View style={StyleSheet.absoluteFill}>
       <CameraView
@@ -245,6 +276,15 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
         onBarcodeScanned={onScan}
       />
       <View style={styles.scanOverlay}>
+        <Pressable
+          style={styles.scanBack}
+          onPress={leaveScanner}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+        >
+          <Text style={styles.scanBackText}>‹ Back</Text>
+        </Pressable>
         <View style={styles.reticle} pointerEvents="none" />
         <Text style={styles.scanHint} pointerEvents="none">
           Point at the QR in the desktop app’s “Pair a phone” window
