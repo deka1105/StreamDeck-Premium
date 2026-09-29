@@ -83,11 +83,21 @@ can create one:
 3. Download the `.cer`, double-click to install into the login keychain.
 4. `npm run check:signing` — it should now list it as usable.
 
-Then pin it so electron-builder can't pick the wrong one:
+Then pin it so electron-builder can't pick the wrong one — **without** the
+`Developer ID Application:` prefix, which electron-builder rejects outright
+(`⨯ Please remove prefix "Developer ID Application:" from the specified name`):
 
 ```json
-"mac": { "identity": "Developer ID Application: Your Name (TEAMID)" }
+"mac": { "identity": "Your Name (TEAMID)" }
 ```
+
+That name can be ambiguous — an `Apple Distribution` certificate usually carries
+the same `Name (TEAMID)` suffix. electron-builder resolves it by target (`dmg`
+picks Developer ID Application, `mas` picks Apple Distribution), and the
+`afterSign` hook refuses to notarize if the wrong one was used, so a mistake
+fails the build rather than shipping. To remove the ambiguity entirely, pin the
+certificate's SHA-1 from `security find-identity -v -p codesigning` instead of
+the name.
 
 ### Notarization credentials
 
