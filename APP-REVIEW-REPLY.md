@@ -71,9 +71,9 @@ Subscription group localization ("DeskAssist Pro") is present.
 ### Steps
 
 1. Open **[appstoreconnect.apple.com](https://appstoreconnect.apple.com)** and
-   sign in. Use the Apple ID that has access to team **4LX3D498MB** — your own
-   (`dekisuki05@gmail.com`, Admin) is sufficient; this does not need the Account
-   Holder.
+   sign in with the developer account for team **4LX3D498MB** (the Account
+   Holder address). Any Admin on the team can do this step, but signing in as
+   the Account Holder avoids permission surprises.
 
 2. **Apps** → **DeskAssist**.
 
