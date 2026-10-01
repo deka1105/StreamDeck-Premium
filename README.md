@@ -116,9 +116,10 @@ native phone app  ──AES-256-GCM over your LAN──▶  macOS host app  ─�
 | **Phone app** | Native iOS/Android deck — scans a QR to pair; editable, **resizable** grid of tiles | Expo / React Native (TS) | [`mobile/`](mobile/) |
 | **Desktop host** | Menu-bar/tray app that pairs with the phone and runs the actions | Electron + electron-builder | [`desktop/`](desktop/) |
 
-> There's also a **legacy browser-based deck** (Next.js) in `src/` + `host-agent/`
-> — the original version. It still works but is superseded by the native app +
-> desktop host. See [Legacy web deck](#legacy-web-deck).
+> There's also a **legacy browser-based deck** (Next.js), archived under
+> [`Extras/legacy-web-deck/`](Extras/legacy-web-deck/) — the original version. It
+> still works but is superseded by the native app + desktop host. See
+> [Legacy web deck](#legacy-web-deck).
 
 ### Action types
 
