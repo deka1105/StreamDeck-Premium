@@ -245,22 +245,24 @@ several phones — opt-in, and never the default, because the current answer to
 
 ---
 
-## Judge access **[PENDING — action required]**
+## Judge access
 
-Devpost requires judges be able to test the premium features. Two routes:
+Not applicable on the Next Gen path — there is no published store listing for a
+judge to purchase from, so the free-trial / promo-code requirement has nothing
+to attach to. Judging is on the demo video and the open-source code, both of
+which are provided.
 
-1. **Promo codes** — App Store Connect → Users and Access → generate codes for
-   the in-app purchases. Requires the app and its products to be approved first.
-2. **A free trial / introductory offer** on the monthly subscription, which lets
-   a judge unlock Pro without payment.
+The monetization is still fully inspectable:
 
-Neither is possible until the three in-app purchase products are in review and
-approved. As of now they are `READY_TO_SUBMIT` and are **not** attached to the
-submitted version — that must be fixed first.
+- **Free vs Pro** section of the [README](https://github.com/deka1105/StreamDeck-Premium#free-vs-pro)
+- `mobile/src/purchases.ts` — the entitlement is read from RevenueCat's
+  `CustomerInfo`, never from a local flag
+- `mobile/src/Paywall.tsx` — the reason-aware paywall
+- The demo video shows the paywall opening from both routes (the Pro pill and a
+  free-tier limit), so the purchase path is visible without being transacted
 
-If neither lands in time, say so plainly in the submission and offer judges a
-TestFlight invite plus a sandbox walkthrough. An honest note reads far better
-than a dead promo code.
+If a judge wants hands-on access to the premium tier, we can issue a TestFlight
+invite on request.
 
 ---
 
