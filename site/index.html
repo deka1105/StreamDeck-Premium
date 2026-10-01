@@ -501,7 +501,11 @@
   <div class="hero">
     <div class="wrap grid">
       <div>
-        <span class="eyebrow hero-anim" style="animation-delay:.05s">Phone → Computer · end-to-end encrypted</span>
+        <div class="hero-anim" style="animation-delay:.04s;display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <img src="/app-icon.png" alt="DeskAssist app icon" width="52" height="52"
+               style="width:52px;height:52px;border-radius:13px;box-shadow:0 6px 20px rgba(0,0,0,.45)" />
+          <span class="eyebrow" style="margin:0">Phone → Computer · end-to-end encrypted</span>
+        </div>
         <h1 class="hero-anim" style="animation-delay:.12s">Your phone is the <span class="accent">button.</span></h1>
         <p class="lead hero-anim" style="animation-delay:.2s">A native app pairs with your computer by scanning a QR — encrypted, over your own Wi-Fi. Then a grid of tiles launches apps, opens sites, fires shortcuts, or types text on your Mac or PC.</p>
         <div class="cta hero-anim" style="animation-delay:.28s">
@@ -776,7 +780,7 @@
       <div class="steps">
         <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Run the desktop host</strong><p>Install the menu-bar app (macOS/Windows), or run it from source. It shows a pairing QR.</p><div class="code"><pre>cd desktop &amp;&amp; npm install
 npm start  <span class="c"># tray app + QR window</span></pre></div></div></div>
-        <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Install the phone app</strong><p>Build a dev or standalone client — the Android APK also builds in CI.</p><div class="code"><pre>cd mobile &amp;&amp; npm install
+        <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Install the phone app</strong><p>iOS is in review on the App Store. Until it lands, build it yourself from source — the repo is open.</p><div class="code"><pre>cd mobile &amp;&amp; npm install
 npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></div></div>
         <div class="step-row reveal"><div class="n"></div><div class="body"><strong>Scan the QR to pair</strong><p>Both devices on the same Wi-Fi — the channel is end-to-end encrypted. Then tap tiles.</p><div class="code"><pre><span class="a">Pair a phone</span> → scan → paired ✓</pre></div></div></div>
       </div>
