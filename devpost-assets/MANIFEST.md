@@ -36,20 +36,22 @@ and is how every launcher works, and the tile icons are standard Unicode emoji
 rather than any company's logo — so this is low risk. If you want it airtight,
 rename a few default tiles before recording.
 
-**Free trial or promo code.** Required: *"Either a free trial in your app, or a
-promo code so judges can unlock the in-app purchase and test all premium
-features."*
-
-Neither exists yet. Promo codes need approved in-app purchases, and the three
-products are still `READY_TO_SUBMIT` in an unsubmitted draft — so the realistic
-route is a **free trial**: App Store Connect → Subscriptions → the monthly
-product → **Introductory Offer** → free trial. That can be configured now and
-does not depend on the app being approved.
-
 ## Not required for Next Gen
 
-A URL to a fully published App Store listing. The Next Gen path replaces it:
+**A URL to a fully published App Store listing.** The Next Gen path replaces it:
 *"submit a video and source code instead of a published store listing."*
+
+**A free trial or promo code.** The requirement exists so judges can unlock the
+in-app purchase on a published app. On the Next Gen path there is no published
+listing for a judge to buy from, so the clause has nothing to attach to —
+judging is on the video and the source.
+
+The monetization work is still evidenced for judges without it: the Free vs Pro
+section of the README, the tier table and reasoning in the submission text, the
+entitlement logic in [`mobile/src/purchases.ts`](../mobile/src/purchases.ts),
+and the reason-aware paywall in
+[`mobile/src/Paywall.tsx`](../mobile/src/Paywall.tsx). Show the paywall opening
+in the video so the purchase path is visible even though it is not transacted.
 
 - **Source code:** https://github.com/deka1105/StreamDeck-Premium (public, MIT)
 - App Store status: version 1.0.0 submitted 29 Sep, Waiting for Review
