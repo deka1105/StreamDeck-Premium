@@ -139,7 +139,7 @@ https://github.com/deka1105/StreamDeck-Premium
 ## ▸ Website
 
 ```
-https://deskassist.vercel.app
+https://deskassist.sdfolio.com
 ```
 
 ## ▸ Demo video URL
@@ -178,7 +178,7 @@ your own network. No account, no cloud, no server in the middle.
 Built with Expo / React Native, an Electron host, and RevenueCat.
 
 Source (MIT): https://github.com/deka1105/StreamDeck-Premium
-Site: https://deskassist.vercel.app
+Site: https://deskassist.sdfolio.com
 
 Submitted to RevenueCat Shipaton 2026 — Next Gen Award.
 ```

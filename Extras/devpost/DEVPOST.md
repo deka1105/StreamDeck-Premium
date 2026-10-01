@@ -182,7 +182,7 @@ Vercel (site)
 ## Links
 
 - **Source:** https://github.com/deka1105/StreamDeck-Premium **[PENDING — make public]**
-- **Site / Terms / Privacy:** https://deskassist.vercel.app
+- **Site / Terms / Privacy:** https://deskassist.sdfolio.com
 - **App Store:** **[PENDING — awaiting review]**
 - **Demo video:** **[PENDING — record]**
 

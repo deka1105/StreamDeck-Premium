@@ -17,7 +17,7 @@ guidelines Apple named in this rejection.
 **The Notes field in App Store Connect is stale.** It still holds the earlier
 1,287-character version, which tells the reviewer:
 
-> Host download: https://deskassist.vercel.app
+> Host download: https://deskassist.sdfolio.com
 
 That page has no download link, and its only outbound link points at a private
 GitHub repository that 404s for anyone else. A reviewer who follows it finds

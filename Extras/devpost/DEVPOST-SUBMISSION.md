@@ -239,7 +239,7 @@ several phones — opt-in, and never the default, because the current answer to
 ## Try it out
 
 - **Source (MIT):** https://github.com/deka1105/StreamDeck-Premium
-- **Site, Terms & Privacy:** https://deskassist.vercel.app
+- **Site, Terms & Privacy:** https://deskassist.sdfolio.com
 - **App Store:** **[PENDING — version 1.0.0 submitted 29 Sep, currently Waiting for Review]**
 - **Demo video:** **[PENDING — record and upload]**
 
