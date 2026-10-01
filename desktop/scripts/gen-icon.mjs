@@ -175,7 +175,12 @@ for (const [name, size] of [["trayTemplate.png", 22], ["trayTemplate@2x.png", 44
   writeFileSync(join(__dirname, "..", "assets", name), encodePng(size, tileAlpha(size)));
 }
 
-mkdirSync(join(__dirname, "..", "build"), { recursive: true });
-writeFileSync(join(__dirname, "..", "build", "icon.png"), encodePngRGBA(1024, appIcon(1024)));
+// NOTE: build/icon.png is no longer generated here. The app icon is now the real
+// DeskAssist artwork (same as the phone app), committed as a tracked asset and
+// laid out on Apple's macOS icon grid — 824x824 of artwork centred on a 1024
+// transparent canvas with a ~22.5% corner radius. Regenerating a placeholder over
+// it on every `npm run dist` would silently replace the brand icon with a drawn
+// stand-in. `appIcon()` / `encodePngRGBA()` below are kept only so a placeholder
+// can be re-made if the artwork is ever lost.
 
-console.log("wrote assets/trayTemplate.png, assets/trayTemplate@2x.png, build/icon.png");
+console.log("wrote assets/trayTemplate.png, assets/trayTemplate@2x.png");
