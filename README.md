@@ -323,9 +323,11 @@ only downloadable by people with repo access.
 
 ## Legacy web deck
 
-The original browser-based version still lives at the repo root:
+The original browser-based version is archived under
+[`Extras/legacy-web-deck/`](Extras/legacy-web-deck/):
 
 ```bash
+cd Extras/legacy-web-deck
 npm install
 npm run dev      # Next.js deck server on :3000
 npm run agent    # host agent that executes actions
@@ -342,15 +344,18 @@ too — see [Security](#security).)
 ## Repository layout
 
 ```
-desktop/     Electron host — pairing window, tray, OS executor, installer packaging
 mobile/      Expo phone app — QR pairing, crypto, resizable deck, snippets, send-text
-site/        Landing page + privacy/terms (static HTML)
+desktop/     Electron host — pairing window, tray, OS executor, installer packaging
+site/        Landing page + privacy/terms (static HTML, deployed to Vercel)
 docs/        Screenshots and the demo video used by this README
-src/         Legacy Next.js web deck (+ src/lib shared model)
-host-agent/  Legacy Node agent for the web deck
-brag-output/ Launch-video composition (Hyperframes) and its render
+Extras/      Archived material — see Extras/README.md
 SECURE-PAIRING-PLAN.md   Protocol, threat model, and build stages
 ```
+
+The three things worth reading are `mobile/`, `desktop/` and
+[`SECURE-PAIRING-PLAN.md`](SECURE-PAIRING-PLAN.md). Everything that isn't the
+product — the archived web deck, submission paperwork, launch-video sources — is
+under [`Extras/`](Extras/) so it stays out of the way.
 
 ## License
 
