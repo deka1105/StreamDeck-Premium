@@ -42,3 +42,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Google Play credentials. The service-account JSON grants upload rights to the
+# Play listing, and the keystore is unrecoverable — lose it and the package name
+# can never be updated again. Neither belongs in git.
+play-service-account.json
+*-service-account.json
+*.keystore
+*.jks
