@@ -17,11 +17,17 @@
     },
     "preview": {
       "distribution": "internal",
-      "environment": "preview"
+      "environment": "preview",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "environment": "production"
+      "environment": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {
@@ -32,6 +38,10 @@
         "ascApiKeyId": "UJ39YTD9H2",
         "ascApiKeyIssuerId": "b3fa0d09-6ec8-47b0-a8ca-3329bcf4e4a3",
         "appleTeamId": "4LX3D498MB"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./play-service-account.json",
+        "track": "internal"
       }
     }
   }
