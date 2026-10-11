@@ -39,17 +39,27 @@ Replace with the production `goog_` key before any Android build.
 
 ## 2. Blocks a clean release
 
-### 2.1 The app icon is the Expo placeholder
-`mobile/assets/icon.png` is the stock template, with design guide lines still on
-it — concentric circles, dashed diagonals, a centre crosshair. It is baked into
-build 6, so it is currently the icon on the App Store submission.
+### 2.1 The Expo placeholder icon is baked into build 6
+The stock template icon — concentric circles, dashed diagonals, a centre
+crosshair — came in with the scaffold (`d1cd258`) and is the icon on the App
+Store submission.
 
-A replacement is generated and ready (the nine-tile deck on the site's
-`#0ea5e9 → #6366f1` brand gradient). Applying it needs:
-- `mobile/assets/icon.png` (full-bleed 1024, opaque) → requires a new build
+Every *source* is now the nine-tile deck on the `#0ea5e9 → #6366f1` brand
+gradient:
+- `mobile/assets/icon.png` (full-bleed 1024, opaque) → done, `79f53f6`
 - `desktop/build/icon.png` (824 artwork on 1024 transparent, 22.5% radius) → done
-- `site/app-icon.png`, `devpost-assets/app-icon-1024.png` → no build needed
-- Android adaptive-icon foreground regenerated to match
+- `site/app-icon.png`, `Extras/devpost/assets/app-icon-1024.png` → done
+- Android adaptive foreground/background/monochrome → done
+- `Extras/play-assets/play-icon-512.png` → done, downscaled from `assets/icon.png`
+  so the two stores show identical artwork
+
+**What remains is a rebuild, not an asset.** `mobile/ios/` is gitignored, and its
+asset catalog was generated on Sep 29 — before the redesign — so it froze the
+placeholder and no later build refreshed it. The local catalog has been
+overwritten by hand, and `expo prebuild -p ios` regenerates it correctly from
+`assets/icon.png`. Until build 7 ships, the App Store listing keeps the
+placeholder. Android is unaffected: its launcher res was regenerated after the
+redesign (Oct 9 15:28 vs sources at 15:26).
 
 ### 2.2 Export-compliance declaration is wrong
 `ITSAppUsesNonExemptEncryption: false` in `mobile/app.json`, while the app
