@@ -216,9 +216,15 @@ export function Paywall({
                 </Text>
               </View>
             ) : packages && packages.length === 0 ? (
+              // The store answered, and offered nothing. That is what happens
+              // before the in-app purchases are approved — not a network fault.
+              // "Check your connection" sends the reader to fix something that
+              // isn't broken, and reads to App Review as a purchase flow that
+              // fails rather than a product that isn't on sale yet.
               <View style={styles.notice}>
                 <Text style={styles.noticeText}>
-                  No pricing is available right now. Check your connection and try again.
+                  Pro isn’t available for purchase yet. Everything on the free tier keeps
+                  working.
                 </Text>
               </View>
             ) : (
