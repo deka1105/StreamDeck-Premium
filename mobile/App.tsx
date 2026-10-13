@@ -4,6 +4,7 @@ import {
   Alert,
   Animated,
   Image,
+  Linking,
   PanResponder,
   Platform,
   Pressable,
@@ -247,9 +248,21 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
             }
           }}
         >
-          <Text style={styles.grantText}>{granted ? "Scan QR code" : "Grant camera access"}</Text>
+          {/* Apple 5.1.1(iv): a screen shown ahead of the system prompt must not
+              push the user toward allowing. The button states what happens next
+              ("Continue"), never what to answer. */}
+          <Text style={styles.grantText}>{granted ? "Scan QR code" : "Continue"}</Text>
         </Pressable>
         {error ? <Text style={styles.scanError}>{error}</Text> : null}
+        {/* Once iOS stops offering the prompt, the only route to the camera is
+            Settings — without this the scanner is simply unreachable. */}
+        {!granted && permission && !permission.canAskAgain ? (
+          <Pressable onPress={() => Linking.openSettings()}>
+            <Text style={styles.settingsLink}>
+              Camera access is off. Turn it on in Settings, or use the demo below.
+            </Text>
+          </Pressable>
+        ) : null}
         <Pressable style={styles.demoButton} onPress={startDemo}>
           <Text style={styles.demoButtonText}>Explore the demo instead</Text>
         </Pressable>
@@ -1338,6 +1351,13 @@ const styles = StyleSheet.create({
   // reviewer with no host must be able to see the product, not just a scanner.
   demoButton: { marginTop: 12, borderWidth: 1, borderColor: "rgba(56,189,248,0.45)", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 13 },
   demoButtonText: { color: "#7dd3fc", fontWeight: "700", fontSize: 15 },
+  settingsLink: {
+    color: "#38bdf8",
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 12,
+    paddingHorizontal: 24,
+  },
   demoNote: { color: "#64748b", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
   demoBanner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12 },
   demoBannerText: { flexShrink: 1, color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
