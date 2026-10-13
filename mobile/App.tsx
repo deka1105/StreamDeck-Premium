@@ -227,7 +227,7 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
         <Text style={styles.dim}>
           {granted
             ? "Scan the QR code in the desktop app’s “Pair a phone” window."
-            : "We need the camera to scan the pairing QR code."}
+            : "Pairing reads a QR code shown by the desktop app."}
         </Text>
         <Pressable
           style={styles.grantButton}
