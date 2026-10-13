@@ -11,13 +11,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dekisuki05.deskassist",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
+        "ITSAppUsesNonExemptEncryption": true,
         "NSLocalNetworkUsageDescription": "DeskAssist connects to your computer on your local network to send actions.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }
       },
-      "buildNumber": "7"
+      "buildNumber": "8"
     },
     "android": {
       "package": "com.dekisuki05.deskassist",
