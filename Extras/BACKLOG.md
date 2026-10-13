@@ -35,7 +35,20 @@ relationship (confirmed by probing every candidate name), and
 `inAppPurchaseSubmissions` rejects with `STATE_ERROR` while the app has no
 approved version. It must be done in the web UI, on the version page.
 
-### 1.3 Android ships a Test Store key
+### 1.3 Google Payments merchant account is not set up
+The Play mirror of 1.1. Monetize → Products is locked behind *"You need to set
+up a Google Payments merchant account."* No merchant account means no in-app
+products, which means no Play mapping in RevenueCat, no `goog_` key, and a
+paywall with nothing to show. Needs legal name, tax details (PAN/GST) and a
+bank account.
+
+### 1.4 Closed testing needs 12 testers for 14 days
+The Alpha track has been live since Oct 11 (full rollout, 178 regions) but sits
+at **0 testers opted-in**. Production access requires 12 opted-in testers
+running for 14 continuous days, and the clock does not start until the twelfth
+person joins. This is the longest pole on Android and nothing shortens it.
+
+### 1.5 Android ships a Test Store key
 `mobile/.env.local` has `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=test_…`. RevenueCat's
 SDK **deliberately terminates the app on launch** when it finds a Test Store key
 in a Release build. A Play release would crash on open for every user.
