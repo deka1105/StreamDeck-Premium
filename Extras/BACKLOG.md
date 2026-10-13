@@ -118,6 +118,18 @@ Still outstanding, and unavoidable for an app that bundles its own crypto:
   and its algorithms — an email, not an application, but it recurs yearly.
 - France has a separate local declaration Apple surfaces for apps sold there.
 
+### 2.3 The two stores run different code
+The bundle on Play is versionCode 1 from Oct 9. Apple's guideline 5.1.1(iv) fix
+on Oct 13 — the camera button renamed "Grant camera access" to "Continue", the
+neutral permission line, and the Settings fallback in `mobile/App.tsx` — is in
+iOS build 8 but **not** in the Android bundle. `app.json` already carries
+`versionCode: 2` for the next upload.
+
+Left deliberately: Google never objected to the old wording, and replacing the
+bundle would mean cutting a new release on a closed test that only just went
+live. Ship the parity fix with the next Android build rather than disturbing a
+running test.
+
 ### 2.3 The macOS DMG cannot be built
 `npm run dist:mac:release` deadlocks in electron-builder's signing stage: twice
 observed at 0% CPU with no `codesign` child, ~22 minutes, keychain unlocked and
