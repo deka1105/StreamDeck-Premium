@@ -61,11 +61,29 @@ overwritten by hand, and `expo prebuild -p ios` regenerates it correctly from
 placeholder. Android is unaffected: its launcher res was regenerated after the
 redesign (Oct 9 15:28 vs sources at 15:26).
 
-### 2.2 Export-compliance declaration is wrong
-`ITSAppUsesNonExemptEncryption: false` in `mobile/app.json`, while the app
-performs X25519 key exchange and AES-256-GCM on every command. Deferred
-deliberately to ship, but it needs correcting — and possibly a self-classification
-report — in 1.0.1. Changing it requires a new build.
+### 2.2 Export-compliance declaration — corrected in build 8
+`ITSAppUsesNonExemptEncryption` was `false` through build 7, which was wrong:
+`mobile/src/crypto.ts` bundles `@noble/*` and performs X25519 key agreement,
+HKDF-SHA256, HMAC-SHA256 and AES-256-GCM on every command. The usual exemption
+covers apps that only *call* Apple's platform crypto; bundling an
+implementation does not qualify. Set to `true` in build 8.
+
+**What the honest answer now obliges.** Declaring non-exempt encryption puts the
+app under US EAR Category 5 Part 2. Standard published algorithms at these key
+lengths are normally fine under License Exception ENC, but it is not free:
+
+- App Store Connect asks for export-compliance information per version, and may
+  want a CCATS/ERN code. Once one exists it goes in
+  `ITSEncryptionExportComplianceCode` and the questions stop.
+- Without a code, the route is an annual **self-classification report** to BIS
+  (`crypt-supp8@bis.doc.gov`) and the NSA (`enc@nsa.gov`), listing the product
+  and its algorithms. It is an email, not an application, but it is a real
+  obligation and it recurs.
+- France has an additional local declaration requirement that Apple surfaces
+  separately for apps distributed there.
+
+None of this blocks review in the normal case, but it can add a round trip if
+Apple asks for documentation that does not exist yet.
 
 ### 2.3 The macOS DMG cannot be built
 `npm run dist:mac:release` deadlocks in electron-builder's signing stage: twice
