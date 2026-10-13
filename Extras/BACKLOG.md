@@ -48,12 +48,19 @@ at **0 testers opted-in**. Production access requires 12 opted-in testers
 running for 14 continuous days, and the clock does not start until the twelfth
 person joins. This is the longest pole on Android and nothing shortens it.
 
-### 1.5 Android ships a Test Store key
-`mobile/.env.local` has `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=test_…`. RevenueCat's
-SDK **deliberately terminates the app on launch** when it finds a Test Store key
-in a Release build. A Play release would crash on open for every user.
+### 1.5 Android has no RevenueCat key, so Pro cannot be sold
+`EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in `mobile/.env.local` is **empty**, and the
+bundle on Play was built after it was blanked (key cleared 15:27, AAB built
+15:43 on Oct 9), so the shipped app is safe — it runs entirely on the free tier
+and the paywall says so.
 
-Replace with the production `goog_` key before any Android build.
+This was previously a `test_` key, which matters because RevenueCat's SDK
+**deliberately terminates the app on launch** when it finds a Test Store key in
+a Release build. Do not reinstate one.
+
+Filling it needs the production `goog_` key, which needs in-app products, which
+needs the merchant account in 1.3. Until then every Android user is on the free
+tier.
 
 ---
 
