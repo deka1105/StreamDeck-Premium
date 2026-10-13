@@ -3,8 +3,15 @@
 Everything found during the Shipaton push, ordered by what it costs you if left
 alone. Each item names where it lives so it can be picked up cold.
 
-Status as of 1 October 2026: iOS 1.0.0 (build 6) in review · repo public (MIT) ·
-site live · Shipaton Next Gen submitted.
+Status as of 13 October 2026: iOS 1.0.0 **build 8** uploaded, VALID, attached to
+the version, state `PREPARE_FOR_SUBMISSION` — **not yet submitted** · Play store
+listing **Live**, closed-testing Alpha running since Oct 11 on versionCode 1 with
+**0 of 12 testers** · repo public (MIT) · site live · Shipaton Next Gen
+submitted.
+
+Build 8 resolved Apple's second rejection (2.3.8 placeholder icons, 5.1.1(iv)
+camera permission wording) and dropped the false export-compliance declaration.
+What is left to ship on either store is in §1 and needs a human.
 
 ---
 
