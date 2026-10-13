@@ -68,22 +68,35 @@ HKDF-SHA256, HMAC-SHA256 and AES-256-GCM on every command. The usual exemption
 covers apps that only *call* Apple's platform crypto; bundling an
 implementation does not qualify. Set to `true` in build 8.
 
-**What the honest answer now obliges.** Declaring non-exempt encryption puts the
-app under US EAR Category 5 Part 2. Standard published algorithms at these key
-lengths are normally fine under License Exception ENC, but it is not free:
+**`true` in the plist is not uploadable without a code.** Tried in build 8 and
+Apple's validator rejected the package outright:
 
-- App Store Connect asks for export-compliance information per version, and may
-  want a CCATS/ERN code. Once one exists it goes in
-  `ITSEncryptionExportComplianceCode` and the questions stop.
-- Without a code, the route is an annual **self-classification report** to BIS
-  (`crypt-supp8@bis.doc.gov`) and the NSA (`enc@nsa.gov`), listing the product
-  and its algorithms. It is an email, not an application, but it is a real
-  obligation and it recurs.
-- France has an additional local declaration requirement that Apple surfaces
-  separately for apps distributed there.
+```
+VERIFY FAILED with 1 error
+90592: Invalid Export Compliance Code. The export compliance key value []
+in the app's Info.plist doesn't match the key value of the app's export
+compliance documentation.
+```
 
-None of this blocks review in the normal case, but it can add a round trip if
-Apple asks for documentation that does not exist yet.
+Setting `ITSAppUsesNonExemptEncryption: true` makes
+`ITSEncryptionExportComplianceCode` mandatory, and the code has to match
+documentation already filed on Apple's side. There is none, so the value was
+empty and `altool --validate-app` failed before any upload.
+
+**What shipped instead:** the key is now **absent** from `infoPlist`. That is not
+a false declaration — it hands the question to App Store Connect, which asks for
+export-compliance information during submission and accepts an answer there
+without a pre-existing code. `false` (builds 1–7) was the actual misstatement.
+
+Still outstanding, and unavoidable for an app that bundles its own crypto:
+
+- Answer Apple's export-compliance questions honestly at each submission.
+- The durable fix is a CCATS/ERN code from BIS; once it exists it goes in
+  `ITSEncryptionExportComplianceCode` and the prompts stop.
+- Failing that, the route is an annual **self-classification report** to BIS
+  (`crypt-supp8@bis.doc.gov`) and the NSA (`enc@nsa.gov`) listing the product
+  and its algorithms — an email, not an application, but it recurs yearly.
+- France has a separate local declaration Apple surfaces for apps sold there.
 
 ### 2.3 The macOS DMG cannot be built
 `npm run dist:mac:release` deadlocks in electron-builder's signing stage: twice
