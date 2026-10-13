@@ -59,7 +59,7 @@ Replace with the production `goog_` key before any Android build.
 
 ## 2. Blocks a clean release
 
-### 2.1 The Expo placeholder icon is baked into build 6
+### 2.1 The Expo placeholder icon — fixed in build 8
 The stock template icon — concentric circles, dashed diagonals, a centre
 crosshair — came in with the scaffold (`d1cd258`) and is the icon on the App
 Store submission.
@@ -130,7 +130,7 @@ bundle would mean cutting a new release on a closed test that only just went
 live. Ship the parity fix with the next Android build rather than disturbing a
 running test.
 
-### 2.3 The macOS DMG cannot be built
+### 2.4 The macOS DMG cannot be built
 `npm run dist:mac:release` deadlocks in electron-builder's signing stage: twice
 observed at 0% CPU with no `codesign` child, ~22 minutes, keychain unlocked and
 `no-timeout`. Everything around it is correct — Developer ID Application cert
@@ -141,7 +141,7 @@ Next things to try: pin the certificate SHA-1 instead of the name; sign the
 bundle manually outside electron-builder; or `--docker` for a deterministic
 environment.
 
-### 2.4 No release, so the README download link is dead
+### 2.5 No release, so the README download link is dead
 No GitHub release exists. The README's **Download** section points at
 `/releases/latest`, which 404s. Blocked on 2.3; once a notarized DMG exists:
 
