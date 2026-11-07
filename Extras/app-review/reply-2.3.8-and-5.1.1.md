@@ -1,12 +1,12 @@
 # Reply — Submission 0f75f483-27cc-4ed3-87e7-fa8ece3a07cc
 
-Both items are fixed in build 7. Paste into the Resolution Center reply box.
+Both items are fixed in build 8. Paste into the Resolution Center reply box.
 
 ---
 
 Hello,
 
-Thank you for the detailed review. Both issues are fixed in build 7, now
+Thank you for the detailed review. Both issues are fixed in build 8, now
 uploaded.
 
 **Guideline 2.3.8 — placeholder icons**
@@ -16,7 +16,7 @@ with the project scaffold, and it still carried the template's design guide
 lines. Our intended icon had been designed but the iOS asset catalogue was
 generated before that change and never refreshed, so the placeholder shipped.
 
-Build 7 contains the final icon — a nine-tile deck mark on a blue gradient — and
+Build 8 contains the final icon — a nine-tile deck mark on a blue gradient — and
 it is now the same artwork everywhere: the app binary, the App Store listing, the
 macOS companion app, and our website. Users searching their device will see the
 same mark they saw on the store.
