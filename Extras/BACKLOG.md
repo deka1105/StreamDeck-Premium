@@ -4,86 +4,64 @@ Everything found during the Shipaton push, ordered by what it costs you if left
 alone. Each item names where it lives so it can be picked up cold.
 
 Status as of 13 November 2026: iOS 1.0.0 **build 8** was submitted (7 Nov) and
-**rejected again on 13 Nov** — guideline 2.1(b) (error on the In-App Purchase
-page) and 3.1.2(c) (dead Terms/Privacy links). Submission
+**rejected on 13 Nov** — guideline 2.1(b) (error on the In-App Purchase page)
+and 3.1.2(c) (dead Terms/Privacy links). Submission
 `b57c512c-73d0-4347-9c59-2e0d5a0e6918`, state `UNRESOLVED_ISSUES`, reviewed on an
-iPad Air 11-inch (M3). · Play store listing **Live**, closed-testing Alpha
-running since Oct 11 on versionCode 1 with **0 of 12 testers** · repo public
-(MIT) · **site moved to GitHub Pages** — the Vercel deployment is dead (see §1.6)
-· Shipaton Next Gen submitted.
+iPad Air 11-inch (M3). · Play listing **Live**, closed-testing Alpha running
+since Oct 11 on versionCode 1 with **0 of 12 testers** · repo public (MIT) ·
+site **moved to GitHub Pages** (§1.6).
 
-Build 8 resolved the *second* rejection. The third rejection is §1.1 (never
-fixed, now reached by a reviewer) plus §1.6 (new). Fix plan and the reply draft:
-`Extras/app-review/reply-2.1b-and-3.1.2c.md`.
-
-Build 8 resolved Apple's second rejection (2.3.8 placeholder icons, 5.1.1(iv)
-camera permission wording) and dropped the false export-compliance declaration.
-What is left to ship on either store is in §1 and needs a human.
+**In-app purchases were removed entirely on 13 November 2026.** Both rejections
+stop applying to an app that sells nothing, and the removal breaks the
+dependency on the Paid Applications Agreement — never completed, and the root
+cause of 2.1(b). What this cost and what it left to do: §1 below, and
+`Extras/app-review/reply-2.1b-and-3.1.2c.md` for the reply and the manual steps.
 
 ---
 
-## 1. Blocks revenue — nothing can be sold until these are done
+## 1. Shipping the free version
 
-### 1.1 Paid Applications agreement is not active — NOW A REJECTION
-No StoreKit product can be fetched until this is signed with bank and tax
-details complete. This is why the paywall reports *"No pricing is available"* —
-not a code bug.
+### 1.1 Paid Applications agreement — NO LONGER NEEDED
+It was never signed, so StoreKit returned no products, so the paywall showed an
+empty store, so App Review rejected under 2.1(b) on 13 Nov 2026. With no in-app
+purchases there is nothing to gate on it.
 
-**App Store Connect → Business → Agreements, Tax, and Banking.** Account Holder
-only; there is no API for agreements.
+Everything else about the three products was verified correct via the API —
+`READY_TO_SUBMIT`, attached to the submission at `READY_FOR_REVIEW`, review
+screenshots `COMPLETE`, 175 territories including USA, full price schedules — so
+the agreement really was the only cause. **If Pro ever returns, this is step
+one, not step last:** App Store Connect → Business → Agreements, Tax, and
+Banking, Account Holder only, no API.
 
-**This is no longer just a revenue block.** App Review reached the paywall on
-13 Nov 2026, saw the empty-store message, and rejected under guideline 2.1(b).
-Apple's message names the agreement directly. Everything else about the three
-products is verified correct via the API — all `READY_TO_SUBMIT`, all attached
-to the submission at `READY_FOR_REVIEW`, review screenshots `COMPLETE`, 175
-territories including USA, full price schedules — so the agreement is the only
-remaining cause. Sign it, then confirm on a device that the paywall loads three
-prices *before* replying.
+### 1.2 Remove the three products from the version — MANUAL, BLOCKS BUILD 9
+The products are still attached to submission `b57c512c` and must come off the
+version before it goes back for review.
 
-### 1.2 The three in-app purchases have never been submitted — DONE
-**Resolved.** Submission `b57c512c` carries five items: the app version plus the
-subscription group, both subscriptions and the one-time purchase, each at
-`READY_FOR_REVIEW`. The manual web-UI step below was done before the 7 Nov
-submission. Kept for the record.
+**No API route.** `DELETE /v1/reviewSubmissionItems/{id}` returns
+`409 STATE_ERROR.ENTITY_STATE_INVALID — "Item was already submitted"` for all
+four non-version items (tried 13 Nov; nothing changed). Web UI only: Apps →
+DeskAssist → App Store tab → version **1.0.0** → **In-App Purchases and
+Subscriptions** → deselect Pro Monthly (`2f5b54`), Pro Yearly (`2f5b54_Y`) and
+Pro Lifetime (`2f5b54_One`) → **Save**.
 
-### 1.2 (historical) The three in-app purchases have never been submitted
-`2f5b54` (monthly), `2f5b54_Y` (annual), `2f5b54_One` (lifetime) sit at
-`READY_TO_SUBMIT` in an unsubmitted draft review submission. Until they go
-through review with a version, StoreKit serves nothing even with the agreement
-active — and Apple's own 2.1 reply flagged it under guideline 3.1.1.
+The products can stay as drafts under Monetization. Nothing in the binary
+references them.
 
-There is **no API route** for this: `reviewSubmissionItems` has no IAP
-relationship (confirmed by probing every candidate name), and
-`inAppPurchaseSubmissions` rejects with `STATE_ERROR` while the app has no
-approved version. It must be done in the web UI, on the version page.
+### 1.3 Build 9 is required
+Build 8 still contains the paywall, the RevenueCat SDK and the dead
+`deskassist.sdfolio.com` links. No amount of metadata editing fixes a binary.
+`eas build -p ios --profile production`.
 
-### 1.3 Google Payments merchant account is not set up
-The Play mirror of 1.1. Monetize → Products is locked behind *"You need to set
-up a Google Payments merchant account."* No merchant account means no in-app
-products, which means no Play mapping in RevenueCat, no `goog_` key, and a
-paywall with nothing to show. Needs legal name, tax details (PAN/GST) and a
-bank account.
+### 1.4 Google Payments merchant account — NO LONGER NEEDED
+Was blocking Play in-app products. With no in-app purchases on either platform,
+it is moot. (Was: Monetize → Products locked behind "You need to set up a Google
+Payments merchant account.")
 
-### 1.4 Closed testing needs 12 testers for 14 days
-The Alpha track has been live since Oct 11 (full rollout, 178 regions) but sits
-at **0 testers opted-in**. Production access requires 12 opted-in testers
-running for 14 continuous days, and the clock does not start until the twelfth
-person joins. This is the longest pole on Android and nothing shortens it.
-
-### 1.5 Android has no RevenueCat key, so Pro cannot be sold
-`EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in `mobile/.env.local` is **empty**, and the
-bundle on Play was built after it was blanked (key cleared 15:27, AAB built
-15:43 on Oct 9), so the shipped app is safe — it runs entirely on the free tier
-and the paywall says so.
-
-This was previously a `test_` key, which matters because RevenueCat's SDK
-**deliberately terminates the app on launch** when it finds a Test Store key in
-a Release build. Do not reinstate one.
-
-Filling it needs the production `goog_` key, which needs in-app products, which
-needs the merchant account in 1.3. Until then every Android user is on the free
-tier.
+### 1.5 Closed testing needs 12 testers for 14 days
+Unchanged and still the longest pole on Android. The Alpha track has been live
+since Oct 11 (full rollout, 178 regions) but sits at **0 testers opted-in**.
+Production access requires 12 opted-in testers running for 14 continuous days,
+and the clock does not start until the twelfth person joins.
 
 ### 1.6 The website host was disabled — caused the 3.1.2(c) rejection
 Every page on `deskassist.sdfolio.com` *and* `deskassist.vercel.app` was
@@ -101,15 +79,21 @@ Worth knowing: the `deskassist` Vercel project sits under org
 
 - `.github/workflows/pages.yml` publishes `site/` on every push to `main`
 - live at <https://deka1105.github.io/StreamDeck-Premium/> (verified 200)
-- `site/index.html` asset paths made relative so it works under the subpath
-- App Store Connect updated via the API: Privacy Policy URL, Support URL,
-  Marketing URL, and the standard Apple EULA link appended to the description
-- `mobile/src/Paywall.tsx` now links the Pages URLs — **this needs build 9**;
-  build 8 still ships the dead ones
+- App Store Connect updated via the API: Privacy Policy URL, Support URL and
+  Marketing URL
+- `site/` rewritten for the free app: pricing section, the privacy policy's
+  RevenueCat section, and the terms' subscription section
 
-Restoring Vercel is optional and is now a marketing-site concern only. If it
-comes back, it must not become the only copy again. A custom domain (Hostinger
-or otherwise) can be pointed at Pages instead.
+Restoring Vercel is optional and now a marketing-site concern only. If it comes
+back it must not become the only copy again. A custom domain (Hostinger or
+otherwise) can point at Pages instead.
+
+### 1.7 Shipaton eligibility is forfeited
+`Extras/devpost/DEVPOST-SUBMISSION.md` records that Shipaton requires the
+RevenueCat SDK and at least one in-app purchase. DeskAssist now has neither, so
+the Next Gen Award submission no longer qualifies. This was a known, accepted
+cost of shipping free — not an oversight. The Devpost write-ups in
+`Extras/devpost/` still describe the monetized app and are now historical.
 
 ---
 
