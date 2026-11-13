@@ -91,7 +91,10 @@ export function Paywall({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [buying, setBuying] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  /** Purchase/restore failures only. A failed *price load* is never an error here. */
   const [error, setError] = useState<string | null>(null);
+  /** Bumped by Retry to re-run the offering fetch. */
+  const [attempt, setAttempt] = useState(0);
 
   const copy = PAYWALL_COPY[reason];
 
@@ -101,6 +104,7 @@ export function Paywall({
     // render picks the "store isn't configured" branch — no setState needed here
     // (`loadingPrices` below already requires `ready`).
     if (!ready) return;
+    setPackages(null); // back to the spinner on a retry
     (async () => {
       try {
         const offering = await fetchOffering();
@@ -111,15 +115,20 @@ export function Paywall({
         const annual = list.find((p) => p.packageType === PACKAGE_TYPE.ANNUAL);
         setSelectedId((annual ?? list[0])?.identifier ?? null);
       } catch (e) {
+        // Deliberately *not* shown as an error. A store that cannot be reached,
+        // or products that are not on sale yet, is not a broken app — and App
+        // Review reads a red SDK string on a purchase screen as a 2.1(b) bug
+        // (it did, on 13 Nov 2026). Fall through to the same calm "not available
+        // yet" notice an empty offering gets, and keep the detail for dev.
         if (!alive) return;
+        if (__DEV__) console.warn("[purchases] couldn't load the offering:", e);
         setPackages([]);
-        setError(e instanceof Error ? e.message : "Couldn't load pricing.");
       }
     })();
     return () => {
       alive = false;
     };
-  }, [ready]);
+  }, [ready, attempt]);
 
   const selected = useMemo(
     () => packages?.find((p) => p.identifier === selectedId) ?? null,
