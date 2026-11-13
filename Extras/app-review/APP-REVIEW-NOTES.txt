@@ -1,46 +1,50 @@
 IMPORTANT: you do not need a Mac, and you do not need an account, to review
-this app in full.
+this app in full. There are also no in-app purchases.
 
-DeskAssist turns an iPhone into a control surface for a computer. Because a
-reviewer will not have the companion Mac app running, the app ships a complete
-simulated mode so every feature can be exercised on the device alone.
+WHAT CHANGED IN THIS BUILD
+The previous rejection (13 Nov 2026) cited guideline 2.1(b) for an error on the
+In-App Purchase page and 3.1.2(c) for the Terms of Use and Privacy Policy links.
+
+Both are resolved by removal rather than repair: the paywall, the three products
+and the payment SDK have been taken out of the app entirely. DeskAssist is now
+free, with every feature available to everyone - unlimited profiles, pages and
+snippets, custom image tiles, and all five action types. There is no purchase
+screen left to show an error, and no auto-renewing subscription, so 3.1.2(c) no
+longer applies.
+
+The three in-app purchase products remain attached to the previous submission
+and could not be detached through the API. They are not referenced by the
+binary, which contains no payment SDK.
+
+The Privacy Policy, Support and Marketing URLs were also moved to a host with no
+payment dependency, after the previous host began returning HTTP 402:
+  https://deka1105.github.io/StreamDeck-Premium/privacy.html
 
 HOW TO REVIEW WITHOUT A MAC
 On the first screen, tap "Explore the demo instead". The entire app then runs
 against a simulated Mac:
-  - the 3x3 deck of tiles renders and responds to taps
+  - the deck of tiles renders and responds to taps
   - the running-apps screen populates with a simulated app list
   - Auto mode reacts to a rotating "focused app"
   - the snippet library sends text and reports the result
 A standing banner states that it is a simulation and that nothing is actually
-sent. No pairing, no network access, and no account are required.
+sent. No pairing, no network access and no account are required.
 
 NO ACCOUNTS
-The app has no sign-up, no sign-in, and no user accounts of any kind, so there
-is no account-deletion flow. Nothing is required to reach full functionality.
-No demo credentials are needed because there is nothing to log in to.
-
-IN-APP PURCHASE (DeskAssist Pro)
-Open the paywall either by tapping the "Pro" pill in the header, or by reaching
-any free-tier limit:
-  - adding a second profile          (free tier allows 1)
-  - adding a second page             (free tier allows 1)
-  - adding a fourth snippet          (free tier allows 3)
-  - choosing an image as a tile face (free tier allows emoji and text only)
-Pro removes all four limits. Purchases are processed by Apple In-App Purchase;
-entitlements are read through RevenueCat. There is no non-Apple payment path
-anywhere in the app.
+The app has no sign-up, no sign-in and no user accounts of any kind, so there is
+no account-deletion flow. No demo credentials are needed because there is
+nothing to log in to.
 
 NO USER-GENERATED CONTENT
 Snippets, tile labels and tile images are stored only on the device. Nothing is
-uploaded, shared, or visible to any other user, so there is no feed, no
+uploaded, shared or visible to any other user, so there is no feed, no
 messaging, and therefore no content reporting or blocking mechanism.
 
 WITH A MAC (entirely optional, not needed for review)
 The companion Mac host app shows a QR code. Scanning it performs an X25519 key
 exchange; every command afterwards is AES-256-GCM encrypted with a per-device
-key and sent directly from the phone to the Mac over the local network. There
-is no account and no server of ours in the path. The Mac host is distributed
+key and sent directly from the phone to the Mac over the local network. There is
+no account and no server of ours in the path. The Mac host is distributed
 separately as a free open-source download and is not required to evaluate the
 iPhone app.
 
@@ -52,5 +56,5 @@ computer. None of this affects the demo mode used for review.
 
 REGIONS
 The app behaves identically in every region. There is no geo-gating, no
-region-specific content, and no regional feature differences. All text is
+region-specific content and no regional feature differences. All text is
 English only.
