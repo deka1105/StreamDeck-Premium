@@ -34,13 +34,35 @@ import {
 } from "./purchases";
 
 // Apple rejects a screen selling an auto-renewable subscription if its
-// Terms/Privacy links are dead, so these must stay reachable. Source lives in
-// site/; deploy it with `cd site && vercel deploy --prod`. Both pages verified
-// returning 200 publicly with no auth wall.
-const SITE_BASE = "https://deskassist.sdfolio.com";
+// Terms/Privacy links are dead — guideline 3.1.2(c), and the reason the
+// 13 Nov 2026 review failed: every page on deskassist.sdfolio.com was answering
+// HTTP 402 DEPLOYMENT_DISABLED because the Vercel project had been switched off.
+//
+// These now point at GitHub Pages, published straight from site/ by
+// .github/workflows/pages.yml on every push to main. That host has no billing
+// state to lapse, so the links cannot go dead the way the Vercel ones did.
+// Re-verify both return 200 before every submission.
+const SITE_BASE = "https://deka1105.github.io/StreamDeck-Premium";
 
 const TERMS_URL = `${SITE_BASE}/terms.html`;
 const PRIVACY_URL = `${SITE_BASE}/privacy.html`;
+
+/**
+ * Guideline 3.1.2(c) requires the subscription's title, length and price to be on
+ * the purchase screen itself. Price and length per tier come from StoreKit and
+ * render in the package rows — but those rows disappear whenever the store can't
+ * be reached, which is exactly when a reviewer is looking. This block does not
+ * disappear, so the terms are stated either way.
+ */
+const SUBSCRIPTION_TERMS =
+  "DeskAssist Pro is an auto-renewing subscription, sold monthly (1 month) or " +
+  "yearly (1 year), and also as a one-time Lifetime purchase that never renews. " +
+  "Prices for each are shown above in your local currency. Payment is charged to " +
+  "your Apple Account at confirmation of purchase. A subscription renews " +
+  "automatically for the same length and price unless auto-renew is switched off " +
+  "at least 24 hours before the current period ends; the renewal is charged within " +
+  "24 hours of that point. Manage or cancel in Settings \u203a Apple Account \u203a " +
+  "Subscriptions \u2014 deleting the app does not cancel a subscription.";
 
 /** What Pro actually buys, in the order it matters to a daily user. */
 const FEATURES = [
