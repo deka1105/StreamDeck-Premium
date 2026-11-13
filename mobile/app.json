@@ -16,7 +16,7 @@
           "NSAllowsLocalNetworking": true
         }
       },
-      "buildNumber": "8"
+      "buildNumber": "9"
     },
     "android": {
       "package": "com.dekisuki05.deskassist",
