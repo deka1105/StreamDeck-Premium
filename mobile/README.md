@@ -37,12 +37,6 @@ button presses over an **AES-256-GCM encrypted channel** (see
 - `src/SnippetLibrary.tsx` — the snippets screen (send / edit / delete / pin) plus
   its editor sheet. Named in PascalCase to avoid colliding with `snippets.ts` on
   case-insensitive filesystems.
-- `src/purchases.ts` — RevenueCat: the `deskassist_pro` entitlement, free-tier `Limits`
-  the deck enforces, and the `usePro()` context. Pure logic + types, no UI.
-- `src/ProProvider.tsx` — owns entitlement state (CustomerInfo is the only source
-  of truth) and hosts the paywall. Wraps the whole app in `App.tsx`.
-- `src/Paywall.tsx` — the Pro sheet. Its headline changes with *why* it opened;
-  packages come from RevenueCat's current offering, so pricing is dashboard-driven.
 - `App.tsx` — pair screen (QR scanner) → deck screen with **profiles**, **pages**
   (dots/arrows), **🪄 Auto mode**, **live tile state**, **drag-to-reorder**, an
   adjustable **layout size** (2–5 columns) and **resizable tiles**.
@@ -105,38 +99,16 @@ boilerplate. Save it once, tap to type it into whatever's focused on your Mac.
   tile. Tiles are the nine things you grab without thinking; the library is
   everything else.
 
-Note the free tier's arithmetic: nine tiles and one page means the seed deck fills
-every slot, so `＋ Tile` has nowhere to go until a tile is freed. Rather than a
-dead button, pressing it names the wall it hit — and offers Pro, since Pro is what
-adds pages.
+If the active page is full, `＋ Tile` has nowhere to go until a tile is freed or
+a page is added; pressing it says so rather than doing nothing.
 
-Free keeps three snippets, Pro unlimited — see below for why it isn't zero.
+## No in-app purchases
 
-## Pro (RevenueCat)
-
-The free tier is a complete product — one profile, one page, nine tiles, three
-snippets, and unlimited ad-hoc text sending all work forever. Pro sells *growth*:
-unlimited profiles, pages, and snippets, plus image tile faces. Nothing that works
-on day one stops working.
-
-Free gets three snippets rather than none deliberately: a feature nobody can try
-is a feature nobody buys, and three is enough to feel why you'd want the fourth.
-
-Entitlement truth always comes from RevenueCat's `CustomerInfo`, never a local
-flag, so lapses, refunds, and restores on a second device all resolve correctly
-with no logic of our own.
-
-**Setup.** Copy `.env.example` → `.env.local` and fill in the public SDK keys
-from RevenueCat → Project settings → API keys. In the RevenueCat dashboard,
-create an entitlement whose identifier matches `ENTITLEMENT_ID` in `src/purchases.ts` (currently **`deskassist_pro`**), attach the store
-products to it, and add them to the **current** offering (the app reads
-`offerings.current`, so pricing and package mix change without an app release).
-
-With no key set, the app runs entirely on the free tier and the paywall explains
-why rather than crashing — so the repo stays runnable by anyone who clones it.
-
-In a dev build, long-press the **PRO** badge on the paywall to unlock the gates
-locally without a sandbox purchase. That path is compiled out of release builds.
+DeskAssist is free, and every feature is available to everyone: unlimited
+profiles, unlimited pages, unlimited snippets, and image tile faces. There is no
+paywall, no entitlement check, no free-tier limit, and no payment SDK — the
+RevenueCat integration and its three products were removed on 13 November 2026
+(see `../Extras/BACKLOG.md`). Nothing in the app reads `EXPO_PUBLIC_*`.
 
 ## CI
 
