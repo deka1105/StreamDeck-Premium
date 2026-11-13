@@ -15,7 +15,7 @@ Applications Agreement, which was never completed and was the root cause of the
 
 ## What was removed
 
-**App** (`mobile/`, needs **build 9** — build 8 still contains all of this):
+**App** (`mobile/`, shipped in **build 10** — build 8 still contains all of this):
 
 - `src/Paywall.tsx`, `src/ProProvider.tsx`, `src/purchases.ts` — deleted
 - `react-native-purchases` — uninstalled; no payment SDK in the binary
@@ -41,27 +41,27 @@ Applications Agreement, which was never completed and was the root cause of the
 
 ## Still to do by hand
 
-1. **Remove the three products from the version in App Store Connect.** The API
-   refuses: `DELETE /v1/reviewSubmissionItems/{id}` returns
-   `409 STATE_ERROR.ENTITY_STATE_INVALID — "Item was already submitted"` for all
-   four non-version items. Same web-UI route as attaching them: Apps →
-   DeskAssist → App Store tab → version **1.0.0** → **In-App Purchases and
-   Subscriptions** → deselect Pro Monthly, Pro Yearly, Pro Lifetime → **Save**.
+1. ~~**Remove the three products from the version in App Store Connect.**~~
+   **Done 13 Nov 2026.** The rejected submission was cancelled in the web UI,
+   which released all five review-submission items (now `REMOVED`) — the API
+   had refused with `409 STATE_ERROR.ENTITY_STATE_INVALID`. Version 1.0.0 is
+   back to `PREPARE_FOR_SUBMISSION`, and Monthly (`2f5b54`), Yearly
+   (`2f5b54_Y`) and the one-time product (`2f5b54_One`) are unsubmitted
+   `READY_TO_SUBMIT` drafts attached to nothing.
 
-   The products themselves can stay as `READY_TO_SUBMIT` drafts under
-   Monetization; they just must not ride along with the version. Nothing in the
-   binary references them.
-
-2. **Upload build 9** (`eas build -p ios --profile production`). Essential —
-   build 8 still contains the paywall and the dead links.
+2. ~~**Upload build 9.**~~ **Superseded by build 10**, uploaded 13 Nov 2026 and
+   `VALID`. Build 10 also carries the new chevron app icon and declares
+   `ITSAppUsesNonExemptEncryption: false` in its Info.plist, so it needed no
+   manual export-compliance answer. It is attached to version 1.0.0.
 
 3. **Record the walkthrough Apple asked for**, on a physical device, one take,
    starting at app launch. The shot list in `APP-REVIEW-REPLY.md` still applies
    minus every paywall step; add instead: add a second profile, add a second
    page, save a fourth snippet, and set an image tile face — the four things
-   that used to hit a wall and now just work.
+   that used to hit a wall and now just work. This is also the first real test
+   of build 10; nothing has run it yet.
 
-4. **Send the reply below** with the recording attached.
+4. **Send the reply below** with the recording attached, then submit for review.
 
 Optional: the Paid Applications Agreement is no longer needed for this release.
 If Pro ever comes back, that agreement is the first step, not the last.
@@ -72,14 +72,14 @@ If Pro ever comes back, that agreement is the first step, not the last.
 
 Hello,
 
-Thank you for the review. Both issues are resolved in build 9, now uploaded.
+Thank you for the review. Both issues are resolved in build 10, now uploaded.
 
 **Guideline 2.1(b) — error on the In-App Purchase page**
 
 You were right that the purchase screen did not work. Rather than repair it, we
 have removed in-app purchases from DeskAssist altogether.
 
-Build 9 contains no paywall, no purchase screen and no payment SDK. Every
+Build 10 contains no paywall, no purchase screen and no payment SDK. Every
 feature that was previously paid — unlimited profiles, unlimited pages,
 unlimited snippets and custom image tile faces — is now available to everyone at
 no cost. The three in-app purchase products have been removed from this version
