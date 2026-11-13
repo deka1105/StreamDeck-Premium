@@ -218,14 +218,9 @@ permission is bound to the app's **code signature**, so any re-signed or newly
 notarized build invalidates an existing grant and the stale System Settings entry
 can read as enabled while being denied.
 
-### 3.3 Dead `devPro` escape hatch
-`mobile/src/ProProvider.tsx:30` declares `devPro`/`setDevPro`, and
-line 74 reads it as `isPro || (__DEV__ && devPro)` — but `setDevPro` is never
-called anywhere, so it does nothing. Also gated on `__DEV__`, so it would not
-work in a Release build installed over USB.
-
-Either wire it to an `EXPO_PUBLIC_FORCE_PRO` env var with a persistent on-screen
-badge so it cannot ship silently unlocked, or delete it.
+### 3.3 Dead `devPro` escape hatch — GONE
+Deleted with `mobile/src/ProProvider.tsx` on 13 Nov 2026. There is no
+entitlement state left to escape.
 
 ### 3.4 Stale app name at runtime
 `desktop/main.mjs:22` — `app.setName("streamPhoneDeck")`. Affects the macOS menu
@@ -267,18 +262,20 @@ same pass.
 submission. Keep one — `DEVPOST-FINAL.md` is the accurate one — and delete the
 others.
 
-### 4.5 Site deploys by hand
-`vercel git connect` was never run, so pushes do not deploy; it took a manual
-`vercel deploy --prod` (and a `vercel login`) to publish. One command fixes it
-permanently.
+### 4.5 Site deploys by hand — FIXED
+`.github/workflows/pages.yml` now publishes `site/` to GitHub Pages on every
+push to `main`. The old Vercel deployment never had `vercel git connect` run
+against it and needed a manual `vercel deploy --prod`; it is also dead (§1.6).
 
 ---
 
 ## 5. Loose ends
 
-- **Revoke the promotional entitlement.** `deskassist_pro` was granted to a device
-  for filming and expires **4 October 2026**. Revoke it so your own device
-  reflects real entitlement state, or you will debug a phantom Pro later.
+- **The RevenueCat project is now unused.** `mobile/.env.local` still holds a
+  live `appl_` SDK key that nothing reads (`.env.example` was deleted). The
+  dashboard project, its `deskassist_pro` entitlement and the promotional grant
+  that expired 4 Oct 2026 can all be left alone or torn down; neither affects
+  the app.
 - **Legacy web deck** (`src/`, `host-agent/`) is superseded by the native app and
   Electron host. The README explains it, but it is dead weight for a reader.
 - **`brag-output/`** is committed, including the composition scratch. Fine to keep
