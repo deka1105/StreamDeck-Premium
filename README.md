@@ -33,7 +33,6 @@ A guided tour of the parts worth reading, shortest path first:
 | **The pairing handshake** | [`mobile/src/crypto.ts`](mobile/src/crypto.ts) · [`SECURE-PAIRING-PLAN.md`](SECURE-PAIRING-PLAN.md) | Ephemeral X25519 → HKDF → HMAC confirmation. The QR carries a public key, never a secret. |
 | **The sealed transport** | [`mobile/src/rpc.ts`](mobile/src/rpc.ts) | AES-256-GCM per command with a monotonic counter, so tampering fails the tag and replays are rejected. |
 | **The one demo/real switch** | [`mobile/src/host.ts`](mobile/src/host.ts) | Single dispatch point. The branch happens *before* any sealing, so no demo path can reach the crypto. |
-| **Monetization** | [`mobile/src/purchases.ts`](mobile/src/purchases.ts) | RevenueCat entitlement as the only source of truth — no local "isPro" flag to drift. |
 | **OS execution** | [`desktop/src/executor.mjs`](desktop/src/executor.mjs) | Where taps become `open -a`, AppleScript keystrokes, or a blocked shell call. |
 
 Three decisions that explain most of the codebase:
@@ -49,35 +48,20 @@ Three decisions that explain most of the codebase:
 
 ---
 
-## Free vs Pro
+## Free, with no in-app purchases
 
-Monetized with [RevenueCat](https://www.revenuecat.com/) — one entitlement
-(`deskassist_pro`) and a `default` offering with monthly, annual and lifetime
-packages. Entitlement state is always read from RevenueCat's `CustomerInfo`
-rather than a local flag, so lapses, refunds and restores on a second device
-resolve correctly with no logic of our own.
+Everything is free and unlimited: profiles, pages, snippets, image tile faces,
+and all five action types — app, URL, keyboard shortcut, text and shell. There
+is no paywall, no entitlement check, no free-tier limit, and no payment SDK in
+the binary.
 
-| | Free | Pro |
-| --- | --- | --- |
-| Profiles | 1 | Unlimited |
-| Pages per profile | 1 (nine tiles) | Unlimited |
-| Snippets | 3 | Unlimited |
-| Image tile faces | — | ✓ |
-
-**The wall sits in front of growth, never in front of function.** All five action
-types — app, URL, keyboard shortcut, text, shell — are free, as is unlimited
-ad-hoc text sending. A free user gets a fully working Stream Deck, and nothing
-that works on day one ever stops working.
-
-Two deliberate choices: free gets **three** snippets rather than none, because a
-feature nobody can try is a feature nobody buys; and **Auto mode is free but
-self-limiting** — it switches decks to match your focused app, which does
-nothing useful with one profile, so the feature creates the want by working
-rather than by showing a lock.
-
-The paywall is reason-aware — reaching for a second profile says "One deck isn't
-enough", a fourth snippet says "Room for every snippet" — implemented in
-[`mobile/src/Paywall.tsx`](mobile/src/Paywall.tsx).
+It was not always so. DeskAssist shipped with a RevenueCat-backed Pro tier
+(monthly / yearly / lifetime) gating profiles, pages, snippets and image faces.
+That was removed on **13 November 2026**: the Paid Applications Agreement was
+never completed, so StoreKit returned no products, and App Review rejected the
+app under guideline 2.1(b) for showing an empty purchase screen. Rather than
+hold the release behind the agreement, the purchase path was taken out
+altogether. `Extras/BACKLOG.md` has the full history.
 
 ---
 
