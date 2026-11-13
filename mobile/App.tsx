@@ -44,8 +44,6 @@ import { TileEditor } from "./src/TileEditor";
 import { NamePrompt } from "./src/NamePrompt";
 import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
-import { ProProvider } from "./src/ProProvider";
-import { usePro } from "./src/purchases";
 import { SnippetLibrary } from "./src/SnippetLibrary";
 import {
   loadSnippets,
@@ -87,22 +85,20 @@ export default function App() {
   }
 
   return (
-    <ProProvider>
-      <View style={styles.root}>
-        {pairing ? (
-          <DeckScreen
-            pairing={pairing}
-            onUnpair={async () => {
-              await clearPairing();
-              setPairing(null);
-            }}
-          />
-        ) : (
-          <PairScreen onPaired={setPairing} />
-        )}
-        <StatusBar style="light" />
-      </View>
-    </ProProvider>
+    <View style={styles.root}>
+      {pairing ? (
+        <DeckScreen
+          pairing={pairing}
+          onUnpair={async () => {
+            await clearPairing();
+            setPairing(null);
+          }}
+        />
+      ) : (
+        <PairScreen onPaired={setPairing} />
+      )}
+      <StatusBar style="light" />
+    </View>
   );
 }
 
@@ -323,7 +319,6 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
 type EditorState = null | "new" | DeckButton;
 
 function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => void }) {
-  const { isPro, limits, showPaywall } = usePro();
   const [state, setState] = useState<ProfilesState | null>(null);
   const [namePrompt, setNamePrompt] = useState<null | "add">(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -461,11 +456,6 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function addPage() {
     if (!state || !active) return;
-    if (active.pages.length >= limits.maxPagesPerProfile) {
-      selectFeedback();
-      showPaywall("pages");
-      return;
-    }
     selectFeedback();
     const nextPages = [...active.pages, { id: newPageId(), buttons: [] }];
     persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
@@ -569,11 +559,6 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function submitName(name: string) {
     if (!state) return;
-    if (state.profiles.length >= limits.maxProfiles) {
-      setNamePrompt(null);
-      showPaywall("profiles");
-      return;
-    }
     const id = newProfileId();
     persistState({ ...state, profiles: [...state.profiles, { id, name, pages: [{ id: newPageId(), buttons: [] }], apps: [] }], activeId: id });
     setNamePrompt(null);
@@ -711,10 +696,6 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
   function saveSnippet(s: Snippet) {
     const idx = snippets.findIndex((x) => x.id === s.id);
-    if (idx < 0 && snippets.length >= limits.maxSnippets) {
-      showPaywall("snippets");
-      return;
-    }
     persistSnippets(idx >= 0 ? snippets.map((x) => (x.id === s.id ? s : x)) : [...snippets, s]);
   }
 
@@ -726,14 +707,8 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   function pinSnippet(s: Snippet) {
     if (full) {
       selectFeedback();
-      // A full page is a dead end on the free tier (nine tiles, one page), so
-      // say which wall was hit rather than leaving a button that does nothing.
-      if (active && active.pages.length >= limits.maxPagesPerProfile) {
-        showPaywall("pages");
-      } else {
-        setOk(false);
-        setStatus(`Page ${safeIdx + 1} is full — add a page or free a tile.`);
-      }
+      setOk(false);
+      setStatus(`Page ${safeIdx + 1} is full — add a page or free a tile.`);
       return;
     }
     selectFeedback();
@@ -747,11 +722,6 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   function saveDraftAsSnippet() {
     const text = textDraft.trim();
     if (!text) return;
-    if (snippets.length >= limits.maxSnippets) {
-      selectFeedback();
-      showPaywall("snippets");
-      return;
-    }
     selectFeedback();
     persistSnippets([...snippets, { id: newSnippetId(), label: "", text, createdAt: Date.now() }]);
     setTextDraft("");
@@ -845,11 +815,6 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             </Pressable>
           ) : (
             <>
-              {!editing && !isPro && (
-                <Pressable style={[styles.pill, styles.proPill]} onPress={() => { selectFeedback(); showPaywall("generic"); }}>
-                  <Text style={[styles.pillText, styles.proPillText]}>✦ Pro</Text>
-                </Pressable>
-              )}
               {!editing && (
                 <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("apps"); }}>
                   <Text style={styles.pillText}>🖥</Text>
@@ -902,14 +867,12 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       ) : view === "snippets" ? (
         <SnippetLibrary
           snippets={snippets}
-          limit={limits.maxSnippets}
           busy={busy}
           full={full}
           onSend={sendSnippet}
           onSave={saveSnippet}
           onDelete={deleteSnippet}
           onPin={pinSnippet}
-          onNeedPro={() => showPaywall("snippets")}
         />
       ) : (
       <>
@@ -939,16 +902,11 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             <Pressable
               onPress={() => {
                 selectFeedback();
-                // Ask before they bother naming it — the wall belongs in front of
-                // the intent, not after the effort.
-                if (state.profiles.length >= limits.maxProfiles) showPaywall("profiles");
-                else setNamePrompt("add");
+                setNamePrompt("add");
               }}
               style={styles.profileAddPill}
             >
-              <Text style={styles.profileAddText}>
-                {state.profiles.length >= limits.maxProfiles ? "＋ Profile ✦" : "＋ Profile"}
-              </Text>
+              <Text style={styles.profileAddText}>＋ Profile</Text>
             </Pressable>
           )}
         </ScrollView>
