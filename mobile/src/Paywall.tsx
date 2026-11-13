@@ -247,23 +247,34 @@ export function Paywall({
                 </Text>
               </View>
             ) : packages && packages.length === 0 ? (
-              // The store answered, and offered nothing. That is what happens
-              // before the in-app purchases are approved — not a network fault.
-              // "Check your connection" sends the reader to fix something that
-              // isn't broken, and reads to App Review as a purchase flow that
-              // fails rather than a product that isn't on sale yet.
+              // The store offered nothing — either it answered with an empty
+              // offering, or it couldn't be reached at all (both land here on
+              // purpose). That is what happens before the in-app purchases are
+              // live, and it is not a network fault the reader can fix.
+              // "Check your connection" sends them to fix something that isn't
+              // broken, and reads to App Review as a purchase flow that fails
+              // rather than a product that isn't on sale yet.
               <View style={styles.notice}>
                 <Text style={styles.noticeText}>
                   Pro isn’t available for purchase yet. Everything on the free tier keeps
                   working.
                 </Text>
+                <Pressable
+                  onPress={() => {
+                    selectFeedback();
+                    setAttempt((n) => n + 1);
+                  }}
+                  hitSlop={8}
+                  style={styles.noticeAction}
+                >
+                  <Text style={styles.noticeActionText}>Check again</Text>
+                </Pressable>
               </View>
             ) : (
               <View style={styles.packages}>
                 {packages?.map((p) => {
                   const active = p.identifier === selectedId;
                   const annual = p.packageType === PACKAGE_TYPE.ANNUAL;
-                  const lifetime = p.packageType === PACKAGE_TYPE.LIFETIME;
                   return (
                     <Pressable
                       key={p.identifier}
@@ -278,7 +289,9 @@ export function Paywall({
                       </View>
                       <View style={styles.pkgText}>
                         <Text style={styles.pkgTitle}>{packageLabel(p)}</Text>
-                        {lifetime ? <Text style={styles.pkgNote}>Pay once, yours forever</Text> : null}
+                        {/* Length and price-per-unit: required on the purchase
+                            screen by guideline 3.1.2(c), not decoration. */}
+                        {packageTerms(p) ? <Text style={styles.pkgNote}>{packageTerms(p)}</Text> : null}
                       </View>
                       {annual ? (
                         <View style={styles.valueBadge}>
@@ -293,6 +306,10 @@ export function Paywall({
             )}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            {/* Renders whatever the store did, so the terms are on the screen
+                even when no price could be fetched. */}
+            <Text style={styles.terms}>{SUBSCRIPTION_TERMS}</Text>
           </ScrollView>
 
           <View style={styles.footer}>
@@ -339,13 +356,54 @@ function packageLabel(p: PurchasesPackage): string {
   }
 }
 
+/**
+ * ISO-8601 subscription period → "1 month" / "1 year". StoreKit hands these back
+ * as "P1M"/"P1Y"; guideline 3.1.2(c) wants the length spelled out next to the
+ * price, so an unparsable value returns null and the row simply omits it rather
+ * than printing "P1M" at a customer.
+ */
+export function periodLabel(iso: string | null | undefined): string | null {
+  const m = typeof iso === "string" ? /^P(\d+)([DWMY])$/.exec(iso) : null;
+  if (!m) return null;
+  const n = Number(m[1]);
+  const unit = ({ D: "day", W: "week", M: "month", Y: "year" } as const)[m[2] as "D" | "W" | "M" | "Y"];
+  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+}
+
+/**
+ * The line under a package title: how long it runs, and the per-month price
+ * where that differs from the headline figure (so a yearly tier states its unit
+ * price, which 3.1.2(c) asks for "if appropriate").
+ */
+export function packageTerms(p: PurchasesPackage): string | null {
+  if (p.packageType === PACKAGE_TYPE.LIFETIME) return "One-time purchase · never renews";
+  const length = periodLabel(p.product.subscriptionPeriod);
+  const perMonth =
+    p.product.subscriptionPeriod !== "P1M" && p.product.pricePerMonthString
+      ? `${p.product.pricePerMonthString}/month`
+      : null;
+  const parts = [length ? `Auto-renews every ${length}` : null, perMonth].filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
+}
+
 function ctaLabel(p: PurchasesPackage): string {
   return p.packageType === PACKAGE_TYPE.LIFETIME ? "Unlock Pro forever" : "Start Pro";
 }
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#0f172a", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "92%" },
+  // maxWidth keeps the sheet from spanning a full iPad — App Review tests on
+  // one (iPad Air 11" on 13 Nov 2026) and a 1000pt-wide bottom sheet reads as a
+  // layout fault rather than a design.
+  sheet: {
+    backgroundColor: "#0f172a",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "92%",
+    width: "100%",
+    maxWidth: 560,
+    alignSelf: "center",
+  },
 
   grabRow: { paddingTop: 10, paddingHorizontal: 16, alignItems: "center", justifyContent: "center" },
   grab: { width: 38, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.18)" },
@@ -375,6 +433,8 @@ const styles = StyleSheet.create({
 
   notice: { marginTop: 22, backgroundColor: "#1e293b", borderRadius: 12, padding: 14 },
   noticeText: { color: "#94a3b8", fontSize: 13, lineHeight: 19 },
+  noticeAction: { marginTop: 10, alignSelf: "flex-start" },
+  noticeActionText: { color: "#38bdf8", fontSize: 13, fontWeight: "700" },
 
   packages: { marginTop: 22, gap: 9 },
   pkg: {
@@ -404,6 +464,7 @@ const styles = StyleSheet.create({
   valueBadgeText: { color: "#7dd3fc", fontSize: 9.5, fontWeight: "800", letterSpacing: 0.7 },
 
   error: { color: "#fb7185", fontSize: 13, lineHeight: 18, marginTop: 14 },
+  terms: { color: "#475569", fontSize: 11.5, lineHeight: 16.5, marginTop: 20 },
 
   footer: { padding: 20, paddingTop: 14, gap: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" },
   cta: { backgroundColor: "#0284c7", borderRadius: 14, paddingVertical: 15, alignItems: "center", justifyContent: "center", minHeight: 50 },
