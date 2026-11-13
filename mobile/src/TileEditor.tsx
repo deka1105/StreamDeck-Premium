@@ -17,7 +17,6 @@ import {
   type IconType,
 } from "./buttons";
 import { parseCombo } from "./keys";
-import { usePro } from "./purchases";
 
 const EMOJI = ["🧭", "💻", "📁", "🔍", "📸", "🔒", "🐙", "▶️", "🔇", "🎵", "🎨", "⚙️", "📝", "🚀", "⭐", "💬", "📅", "🖥️", "🔔", "☕"];
 
@@ -40,7 +39,6 @@ export function TileEditor({
   onCancel: () => void;
   onDelete?: () => void;
 }) {
-  const { limits, showPaywall } = usePro();
   const [label, setLabel] = useState(initial?.label ?? "");
   const [icon, setIcon] = useState(initial?.icon ?? "⭐");
   const [iconType, setIconType] = useState<IconType>(initial?.iconType ?? "emoji");
@@ -67,12 +65,6 @@ export function TileEditor({
   }
 
   async function pickImage() {
-    // Reachable while editing a tile that already wears an image (e.g. after a
-    // subscription lapses). Existing faces keep rendering — we only gate *new* ones.
-    if (!limits.imageIcons) {
-      showPaywall("imageIcons");
-      return;
-    }
     try {
       // launchImageLibraryAsync uses the iOS PHPicker (iOS 14+) / Android photo
       // picker, which need NO runtime permission. We deliberately do NOT call
@@ -130,20 +122,17 @@ export function TileEditor({
 
             <Text style={styles.fieldLabel}>Icon</Text>
             <View style={styles.typeRow}>
-              {ICON_TYPES.map((t) => {
-                const locked = t.type === "image" && !limits.imageIcons;
-                return (
-                  <Pressable
-                    key={t.type}
-                    onPress={() => (locked ? showPaywall("imageIcons") : setIconType(t.type))}
-                    style={[styles.typeChip, iconType === t.type && styles.typeChipActive]}
-                  >
-                    <Text style={[styles.typeChipText, iconType === t.type && styles.typeChipTextActive]}>
-                      {locked ? `${t.label} ✦` : t.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+              {ICON_TYPES.map((t) => (
+                <Pressable
+                  key={t.type}
+                  onPress={() => setIconType(t.type)}
+                  style={[styles.typeChip, iconType === t.type && styles.typeChipActive]}
+                >
+                  <Text style={[styles.typeChipText, iconType === t.type && styles.typeChipTextActive]}>
+                    {t.label}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
 
             {iconType === "emoji" && (
