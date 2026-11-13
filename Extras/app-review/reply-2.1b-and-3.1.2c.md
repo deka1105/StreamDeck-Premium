@@ -4,73 +4,67 @@ Guideline 2.1(b) — error on the In-App Purchase page.
 Guideline 3.1.2(c) — missing Terms of Use / Privacy Policy links.
 Reviewed on iPad Air 11-inch (M3), iPadOS 27.2.1, version 1.0.0 build 8.
 
-**Do not send this until steps 1–3 below are actually done.** Every previous
-rejection on this app was made worse by replying ahead of the fix.
+**Resolved by removing in-app purchases entirely**, decided 13 Nov 2026. Both
+guidelines stop applying to an app that sells nothing: there is no purchase
+screen left to show an error, and 3.1.2(c) governs auto-renewable subscriptions,
+of which there are now none. It also removes the dependency on the Paid
+Applications Agreement, which was never completed and was the root cause of the
+2.1(b) rejection.
 
 ---
 
-## What caused each rejection
+## What was removed
 
-### 2.1(b) — "the app displayed an error message in In-App Purchase page"
+**App** (`mobile/`, needs **build 9** — build 8 still contains all of this):
 
-StoreKit returned no products, so the paywall had nothing to show and said so.
-Everything that *can* be verified through the App Store Connect API is correct:
+- `src/Paywall.tsx`, `src/ProProvider.tsx`, `src/purchases.ts` — deleted
+- `react-native-purchases` — uninstalled; no payment SDK in the binary
+- all four free-tier limits — profiles, pages, snippets and image tile faces are
+  now unlimited for everyone
+- the **✦ Pro** header pill, the `＋ New ✦` / `＋ Profile ✦` locked states, and
+  every `showPaywall()` call site across `App.tsx`, `TileEditor.tsx` and
+  `SnippetLibrary.tsx`
+- `.env.example` — deleted; nothing reads `EXPO_PUBLIC_*` any more
 
-| Product | Id | State | Review screenshot | Territories | Prices |
-| --- | --- | --- | --- | --- | --- |
-| Pro Monthly | `2f5b54` | READY_TO_SUBMIT | COMPLETE | 175 (incl. USA) | 175 rows |
-| Pro Yearly | `2f5b54_Y` | READY_TO_SUBMIT | COMPLETE | 175 (incl. USA) | 175 rows |
-| Pro Lifetime | `2f5b54_One` | READY_TO_SUBMIT | COMPLETE | 175 (incl. USA) | schedule set |
+**App Store Connect** (done via the API, verified):
 
-All three are attached to this submission — it holds five items: the app version
-plus the subscription group, both subscriptions and the one-time purchase, each
-at `READY_FOR_REVIEW`. That was the gap in the September rejection and it is
-closed.
+- description — the Pro tier, the subscription terms and the EULA link replaced
+  with an "EVERYTHING IS FREE" section
+- App Review notes — rewritten to state there are no in-app purchases
 
-**What is left is the Paid Applications Agreement.** Without it in effect,
-StoreKit serves zero products in sandbox *and* production regardless of how the
-products are configured — which is exactly the symptom, and exactly what Apple's
-own message points at ("the Account Holder must also accept the Paid Apps
-Agreement … Confirm you have a Paid Apps Agreement in effect"). `BACKLOG.md §1.1`
-recorded it as not active on 13 October and nothing since has changed it. There
-is no API for agreements; only the Account Holder can sign it.
+**Website** (live on GitHub Pages):
 
-### 3.1.2(c) — missing Terms of Use and Privacy Policy links
+- pricing section — now a single free tier
+- privacy policy — the RevenueCat data-processing section replaced with "there
+  are none"
+- terms of use — the subscription section replaced with a price statement
 
-The links were present but **dead**. Every page on `deskassist.sdfolio.com` and
-`deskassist.vercel.app` was returning `HTTP 402 DEPLOYMENT_DISABLED` — the Vercel
-project had been switched off. That killed, simultaneously:
+## Still to do by hand
 
-- the paywall's Terms and Privacy links,
-- the Privacy Policy URL in App Store Connect,
-- the Support URL and Marketing URL (a guideline 1.5 rejection waiting to happen).
+1. **Remove the three products from the version in App Store Connect.** The API
+   refuses: `DELETE /v1/reviewSubmissionItems/{id}` returns
+   `409 STATE_ERROR.ENTITY_STATE_INVALID — "Item was already submitted"` for all
+   four non-version items. Same web-UI route as attaching them: Apps →
+   DeskAssist → App Store tab → version **1.0.0** → **In-App Purchases and
+   Subscriptions** → deselect Pro Monthly, Pro Yearly, Pro Lifetime → **Save**.
 
-Fixed by moving the canonical copies to GitHub Pages, which has no billing state
-that can lapse. All verified 200.
+   The products themselves can stay as `READY_TO_SUBMIT` drafts under
+   Monetization; they just must not ride along with the version. Nothing in the
+   binary references them.
 
----
+2. **Upload build 9** (`eas build -p ios --profile production`). Essential —
+   build 8 still contains the paywall and the dead links.
 
-## Steps, in order
+3. **Record the walkthrough Apple asked for**, on a physical device, one take,
+   starting at app launch. The shot list in `APP-REVIEW-REPLY.md` still applies
+   minus every paywall step; add instead: add a second profile, add a second
+   page, save a fourth snippet, and set an image tile face — the four things
+   that used to hit a wall and now just work.
 
-1. **Sign the Paid Applications Agreement.** App Store Connect → Business →
-   Agreements, Tax and Banking. Needs the Account Holder, plus bank and tax
-   details. Nothing below matters until this shows *Active*.
+4. **Send the reply below** with the recording attached.
 
-2. **Confirm the paywall loads prices** on a physical device with a Sandbox
-   Apple ID signed in under Settings → App Store → Sandbox Account. Three rows
-   with real prices, no notice. If it still shows "Pro isn't available for
-   purchase yet", stop — the agreement has not propagated and replying is futile.
-
-3. **Upload build 9** (`eas build -p ios --profile production`). Build 8 still
-   carries the dead `deskassist.sdfolio.com` links, so build 8 cannot pass
-   3.1.2(c) no matter what the metadata says.
-
-4. **Record the screen recording Apple asked for** on a physical device, in one
-   take, beginning at app launch. Shot list in `APP-REVIEW-REPLY.md`; the two
-   additions this time are: tap **Terms** and **Privacy** on the paywall and let
-   each page load on camera, and complete a sandbox purchase.
-
-5. **Paste the reply below** into Resolution Center with the recording attached.
+Optional: the Paid Applications Agreement is no longer needed for this release.
+If Pro ever comes back, that agreement is the first step, not the last.
 
 ---
 
@@ -78,50 +72,47 @@ that can lapse. All verified 200.
 
 Hello,
 
-Thank you for the review. Both issues are resolved; build 9 is now uploaded.
+Thank you for the review. Both issues are resolved in build 9, now uploaded.
 
 **Guideline 2.1(b) — error on the In-App Purchase page**
 
-Our Paid Applications Agreement was not in effect when you reviewed build 8, so
-StoreKit returned no products and the purchase screen had nothing to display.
-The agreement is now active. All three products — DeskAssist Pro Monthly, Pro
-Yearly and Pro Lifetime — are attached to this submission, available in all 175
-territories, with prices and review screenshots complete. We have confirmed on a
-physical device with a sandbox account that the paywall now loads all three
-prices and that a purchase completes and unlocks Pro. The screen recording shows
-this end to end.
+You were right that the purchase screen did not work. Rather than repair it, we
+have removed in-app purchases from DeskAssist altogether.
 
-We have also changed how the screen behaves if the store is ever unreachable: it
-now states plainly that Pro is not available for purchase and offers to check
-again, rather than surfacing a store error. The free tier is fully functional
-either way.
+Build 9 contains no paywall, no purchase screen and no payment SDK. Every
+feature that was previously paid — unlimited profiles, unlimited pages,
+unlimited snippets and custom image tile faces — is now available to everyone at
+no cost. The three in-app purchase products have been removed from this version
+and nothing in the binary references them. There is no purchase flow left that
+could present an error.
 
 **Guideline 3.1.2(c) — subscription information and links**
 
-You were right, and the cause was worse than a missing link: our website host had
-disabled the deployment, so every link to it — the Terms of Use and Privacy
-Policy on the paywall, and the Privacy Policy, Support and Marketing URLs in App
-Store Connect — was returning an HTTP error. We did not catch it because the
-links existed in the build; they simply no longer resolved.
+DeskAssist no longer offers an auto-renewable subscription, or any in-app
+purchase, so the subscription disclosure requirements no longer apply.
 
-Both documents have been moved to a host with no payment dependency and verified
-publicly reachable. Build 9 links to them from the purchase screen, where they
-are visible without scrolling:
+We have nonetheless fixed the underlying fault, which was worse than a missing
+link: our website host had disabled the deployment, so every link pointing at it
+— the Terms of Use and Privacy Policy in the app, and the Privacy Policy,
+Support and Marketing URLs in App Store Connect — was returning an HTTP error.
+The links existed in the build; they simply no longer resolved, which is why we
+did not catch it.
 
-- Terms of Use: https://deka1105.github.io/StreamDeck-Premium/terms.html
+Both documents have been moved to a host with no payment dependency and are
+verified publicly reachable:
+
 - Privacy Policy: https://deka1105.github.io/StreamDeck-Premium/privacy.html
+- Terms of Use: https://deka1105.github.io/StreamDeck-Premium/terms.html
 
-The App Store Connect metadata now carries the Privacy Policy URL in the Privacy
-Policy field, and the App Description carries a link to the standard Apple Terms
-of Use (EULA), which is the EULA this app uses.
-
-The purchase screen itself now states the title, the length and the price of each
-option — Pro Monthly (auto-renews every 1 month), Pro Yearly (auto-renews every
-1 year, with the price shown per month as well) and Pro Lifetime (one-time, never
-renews) — together with the renewal and cancellation terms. That text is on the
-screen whether or not prices have loaded.
+The Privacy Policy URL in App Store Connect now points at the first of these,
+as do the Support and Marketing URLs. Both documents have been updated to state
+that the app contains no purchases and sends no data to any payment processor.
 
 English is our only localization, so this is complete for every localization.
+
+The app still requires no account, and a reviewer still needs no Mac — tapping
+"Explore the demo instead" on the first screen runs the entire app against a
+simulated computer.
 
 Thank you for your patience with this one.
 
