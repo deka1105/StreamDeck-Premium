@@ -29,18 +29,14 @@ import {
 
 export function SnippetLibrary({
   snippets,
-  limit,
   busy,
   full,
   onSend,
   onSave,
   onDelete,
   onPin,
-  onNeedPro,
 }: {
   snippets: Snippet[];
-  /** limits.maxSnippets — Infinity for Pro. */
-  limit: number;
   busy: boolean;
   /** Active deck page is full, so pinning is unavailable. */
   full: boolean;
@@ -48,19 +44,11 @@ export function SnippetLibrary({
   onSave: (s: Snippet) => void;
   onDelete: (s: Snippet) => void;
   onPin: (s: Snippet) => void;
-  onNeedPro: () => void;
 }) {
   const [editing, setEditing] = useState<Snippet | "new" | null>(null);
 
-  const atLimit = snippets.length >= limit;
-  const bounded = Number.isFinite(limit);
-
   function startNew() {
     selectFeedback();
-    if (atLimit) {
-      onNeedPro();
-      return;
-    }
     setEditing("new");
   }
 
@@ -71,9 +59,9 @@ export function SnippetLibrary({
           Snippets
           {snippets.length > 0 ? <Text style={styles.count}> · {snippets.length}</Text> : null}
         </Text>
-        <Pressable style={[styles.newBtn, atLimit && styles.newBtnLocked]} onPress={startNew}>
-          <Text style={[styles.newBtnText, atLimit && styles.newBtnTextLocked]}>
-            {atLimit ? "＋ New ✦" : "＋ New"}
+        <Pressable style={styles.newBtn} onPress={startNew}>
+          <Text style={styles.newBtnText}>
+            {"＋ New"}
           </Text>
         </Pressable>
       </View>
@@ -126,11 +114,7 @@ export function SnippetLibrary({
         </ScrollView>
       )}
 
-      <Text style={styles.hint}>
-        {bounded
-          ? `${snippets.length} of ${limit} on the free plan · tap to send · ＋ Tile pins it to the deck`
-          : "Tap to send · ✎ to edit · ＋ Tile pins it to the deck"}
-      </Text>
+      <Text style={styles.hint}>Tap to send · ✎ to edit · ＋ Tile pins it to the deck</Text>
 
       {editing ? (
         <SnippetEditor
@@ -256,9 +240,7 @@ const styles = StyleSheet.create({
   title: { color: "#cbd5e1", fontSize: 15, fontWeight: "700" },
   count: { color: "#64748b", fontWeight: "600" },
   newBtn: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 },
-  newBtnLocked: { backgroundColor: "rgba(251,191,36,0.14)" },
   newBtnText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
-  newBtnTextLocked: { color: "#fbbf24", fontWeight: "700" },
 
   list: { gap: 8, paddingBottom: 16 },
   row: { flexDirection: "row", gap: 8, alignItems: "stretch" },
