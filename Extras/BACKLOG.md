@@ -88,13 +88,6 @@ Restoring Vercel is optional and now a marketing-site concern only. If it comes
 back it must not become the only copy again. A custom domain (Hostinger or
 otherwise) can point at Pages instead.
 
-### 1.7 Shipaton eligibility is forfeited
-`Extras/devpost/DEVPOST-SUBMISSION.md` records that Shipaton requires the
-RevenueCat SDK and at least one in-app purchase. DeskAssist now has neither, so
-the Next Gen Award submission no longer qualifies. This was a known, accepted
-cost of shipping free — not an oversight. The Devpost write-ups in
-`Extras/devpost/` still describe the monetized app and are now historical.
-
 ---
 
 ## 2. Blocks a clean release
@@ -257,11 +250,6 @@ most of what bit us.
 Neither is urgent. If you rewrite history for the email, do the size sweep in the
 same pass.
 
-### 4.4 Three overlapping Devpost documents
-`DEVPOST.md`, `DEVPOST-SUBMISSION.md` and `DEVPOST-FINAL.md` all describe the same
-submission. Keep one — `DEVPOST-FINAL.md` is the accurate one — and delete the
-others.
-
 ### 4.5 Site deploys by hand — FIXED
 `.github/workflows/pages.yml` now publishes `site/` to GitHub Pages on every
 push to `main`. The old Vercel deployment never had `vercel git connect` run
@@ -271,6 +259,9 @@ against it and needed a manual `vercel deploy --prod`; it is also dead (§1.6).
 
 ## 5. Loose ends
 
+- **`Extras/devpost/` is closed and historical.** The Devpost / RevenueCat
+  Shipaton entry is no longer being pursued, so the three overlapping write-ups
+  are a record of the monetized app, not documents to maintain. No action.
 - **The RevenueCat project is now unused.** `mobile/.env.local` still holds a
   live `appl_` SDK key that nothing reads (`.env.example` was deleted). The
   dashboard project, its `deskassist_pro` entitlement and the promotional grant
