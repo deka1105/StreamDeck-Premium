@@ -3,11 +3,18 @@
 Everything found during the Shipaton push, ordered by what it costs you if left
 alone. Each item names where it lives so it can be picked up cold.
 
-Status as of 13 October 2026: iOS 1.0.0 **build 8** uploaded, VALID, attached to
-the version, state `PREPARE_FOR_SUBMISSION` — **not yet submitted** · Play store
-listing **Live**, closed-testing Alpha running since Oct 11 on versionCode 1 with
-**0 of 12 testers** · repo public (MIT) · site live · Shipaton Next Gen
-submitted.
+Status as of 13 November 2026: iOS 1.0.0 **build 8** was submitted (7 Nov) and
+**rejected again on 13 Nov** — guideline 2.1(b) (error on the In-App Purchase
+page) and 3.1.2(c) (dead Terms/Privacy links). Submission
+`b57c512c-73d0-4347-9c59-2e0d5a0e6918`, state `UNRESOLVED_ISSUES`, reviewed on an
+iPad Air 11-inch (M3). · Play store listing **Live**, closed-testing Alpha
+running since Oct 11 on versionCode 1 with **0 of 12 testers** · repo public
+(MIT) · **site moved to GitHub Pages** — the Vercel deployment is dead (see §1.6)
+· Shipaton Next Gen submitted.
+
+Build 8 resolved the *second* rejection. The third rejection is §1.1 (never
+fixed, now reached by a reviewer) plus §1.6 (new). Fix plan and the reply draft:
+`Extras/app-review/reply-2.1b-and-3.1.2c.md`.
 
 Build 8 resolved Apple's second rejection (2.3.8 placeholder icons, 5.1.1(iv)
 camera permission wording) and dropped the false export-compliance declaration.
@@ -17,14 +24,30 @@ What is left to ship on either store is in §1 and needs a human.
 
 ## 1. Blocks revenue — nothing can be sold until these are done
 
-### 1.1 Paid Applications agreement is not active
+### 1.1 Paid Applications agreement is not active — NOW A REJECTION
 No StoreKit product can be fetched until this is signed with bank and tax
 details complete. This is why the paywall reports *"No pricing is available"* —
 not a code bug.
 
-**App Store Connect → Business → Agreements, Tax, and Banking.**
+**App Store Connect → Business → Agreements, Tax, and Banking.** Account Holder
+only; there is no API for agreements.
 
-### 1.2 The three in-app purchases have never been submitted
+**This is no longer just a revenue block.** App Review reached the paywall on
+13 Nov 2026, saw the empty-store message, and rejected under guideline 2.1(b).
+Apple's message names the agreement directly. Everything else about the three
+products is verified correct via the API — all `READY_TO_SUBMIT`, all attached
+to the submission at `READY_FOR_REVIEW`, review screenshots `COMPLETE`, 175
+territories including USA, full price schedules — so the agreement is the only
+remaining cause. Sign it, then confirm on a device that the paywall loads three
+prices *before* replying.
+
+### 1.2 The three in-app purchases have never been submitted — DONE
+**Resolved.** Submission `b57c512c` carries five items: the app version plus the
+subscription group, both subscriptions and the one-time purchase, each at
+`READY_FOR_REVIEW`. The manual web-UI step below was done before the 7 Nov
+submission. Kept for the record.
+
+### 1.2 (historical) The three in-app purchases have never been submitted
 `2f5b54` (monthly), `2f5b54_Y` (annual), `2f5b54_One` (lifetime) sit at
 `READY_TO_SUBMIT` in an unsubmitted draft review submission. Until they go
 through review with a version, StoreKit serves nothing even with the agreement
@@ -61,6 +84,32 @@ a Release build. Do not reinstate one.
 Filling it needs the production `goog_` key, which needs in-app products, which
 needs the merchant account in 1.3. Until then every Android user is on the free
 tier.
+
+### 1.6 The website host was disabled — caused the 3.1.2(c) rejection
+Every page on `deskassist.sdfolio.com` *and* `deskassist.vercel.app` was
+answering **HTTP 402 `DEPLOYMENT_DISABLED`**: the Vercel project had been
+switched off. That broke, at once, the paywall's Terms and Privacy links, the
+Privacy Policy URL in App Store Connect, and the Support and Marketing URLs —
+which is both the 3.1.2(c) rejection and a guideline 1.5 rejection waiting to
+happen.
+
+Worth knowing: the `deskassist` Vercel project sits under org
+`team_4ZQ0ZjkOfXtsefK0Txbwh08b`, **not** the `philamentos` account the local
+`vercel` CLI is signed into. Recovering it means finding that account first.
+
+**Fixed, canonically, on GitHub Pages** — no billing state that can lapse:
+
+- `.github/workflows/pages.yml` publishes `site/` on every push to `main`
+- live at <https://deka1105.github.io/StreamDeck-Premium/> (verified 200)
+- `site/index.html` asset paths made relative so it works under the subpath
+- App Store Connect updated via the API: Privacy Policy URL, Support URL,
+  Marketing URL, and the standard Apple EULA link appended to the description
+- `mobile/src/Paywall.tsx` now links the Pages URLs — **this needs build 9**;
+  build 8 still ships the dead ones
+
+Restoring Vercel is optional and is now a marketing-site concern only. If it
+comes back, it must not become the only copy again. A custom domain (Hostinger
+or otherwise) can be pointed at Pages instead.
 
 ---
 
