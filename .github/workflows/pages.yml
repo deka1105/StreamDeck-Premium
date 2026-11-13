@@ -1,0 +1,49 @@
+# Publishes site/ to GitHub Pages on every push to main.
+#
+# Why this exists: the App Store build links to the Terms of Use and Privacy
+# Policy from the paywall, and App Store Connect holds the Privacy Policy,
+# Support and Marketing URLs. Those all pointed at deskassist.sdfolio.com, which
+# started answering HTTP 402 DEPLOYMENT_DISABLED when the Vercel project was
+# switched off — and that dead link is what failed review under guideline
+# 3.1.2(c) on 13 November 2026.
+#
+# GitHub Pages has no billing state that can lapse, so it is the canonical host
+# for anything Apple needs to resolve. The Vercel deployment can come back as the
+# marketing site on its own domain; it must not be the only copy again.
+#
+# Published at: https://deka1105.github.io/StreamDeck-Premium/
+name: Deploy site to Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let an in-flight deploy finish rather than cancelling it; a half-deployed
+# legal page is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
