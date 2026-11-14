@@ -187,7 +187,7 @@ function SnippetEditor({
               value={label}
               onChangeText={setLabel}
               placeholder="Work email"
-              placeholderTextColor="#64748b"
+              placeholderTextColor="#6b7a94"
               maxLength={MAX_SNIPPET_LABEL_LEN}
             />
 
@@ -197,7 +197,7 @@ function SnippetEditor({
               value={text}
               onChangeText={setText}
               placeholder="The text to type on your computer…"
-              placeholderTextColor="#64748b"
+              placeholderTextColor="#6b7a94"
               multiline
               textAlignVertical="top"
               autoCapitalize="none"
@@ -237,45 +237,45 @@ function SnippetEditor({
 const styles = StyleSheet.create({
   root: { flex: 1 },
   head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  title: { color: "#cbd5e1", fontSize: 15, fontWeight: "700" },
-  count: { color: "#64748b", fontWeight: "600" },
+  title: { color: "#cdd7e8", fontSize: 15, fontWeight: "700" },
+  count: { color: "#6b7a94", fontWeight: "600" },
   newBtn: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 },
-  newBtnText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  newBtnText: { color: "#cdd7e8", fontSize: 13, fontWeight: "600" },
 
   list: { gap: 8, paddingBottom: 16 },
   row: { flexDirection: "row", gap: 8, alignItems: "stretch" },
   rowDisabled: { opacity: 0.4 },
-  sendBtn: { flex: 1, backgroundColor: "#1e293b", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 2 },
-  snipTitle: { color: "#e2e8f0", fontSize: 15, fontWeight: "600" },
-  snipPreview: { color: "#64748b", fontSize: 12 },
+  sendBtn: { flex: 1, backgroundColor: "#16233a", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 2 },
+  snipTitle: { color: "#e8eef9", fontSize: 15, fontWeight: "600" },
+  snipPreview: { color: "#6b7a94", fontSize: 12 },
   iconBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 14, paddingHorizontal: 15, justifyContent: "center" },
-  iconBtnText: { color: "#e2e8f0", fontSize: 15, fontWeight: "700" },
+  iconBtnText: { color: "#e8eef9", fontSize: 15, fontWeight: "700" },
   pinBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 14, paddingHorizontal: 14, justifyContent: "center" },
-  pinText: { color: "#e2e8f0", fontSize: 13, fontWeight: "700" },
+  pinText: { color: "#e8eef9", fontSize: 13, fontWeight: "700" },
   // Muted, not disabled — it still explains itself on press.
   pinBtnFull: { backgroundColor: "rgba(255,255,255,0.05)" },
-  pinTextFull: { color: "#64748b" },
+  pinTextFull: { color: "#6b7a94" },
 
   empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 40, paddingHorizontal: 24 },
-  emptyIcon: { fontSize: 28, color: "#475569" },
-  emptyText: { color: "#94a3b8", fontSize: 15, fontWeight: "600" },
-  emptyHint: { color: "#64748b", fontSize: 12.5, textAlign: "center", lineHeight: 18 },
-  hint: { color: "#475569", fontSize: 11, textAlign: "center", marginTop: 8, marginBottom: 4 },
+  emptyIcon: { fontSize: 28, color: "#5d6c86" },
+  emptyText: { color: "#8a99b2", fontSize: 15, fontWeight: "600" },
+  emptyHint: { color: "#6b7a94", fontSize: 12.5, textAlign: "center", lineHeight: 18 },
+  hint: { color: "#5d6c86", fontSize: 11, textAlign: "center", marginTop: 8, marginBottom: 4 },
 
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#0f172a", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
+  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
   sheetBody: { padding: 20, paddingBottom: 8 },
-  heading: { color: "#e2e8f0", fontSize: 18, fontWeight: "700", marginBottom: 12 },
-  fieldLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
+  fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   textArea: { minHeight: 132, paddingTop: 12 },
-  counter: { color: "#475569", fontSize: 11, textAlign: "right", marginTop: 6 },
+  counter: { color: "#5d6c86", fontSize: 11, textAlign: "right", marginTop: 6 },
   actions: { flexDirection: "row", gap: 10, padding: 20, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   btnDisabled: { opacity: 0.4 },
   ghostBtn: { backgroundColor: "rgba(255,255,255,0.08)" },
-  ghostText: { color: "#cbd5e1", fontWeight: "600" },
-  saveBtn: { backgroundColor: "#0284c7", flex: 1 },
+  ghostText: { color: "#cdd7e8", fontWeight: "600" },
+  saveBtn: { backgroundColor: "#0ea5e9", flex: 1 },
   saveText: { color: "#fff", fontWeight: "700" },
   deleteBtn: { backgroundColor: "rgba(244,63,94,0.15)" },
   deleteText: { color: "#fb7185", fontWeight: "600" },

@@ -53,6 +53,17 @@ import {
   snippetToTile,
   type Snippet,
 } from "./src/snippets";
+import { shadow } from "./src/theme";
+import {
+  MotionProvider,
+  PressableScale,
+  Reveal,
+  animateLayout,
+  seedFor,
+  usePulse,
+  useReduceMotion,
+  useWiggle,
+} from "./src/motion";
 
 // How often the phone polls the host's focused app while Auto mode is on.
 const FOREGROUND_POLL_MS = 1500;
@@ -85,6 +96,7 @@ export default function App() {
   }
 
   return (
+    <MotionProvider>
     <View style={styles.root}>
       {pairing ? (
         <DeckScreen
@@ -99,6 +111,7 @@ export default function App() {
       )}
       <StatusBar style="light" />
     </View>
+    </MotionProvider>
   );
 }
 
@@ -179,7 +192,7 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
           value={manualText}
           onChangeText={setManualText}
           placeholder='{"proto":"spd2", ...}'
-          placeholderTextColor="#475569"
+          placeholderTextColor="#5d6c86"
           autoCapitalize="none"
           autoCorrect={false}
           multiline
@@ -220,13 +233,18 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
     const granted = permission.granted;
     return (
       <View style={styles.center}>
-        <Text style={styles.title}>Pair with your Mac</Text>
-        <Text style={styles.dim}>
-          {granted
-            ? "Scan the QR code in the desktop app’s “Pair a phone” window."
-            : "Pairing reads a QR code shown by the desktop app."}
-        </Text>
-        <Pressable
+        <Reveal style={{ alignItems: "center" }}><Text style={styles.title}>Pair with your Mac</Text></Reveal>
+        <Reveal delay={40} style={{ alignItems: "center" }}>
+          <Text style={styles.dim}>
+            {granted
+              ? "Scan the QR code in the desktop app’s “Pair a phone” window."
+              : "Pairing reads a QR code shown by the desktop app."}
+          </Text>
+        </Reveal>
+        <Reveal delay={80} style={{ alignItems: "center" }}>
+        <PressableScale
+          scaleTo={0.96}
+          accessibilityRole="button"
           style={styles.grantButton}
           onPress={async () => {
             setError(null);
@@ -248,7 +266,8 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
               push the user toward allowing. The button states what happens next
               ("Continue"), never what to answer. */}
           <Text style={styles.grantText}>{granted ? "Scan QR code" : "Continue"}</Text>
-        </Pressable>
+        </PressableScale>
+        </Reveal>
         {error ? <Text style={styles.scanError}>{error}</Text> : null}
         {/* Once iOS stops offering the prompt, the only route to the camera is
             Settings — without this the scanner is simply unreachable. */}
@@ -259,13 +278,15 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
             </Text>
           </Pressable>
         ) : null}
-        <Pressable style={styles.demoButton} onPress={startDemo}>
-          <Text style={styles.demoButtonText}>Explore the demo instead</Text>
-        </Pressable>
-        <Text style={styles.demoNote}>No computer needed — try the whole app with a simulated Mac.</Text>
-        <Pressable onPress={() => setManual(true)}>
-          <Text style={styles.linkText}>Enter pairing data manually</Text>
-        </Pressable>
+        <Reveal delay={120} style={{ alignItems: "center" }}>
+          <PressableScale scaleTo={0.96} accessibilityRole="button" style={styles.demoButton} onPress={startDemo}>
+            <Text style={styles.demoButtonText}>Explore the demo instead</Text>
+          </PressableScale>
+          <Text style={styles.demoNote}>No computer needed — try the whole app with a simulated Mac.</Text>
+          <Pressable accessibilityRole="button" onPress={() => setManual(true)}>
+            <Text style={styles.linkText}>Enter pairing data manually</Text>
+          </Pressable>
+        </Reveal>
       </View>
     );
   }
@@ -344,6 +365,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [cols, setCols] = useState(DEFAULT_COLS);
   const [gridW, setGridW] = useState(0);
+  const reduced = useReduceMotion();
 
   useEffect(() => {
     loadProfiles().then(setState);
@@ -441,9 +463,10 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
     saveProfiles(next);
   }
 
-  /** Replace the active page's tiles. */
+  /** Replace the active page's tiles (animating the grid reflow). */
   function persistButtons(next: DeckButton[]) {
     if (!state || !active) return;
+    animateLayout(reduced);
     const nextPages = active.pages.map((pg, i) => (i === safeIdx ? { ...pg, buttons: next } : pg));
     persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
   }
@@ -451,12 +474,14 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   function switchPage(i: number) {
     if (pages.length === 0) return;
     selectFeedback();
+    animateLayout(reduced);
     setPageIdx((i % pages.length + pages.length) % pages.length);
   }
 
   function addPage() {
     if (!state || !active) return;
     selectFeedback();
+    animateLayout(reduced);
     const nextPages = [...active.pages, { id: newPageId(), buttons: [] }];
     persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
     setPageIdx(nextPages.length - 1);
@@ -470,6 +495,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
         text: "Delete",
         style: "destructive",
         onPress: () => {
+          animateLayout(reduced);
           const nextPages = active.pages.filter((_, i) => i !== safeIdx);
           persistState({ ...state, profiles: state.profiles.map((p) => (p.id === active.id ? { ...p, pages: nextPages } : p)) });
           setPageIdx(Math.max(0, safeIdx - 1));
@@ -553,6 +579,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   function switchProfile(id: string) {
     if (!state) return;
     selectFeedback();
+    animateLayout(reduced);
     persistState({ ...state, activeId: id });
     setPageIdx(0);
   }
@@ -804,39 +831,42 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             squeezed out by the controls below it. */}
         <View style={styles.titleRow}>
           <Text style={styles.title}>DeskAssist</Text>
-          <Text style={[styles.status, { color: ok ? "#94a3b8" : "#fca5a5" }]} numberOfLines={1}>
-            {status}
-          </Text>
+          <View style={styles.statusRow}>
+            <ConnDot ok={ok} />
+            <Text style={[styles.status, { color: ok ? "#8a99b2" : "#fca5a5" }]} numberOfLines={1}>
+              {status}
+            </Text>
+          </View>
         </View>
         <View style={styles.headerButtons}>
           {view !== "deck" ? (
-            <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("deck"); }}>
+            <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Back to deck" onPress={() => { selectFeedback(); animateLayout(reduced); setView("deck"); }}>
               <Text style={styles.pillText}>← Deck</Text>
-            </Pressable>
+            </PressableScale>
           ) : (
             <>
               {!editing && (
-                <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("apps"); }}>
+                <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Running apps" onPress={() => { selectFeedback(); animateLayout(reduced); setView("apps"); }}>
                   <Text style={styles.pillText}>🖥</Text>
-                </Pressable>
+                </PressableScale>
               )}
               {!editing && (
-                <Pressable style={styles.pill} onPress={() => { selectFeedback(); setView("snippets"); }}>
+                <PressableScale style={styles.pill} accessibilityRole="button" onPress={() => { selectFeedback(); animateLayout(reduced); setView("snippets"); }}>
                   <Text style={styles.pillText}>Snippets</Text>
-                </Pressable>
+                </PressableScale>
               )}
-              <Pressable style={[styles.pill, autoMode && styles.pillActive]} onPress={toggleAuto}>
+              <PressableScale style={[styles.pill, autoMode && styles.pillActive]} accessibilityRole="switch" accessibilityState={{ checked: autoMode }} accessibilityLabel="Auto mode" onPress={toggleAuto}>
                 <Text style={[styles.pillText, autoMode && styles.pillTextActive]}>{autoMode ? "🪄 Auto" : "Auto"}</Text>
-              </Pressable>
-              <Pressable style={[styles.pill, editing && styles.pillActive]} onPress={() => { selectFeedback(); setEditing((e) => !e); }}>
+              </PressableScale>
+              <PressableScale style={[styles.pill, editing && styles.pillActive]} accessibilityRole="button" onPress={() => { selectFeedback(); animateLayout(reduced); setEditing((e) => !e); }}>
                 <Text style={[styles.pillText, editing && styles.pillTextActive]}>{editing ? "Done" : "Edit"}</Text>
-              </Pressable>
+              </PressableScale>
               {/* Unpair is a management action, so it lives in edit mode. Demo
                   sessions get their own exit via the banner below. */}
               {editing && (
-                <Pressable style={styles.pill} onPress={() => { selectFeedback(); onUnpair(); }}>
+                <PressableScale style={styles.pill} accessibilityRole="button" onPress={() => { selectFeedback(); onUnpair(); }}>
                   <Text style={styles.pillText}>Unpair</Text>
-                </Pressable>
+                </PressableScale>
               )}
             </>
           )}
@@ -847,15 +877,16 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           the banner itself is the way out, so leaving the demo never means
           hunting for a control. */}
       {isDemo(pairing) && (
-        <Pressable style={styles.demoBanner} onPress={() => { selectFeedback(); onUnpair(); }}>
+        <PressableScale scaleTo={0.98} style={styles.demoBanner} accessibilityRole="button" onPress={() => { selectFeedback(); onUnpair(); }}>
           <Text style={styles.demoBannerText} numberOfLines={2}>
             Demo — a simulated Mac. Nothing is actually sent.
           </Text>
           <Text style={styles.demoBannerLink}>Connect your own Mac →</Text>
-        </Pressable>
+        </PressableScale>
       )}
 
       {view === "apps" ? (
+        <Reveal style={{ flex: 1 }}>
         <RunningApps
           data={runningApps}
           onFocus={focusAppByName}
@@ -864,7 +895,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           onRefresh={refreshApps}
           loading={appsLoading}
         />
+        </Reveal>
       ) : view === "snippets" ? (
+        <Reveal style={{ flex: 1 }}>
         <SnippetLibrary
           snippets={snippets}
           busy={busy}
@@ -874,6 +907,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
           onDelete={deleteSnippet}
           onPin={pinSnippet}
         />
+        </Reveal>
       ) : (
       <>
       {/* Profile switcher: tap to switch; in edit mode, tap the active one for settings. */}
@@ -883,8 +917,11 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
             const isActive = p.id === active.id;
             const auto = autoMode && !!p.apps?.length;
             return (
-              <Pressable
+              <PressableScale
                 key={p.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={`Profile ${p.name}`}
                 onPress={() =>
                   editing && isActive ? (selectFeedback(), setShowSettings(true)) : switchProfile(p.id)
                 }
@@ -895,11 +932,13 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
                   {p.name}
                   {editing && isActive ? "  ⚙" : ""}
                 </Text>
-              </Pressable>
+              </PressableScale>
             );
           })}
           {editing && (
-            <Pressable
+            <PressableScale
+              accessibilityRole="button"
+              accessibilityLabel="New profile"
               onPress={() => {
                 selectFeedback();
                 setNamePrompt("add");
@@ -907,7 +946,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               style={styles.profileAddPill}
             >
               <Text style={styles.profileAddText}>＋ Profile</Text>
-            </Pressable>
+            </PressableScale>
           )}
         </ScrollView>
       </View>
@@ -932,7 +971,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               value={textDraft}
               onChangeText={setTextDraft}
               placeholder="Type text to send to your Mac…"
-              placeholderTextColor="#64748b"
+              placeholderTextColor="#6b7a94"
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="send"
@@ -945,7 +984,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
                 <Text style={styles.saveSnipText}>✎</Text>
               </Pressable>
             )}
-            <Pressable
+            <PressableScale
+              scaleTo={0.94}
+              accessibilityRole="button"
               style={[
                 styles.sendBtn,
                 countdown !== null && styles.cancelBtn,
@@ -955,7 +996,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               disabled={countdown === null && (busy || !textDraft.trim())}
             >
               <Text style={styles.sendBtnText}>{countdown !== null ? `Cancel ${countdown}s` : "Send"}</Text>
-            </Pressable>
+            </PressableScale>
           </View>
           <View style={styles.delayRow}>
             <Text style={styles.delayLabel}>Delay</Text>
@@ -991,7 +1032,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       <ScrollView contentContainerStyle={styles.gridScroll} scrollEnabled={!editing}>
         <View style={{ height: gridHeight }} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
           {cellSize > 0 &&
-            placements.map((p) => {
+            placements.map((p, i) => {
               const box = {
                 position: "absolute" as const,
                 left: p.x * (cellSize + GRID_GAP),
@@ -1002,10 +1043,10 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               if (p.tile.id === "__add__") {
                 return (
                   <View key="__add__" style={box}>
-                    <Pressable style={styles.addTile} onPress={() => { selectFeedback(); setEditor("new"); }}>
+                    <PressableScale style={styles.addTile} accessibilityRole="button" accessibilityLabel="Add tile" onPress={() => { selectFeedback(); setEditor("new"); }}>
                       <Text style={styles.addPlus}>＋</Text>
                       <Text style={styles.addLabel}>Add</Text>
-                    </Pressable>
+                    </PressableScale>
                   </View>
                 );
               }
@@ -1018,6 +1059,7 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
                   key={tile.id}
                   tile={tile}
                   box={box}
+                  order={i}
                   editing={editing}
                   dragging={dragId === tile.id}
                   running={running}
@@ -1034,9 +1076,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
 
       {(pages.length > 1 || editing) && (
         <View style={styles.pageRow}>
-          <Pressable onPress={() => switchPage(safeIdx - 1)} disabled={pages.length <= 1} style={[styles.pageArrow, pages.length <= 1 && styles.pageArrowOff]}>
+          <PressableScale accessibilityRole="button" accessibilityLabel="Previous page" onPress={() => switchPage(safeIdx - 1)} disabled={pages.length <= 1} style={[styles.pageArrow, pages.length <= 1 && styles.pageArrowOff]}>
             <Text style={styles.pageArrowText}>‹</Text>
-          </Pressable>
+          </PressableScale>
           <View style={styles.pageDots}>
             {pages.map((pg, i) => (
               <Pressable key={pg.id} onPress={() => switchPage(i)} style={[styles.pageDot, i === safeIdx && styles.pageDotActive]} />
@@ -1047,9 +1089,9 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
               </Pressable>
             )}
           </View>
-          <Pressable onPress={() => switchPage(safeIdx + 1)} disabled={pages.length <= 1} style={[styles.pageArrow, pages.length <= 1 && styles.pageArrowOff]}>
+          <PressableScale accessibilityRole="button" accessibilityLabel="Next page" onPress={() => switchPage(safeIdx + 1)} disabled={pages.length <= 1} style={[styles.pageArrow, pages.length <= 1 && styles.pageArrowOff]}>
             <Text style={styles.pageArrowText}>›</Text>
-          </Pressable>
+          </PressableScale>
         </View>
       )}
 
@@ -1184,8 +1226,8 @@ function TileCell({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0b1120" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1120", padding: 24, gap: 12 },
+  root: { flex: 1, backgroundColor: "#070b14" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#070b14", padding: 24, gap: 12 },
   // paddingBottom keeps bottom-anchored content (the Apps/Snippets hint lines)
   // clear of the home indicator.
   deck: { flex: 1, paddingTop: 64, paddingHorizontal: 16, paddingBottom: 24 },
@@ -1194,42 +1236,42 @@ const styles = StyleSheet.create({
   header: { flexDirection: "column", marginBottom: 16, gap: 12 },
   titleRow: { gap: 2 },
   headerButtons: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 8 },
-  title: { color: "#e2e8f0", fontSize: 20, fontWeight: "700" },
-  dim: { color: "#94a3b8", textAlign: "center" },
+  title: { color: "#e8eef9", fontSize: 20, fontWeight: "700" },
+  dim: { color: "#8a99b2", textAlign: "center" },
   status: { fontSize: 13, marginTop: 4 },
   pill: { backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  pillActive: { backgroundColor: "#0284c7" },
-  pillText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  pillActive: { backgroundColor: "#0ea5e9" },
+  pillText: { color: "#cdd7e8", fontSize: 13, fontWeight: "600" },
   pillTextActive: { color: "#fff" },
   // Amber is reserved for Pro — the only non-sky accent in the app, so the
   // upgrade affordance never reads as just another control.
   sendArea: { marginBottom: 16 },
   sendRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  sendInput: { flex: 1, backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15 },
-  sendBtn: { backgroundColor: "#0284c7", borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11, minWidth: 92, alignItems: "center" },
+  sendInput: { flex: 1, backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15 },
+  sendBtn: { backgroundColor: "#0ea5e9", borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11, minWidth: 92, alignItems: "center" },
   cancelBtn: { backgroundColor: "#e11d48" },
   saveSnipBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, paddingHorizontal: 13, justifyContent: "center", alignItems: "center" },
-  saveSnipText: { color: "#e2e8f0", fontSize: 15, fontWeight: "700" },
+  saveSnipText: { color: "#e8eef9", fontSize: 15, fontWeight: "700" },
   sendBtnDisabled: { opacity: 0.4 },
   sendBtnText: { color: "#fff", fontWeight: "700" },
   delayRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
-  delayLabel: { color: "#94a3b8", fontSize: 13 },
-  delayInput: { backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 14, minWidth: 44, textAlign: "center" },
+  delayLabel: { color: "#8a99b2", fontSize: 13 },
+  delayInput: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 14, minWidth: 44, textAlign: "center" },
   delayChip: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  delayChipActive: { backgroundColor: "#0284c7" },
-  delayChipText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  delayChipActive: { backgroundColor: "#0ea5e9" },
+  delayChipText: { color: "#cdd7e8", fontSize: 13, fontWeight: "600" },
   delayChipTextActive: { color: "#fff" },
   gridScroll: { paddingBottom: 24 },
   profileRow: { marginBottom: 16 },
   profileRowContent: { gap: 8, paddingRight: 8 },
   profilePill: { maxWidth: 180, backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  profilePillActive: { backgroundColor: "#0284c7" },
-  profilePillText: { color: "#cbd5e1", fontSize: 13, fontWeight: "600" },
+  profilePillActive: { backgroundColor: "#0ea5e9" },
+  profilePillText: { color: "#cdd7e8", fontSize: 13, fontWeight: "600" },
   profilePillTextActive: { color: "#fff" },
   profileAddPill: { borderWidth: 1, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.25)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  profileAddText: { color: "#94a3b8", fontSize: 13, fontWeight: "600" },
+  profileAddText: { color: "#8a99b2", fontSize: 13, fontWeight: "600" },
   fgRow: { marginTop: -8, marginBottom: 12, paddingHorizontal: 2 },
-  fgText: { color: "#64748b", fontSize: 12 },
+  fgText: { color: "#6b7a94", fontSize: 12 },
   editFooter: { flexDirection: "row", justifyContent: "center", gap: 24 },
   colsRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
   tile: { width: "100%", height: "100%", borderRadius: 20, alignItems: "center", justifyContent: "center", gap: 6, padding: 6 },
@@ -1245,12 +1287,12 @@ const styles = StyleSheet.create({
   pageRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 4, marginBottom: 2 },
   pageArrow: { width: 30, height: 30, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", alignItems: "center", justifyContent: "center" },
   pageArrowOff: { opacity: 0.3 },
-  pageArrowText: { color: "#cbd5e1", fontSize: 18, lineHeight: 20 },
+  pageArrowText: { color: "#cdd7e8", fontSize: 18, lineHeight: 20 },
   pageDots: { flexDirection: "row", alignItems: "center", gap: 6 },
   pageDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.25)" },
   pageDotActive: { width: 18, backgroundColor: "#38bdf8" },
   pageAdd: { marginLeft: 4, width: 20, height: 20, borderRadius: 999, borderWidth: 1, borderColor: "rgba(255,255,255,0.25)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" },
-  pageAddText: { color: "#94a3b8", fontSize: 12 },
+  pageAddText: { color: "#8a99b2", fontSize: 12 },
   badge: {
     position: "absolute",
     top: -6,
@@ -1262,7 +1304,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#0b1120",
+    borderColor: "#070b14",
   },
   badgeText: { color: "#fff", fontSize: 13, fontWeight: "700", lineHeight: 16 },
   addTile: {
@@ -1276,11 +1318,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 4,
   },
-  addPlus: { color: "#94a3b8", fontSize: 30 },
-  addLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "600" },
+  addPlus: { color: "#8a99b2", fontSize: 30 },
+  addLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600" },
   resetButton: { alignItems: "center", paddingVertical: 14 },
-  resetText: { color: "#64748b", fontSize: 13 },
-  grantButton: { backgroundColor: "#0284c7", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
+  resetText: { color: "#6b7a94", fontSize: 13 },
+  grantButton: { backgroundColor: "#0ea5e9", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
   grantText: { color: "#fff", fontWeight: "700" },
   scanOverlay: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
   reticle: { width: 220, height: 220, borderRadius: 24, borderWidth: 3, borderColor: "rgba(255,255,255,0.9)" },
@@ -1300,7 +1342,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 999,
-    backgroundColor: "rgba(15,23,42,0.72)",
+    backgroundColor: "rgba(7,11,20,0.78)",
   },
   scanBackText: { color: "#e0f2fe", fontWeight: "700", fontSize: 15 },
   // Demo entry on the pair screen — deliberately a real button, not a link: a
@@ -1314,7 +1356,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingHorizontal: 24,
   },
-  demoNote: { color: "#64748b", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
+  demoNote: { color: "#6b7a94", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
   demoBanner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12 },
   demoBannerText: { flexShrink: 1, color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
   demoBannerLink: { color: "#fde68a", fontSize: 11.5, fontWeight: "800" },
@@ -1322,8 +1364,8 @@ const styles = StyleSheet.create({
     width: "100%",
     minHeight: 120,
     maxHeight: 220,
-    backgroundColor: "#1e293b",
-    color: "#e2e8f0",
+    backgroundColor: "#16233a",
+    color: "#e8eef9",
     borderRadius: 12,
     padding: 12,
     fontSize: 13,

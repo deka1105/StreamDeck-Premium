@@ -44,7 +44,7 @@ export function ProfileSettings({
             <Text style={styles.heading}>Profile settings</Text>
 
             <Text style={styles.fieldLabel}>Name</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Work" placeholderTextColor="#64748b" maxLength={24} />
+            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Work" placeholderTextColor="#6b7a94" maxLength={24} />
 
             <Text style={styles.fieldLabel}>Auto-activate for apps</Text>
             <Text style={styles.hint}>In Auto mode, this profile shows whenever one of these apps is focused on your computer.</Text>
@@ -70,7 +70,7 @@ export function ProfileSettings({
                 value={draft}
                 onChangeText={setDraft}
                 placeholder="App name, e.g. Visual Studio Code"
-                placeholderTextColor="#64748b"
+                placeholderTextColor="#6b7a94"
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="done"
@@ -119,30 +119,30 @@ export function ProfileSettings({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#0f172a", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
+  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
   body: { padding: 20, paddingBottom: 8 },
-  heading: { color: "#e2e8f0", fontSize: 18, fontWeight: "700", marginBottom: 12 },
-  fieldLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
-  hint: { fontSize: 12, color: "#64748b", marginBottom: 8 },
-  empty: { fontSize: 12, color: "#475569", marginBottom: 4 },
+  heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
+  fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  hint: { fontSize: 12, color: "#6b7a94", marginBottom: 8 },
+  empty: { fontSize: 12, color: "#5d6c86", marginBottom: 4 },
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 4 },
   chip: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999, paddingLeft: 12, paddingRight: 10, paddingVertical: 6 },
-  chipText: { color: "#e2e8f0", fontSize: 13, fontWeight: "600" },
-  chipRemove: { color: "#94a3b8", fontSize: 12, fontWeight: "700" },
+  chipText: { color: "#e8eef9", fontSize: 13, fontWeight: "600" },
+  chipRemove: { color: "#8a99b2", fontSize: 12, fontWeight: "700" },
   addRow: { flexDirection: "row", gap: 8, alignItems: "center", marginTop: 10 },
   addBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  addBtnText: { color: "#e2e8f0", fontWeight: "700" },
+  addBtnText: { color: "#e8eef9", fontWeight: "700" },
   useCurrent: { marginTop: 12, borderWidth: 1, borderStyle: "dashed", borderColor: "rgba(56,189,248,0.4)", borderRadius: 12, paddingVertical: 12, alignItems: "center" },
   useCurrentDisabled: { borderColor: "rgba(255,255,255,0.1)" },
   useCurrentText: { color: "#7dd3fc", fontWeight: "600", fontSize: 13 },
-  useCurrentTextDisabled: { color: "#475569" },
+  useCurrentTextDisabled: { color: "#5d6c86" },
   actions: { flexDirection: "row", gap: 10, padding: 20, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   btnDisabled: { opacity: 0.4 },
   ghostBtn: { backgroundColor: "rgba(255,255,255,0.08)" },
-  ghostText: { color: "#cbd5e1", fontWeight: "600" },
-  saveBtn: { backgroundColor: "#0284c7", flex: 1 },
+  ghostText: { color: "#cdd7e8", fontWeight: "600" },
+  saveBtn: { backgroundColor: "#0ea5e9", flex: 1 },
   saveText: { color: "#fff", fontWeight: "700" },
   deleteBtn: { backgroundColor: "rgba(244,63,94,0.15)" },
   deleteText: { color: "#fb7185", fontWeight: "600" },

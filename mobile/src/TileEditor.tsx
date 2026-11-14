@@ -118,7 +118,7 @@ export function TileEditor({
             <Text style={styles.heading}>{initial ? "Edit tile" : "New tile"}</Text>
 
             <Text style={styles.fieldLabel}>Label</Text>
-            <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="Safari" placeholderTextColor="#64748b" />
+            <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="Safari" placeholderTextColor="#6b7a94" />
 
             <Text style={styles.fieldLabel}>Icon</Text>
             <View style={styles.typeRow}>
@@ -155,7 +155,7 @@ export function TileEditor({
                   value={icon.startsWith("data:") ? "" : icon}
                   onChangeText={(t) => setIcon(t.slice(0, 6))}
                   placeholder="REC"
-                  placeholderTextColor="#64748b"
+                  placeholderTextColor="#6b7a94"
                   maxLength={6}
                   autoCapitalize="characters"
                 />
@@ -196,7 +196,7 @@ export function TileEditor({
               value={value}
               onChangeText={setValue}
               placeholder={field.placeholder}
-              placeholderTextColor="#64748b"
+              placeholderTextColor="#6b7a94"
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -261,42 +261,42 @@ export function TileEditor({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#0f172a", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
+  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
   body: { padding: 20, paddingBottom: 8 },
-  heading: { color: "#e2e8f0", fontSize: 18, fontWeight: "700", marginBottom: 12 },
-  fieldLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
+  fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   iconInput: { width: 60, textAlign: "center", fontSize: 22 },
   textIconInput: { textAlign: "center", fontSize: 18, fontWeight: "800", letterSpacing: 1 },
   imageRow: { flexDirection: "row", gap: 12, alignItems: "center" },
-  imageThumb: { width: 56, height: 56, borderRadius: 12, backgroundColor: "#1e293b", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  imageThumb: { width: 56, height: 56, borderRadius: 12, backgroundColor: "#16233a", alignItems: "center", justifyContent: "center", overflow: "hidden" },
   imageThumbImg: { width: "100%", height: "100%" },
   imageThumbGlyph: { fontSize: 24 },
   imageBtn: { backgroundColor: "rgba(56,189,248,0.2)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, alignItems: "center" },
   imageBtnText: { color: "#7dd3fc", fontWeight: "700", fontSize: 14 },
   emojiRow: { flex: 1 },
   emoji: { padding: 6, borderRadius: 10, marginRight: 4 },
-  emojiActive: { backgroundColor: "#334155" },
+  emojiActive: { backgroundColor: "#22334e" },
   emojiText: { fontSize: 22 },
   typeRow: { flexDirection: "row", gap: 8 },
-  typeChip: { flex: 1, backgroundColor: "#1e293b", paddingVertical: 10, borderRadius: 10, alignItems: "center" },
-  typeChipActive: { backgroundColor: "#0284c7" },
-  typeChipText: { color: "#cbd5e1", fontWeight: "600", fontSize: 13 },
+  typeChip: { flex: 1, backgroundColor: "#16233a", paddingVertical: 10, borderRadius: 10, alignItems: "center" },
+  typeChipActive: { backgroundColor: "#0ea5e9" },
+  typeChipText: { color: "#cdd7e8", fontWeight: "600", fontSize: 13 },
   typeChipTextActive: { color: "#fff" },
-  hint: { fontSize: 12, color: "#64748b", marginTop: 6 },
+  hint: { fontSize: 12, color: "#6b7a94", marginTop: 6 },
   swatchRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   swatch: { width: 36, height: 36, borderRadius: 999, borderWidth: 2, borderColor: "transparent" },
-  swatchActive: { borderColor: "#e2e8f0" },
+  swatchActive: { borderColor: "#e8eef9" },
   sizeRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
-  sizeLabel: { color: "#94a3b8", fontSize: 13, width: 52 },
-  sizeChip: { backgroundColor: "#1e293b", width: 42, paddingVertical: 8, borderRadius: 10, alignItems: "center" },
+  sizeLabel: { color: "#8a99b2", fontSize: 13, width: 52 },
+  sizeChip: { backgroundColor: "#16233a", width: 42, paddingVertical: 8, borderRadius: 10, alignItems: "center" },
   actions: { flexDirection: "row", gap: 10, padding: 20, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   btnDisabled: { opacity: 0.4 },
   ghostBtn: { backgroundColor: "rgba(255,255,255,0.08)" },
-  ghostText: { color: "#cbd5e1", fontWeight: "600" },
-  saveBtn: { backgroundColor: "#0284c7", flex: 1 },
+  ghostText: { color: "#cdd7e8", fontWeight: "600" },
+  saveBtn: { backgroundColor: "#0ea5e9", flex: 1 },
   saveText: { color: "#fff", fontWeight: "700" },
   deleteBtn: { backgroundColor: "rgba(244,63,94,0.15)" },
   deleteText: { color: "#fb7185", fontWeight: "600" },

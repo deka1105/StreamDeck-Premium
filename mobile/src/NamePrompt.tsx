@@ -33,7 +33,7 @@ export function NamePrompt({
             value={name}
             onChangeText={setName}
             placeholder="Profile name"
-            placeholderTextColor="#64748b"
+            placeholderTextColor="#6b7a94"
             autoFocus
             returnKeyType="done"
             onSubmitEditing={submit}
@@ -55,14 +55,14 @@ export function NamePrompt({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center", padding: 24 },
-  card: { width: "100%", maxWidth: 380, backgroundColor: "#0f172a", borderRadius: 20, padding: 20 },
-  heading: { color: "#e2e8f0", fontSize: 18, fontWeight: "700", marginBottom: 14 },
-  input: { backgroundColor: "#1e293b", color: "#e2e8f0", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  card: { width: "100%", maxWidth: 380, backgroundColor: "#0e1626", borderRadius: 20, padding: 20 },
+  heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 14 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   actions: { flexDirection: "row", gap: 10, marginTop: 16, justifyContent: "flex-end" },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   btnDisabled: { opacity: 0.4 },
   ghostBtn: { backgroundColor: "rgba(255,255,255,0.08)" },
-  ghostText: { color: "#cbd5e1", fontWeight: "600" },
-  saveBtn: { backgroundColor: "#0284c7", minWidth: 96 },
+  ghostText: { color: "#cdd7e8", fontWeight: "600" },
+  saveBtn: { backgroundColor: "#0ea5e9", minWidth: 96 },
   saveText: { color: "#fff", fontWeight: "700" },
 });
