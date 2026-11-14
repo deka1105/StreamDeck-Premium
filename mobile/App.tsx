@@ -18,12 +18,16 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
-import { clearPairing, loadPairing, savePairing, type Pairing } from "./src/storage";
+import { addPairing, loadPairings, removePairing, setActivePairing, type Pairing, type PairingsState } from "./src/storage";
 import { resultFeedback, selectFeedback, tapFeedback } from "./src/haptics";
 // Everything host-facing goes through host.ts, which routes to the encrypted
 // transport or the demo simulation — so no call site below knows the difference.
-import { apps as fetchApps, foreground, hello, pair, sendAction } from "./src/host";
+import { apps as fetchApps, foreground, hello, pair, sendAction, status as fetchStatus } from "./src/host";
 import { demoPairing, isDemo } from "./src/demo";
+import type { HostStatus } from "./src/rpc";
+import { HostsSheet } from "./src/HostsSheet";
+import { VolumeSheet } from "./src/VolumeSheet";
+import { ImportProfileSheet } from "./src/ImportProfileSheet";
 import { loadCols, loadProfiles, saveCols, saveProfiles, type ProfilesState } from "./src/deckStorage";
 import {
   DEFAULT_COLS,
@@ -75,18 +79,27 @@ const COL_OPTIONS = Array.from({ length: MAX_COLS - MIN_COLS + 1 }, (_, i) => MI
 // Sentinel used to place the "Add" tile inside the packed grid while editing.
 const ADD_TILE: DeckButton = { id: "__add__", label: "", icon: "", action: { type: "url", target: "add" }, color: "", w: 1, h: 1 };
 
+/** "⏱ 4:32" / "⏱ 45s" for an armed timer tile's caption. */
+function fmtCountdown(total: number): string {
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m > 0 ? `⏱ ${m}:${String(s).padStart(2, "0")}` : `⏱ ${s}s`;
+}
+
 export default function App() {
-  const [pairing, setPairing] = useState<Pairing | null | "loading">("loading");
+  const [hosts, setHosts] = useState<PairingsState | "loading">("loading");
+  // True while "Pair another computer" is open on top of an existing pairing.
+  const [addingHost, setAddingHost] = useState(false);
 
   useEffect(() => {
-    // loadPairing never rejects, but belt-and-braces: the UI shows a spinner
+    // loadPairings never rejects, but belt-and-braces: the UI shows a spinner
     // until this resolves, so failing to set state at all would hang the launch.
-    loadPairing()
-      .then((p) => setPairing(p))
-      .catch(() => setPairing(null));
+    loadPairings()
+      .then(setHosts)
+      .catch(() => setHosts({ pairings: [], activeKid: null }));
   }, []);
 
-  if (pairing === "loading") {
+  if (hosts === "loading") {
     return (
       <View style={styles.center}>
         <ActivityIndicator color="#38bdf8" />
@@ -95,19 +108,27 @@ export default function App() {
     );
   }
 
+  const active = hosts.pairings.find((p) => p.kid === hosts.activeKid) ?? null;
+
+  const paired = async (p: Pairing) => {
+    setHosts(await addPairing(hosts, p));
+    setAddingHost(false);
+  };
+
   return (
     <MotionProvider>
     <View style={styles.root}>
-      {pairing ? (
+      {active && !addingHost ? (
         <DeckScreen
-          pairing={pairing}
-          onUnpair={async () => {
-            await clearPairing();
-            setPairing(null);
-          }}
+          pairing={active}
+          hosts={hosts.pairings}
+          activeKid={hosts.activeKid}
+          onSwitchHost={async (kid) => setHosts(await setActivePairing(hosts, kid))}
+          onRemoveHost={async (kid) => setHosts(await removePairing(hosts, kid))}
+          onAddHost={() => setAddingHost(true)}
         />
       ) : (
-        <PairScreen onPaired={setPairing} />
+        <PairScreen onPaired={paired} onCancel={active ? () => setAddingHost(false) : undefined} />
       )}
       <StatusBar style="light" />
     </View>
@@ -115,7 +136,7 @@ export default function App() {
   );
 }
 
-function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
+function PairScreen({ onPaired, onCancel }: { onPaired: (p: Pairing) => Promise<void> | void; onCancel?: () => void }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [error, setError] = useState<string | null>(null);
   const [manual, setManual] = useState(false);
@@ -135,8 +156,7 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
       }
       try {
         const pairing = await pair(info.host, info.port, info.pid, info.hpk, DEVICE_NAME);
-        await savePairing(pairing);
-        onPaired(pairing);
+        await onPaired(pairing); // the App persists it (addPairing)
         return true;
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
@@ -176,9 +196,7 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
   // installed. Persisted like a real pairing, so it survives a relaunch and
   // "Unpair" exits it.
   const startDemo = useCallback(async () => {
-    const p = demoPairing();
-    await savePairing(p);
-    onPaired(p);
+    await onPaired(demoPairing());
   }, [onPaired]);
 
   // Manual entry — needed on the Simulator (no camera), handy as a fallback.
@@ -233,6 +251,11 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
     const granted = permission.granted;
     return (
       <View style={styles.center}>
+        {onCancel && (
+          <Pressable style={styles.scanBack} onPress={onCancel} hitSlop={12} accessibilityRole="button" accessibilityLabel="Back">
+            <Text style={styles.scanBackText}>‹ Back</Text>
+          </Pressable>
+        )}
         <Reveal style={{ alignItems: "center" }}><Text style={styles.title}>Pair with your Mac</Text></Reveal>
         <Reveal delay={40} style={{ alignItems: "center" }}>
           <Text style={styles.dim}>
@@ -339,7 +362,21 @@ function PairScreen({ onPaired }: { onPaired: (p: Pairing) => void }) {
 
 type EditorState = null | "new" | DeckButton;
 
-function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => void }) {
+function DeckScreen({
+  pairing,
+  hosts,
+  activeKid,
+  onSwitchHost,
+  onRemoveHost,
+  onAddHost,
+}: {
+  pairing: Pairing;
+  hosts: Pairing[];
+  activeKid: string | null;
+  onSwitchHost: (kid: string) => void;
+  onRemoveHost: (kid: string) => void;
+  onAddHost: () => void;
+}) {
   const [state, setState] = useState<ProfilesState | null>(null);
   const [namePrompt, setNamePrompt] = useState<null | "add">(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -366,6 +403,13 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   const [cols, setCols] = useState(DEFAULT_COLS);
   const [gridW, setGridW] = useState(0);
   const reduced = useReduceMotion();
+  const [hostStatus, setHostStatus] = useState<HostStatus | null>(null);
+  const [showHosts, setShowHosts] = useState(false);
+  const [showVolume, setShowVolume] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  // Armed timer tiles: tile id → epoch ms when it fires.
+  const [timers, setTimers] = useState<Record<string, number>>({});
+  const [clock, setClock] = useState(() => Date.now());
 
   useEffect(() => {
     loadProfiles().then(setState);
@@ -457,6 +501,52 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
       clearInterval(id);
     };
   }, [pairing]);
+
+  // Live host status (volume / now playing / recorded shortcut) — powers media
+  // tiles, the now-playing strip, and the editor's "use recorded shortcut".
+  useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const r = await fetchStatus(pairing);
+        if (!cancelled) setHostStatus(r);
+      } catch {
+        // host momentarily unreachable — keep the last snapshot
+      }
+    };
+    poll();
+    const id = setInterval(poll, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [pairing]);
+
+  // Tick every half second while any timer tile is armed, so countdown
+  // captions stay current.
+  const hasTimers = Object.keys(timers).length > 0;
+  useEffect(() => {
+    if (!hasTimers) return;
+    const id = setInterval(() => setClock(Date.now()), 500);
+    return () => clearInterval(id);
+  }, [hasTimers]);
+
+  // Fire due timers. Intentionally keyed on the tick, not on `timers`, so a
+  // firing doesn't rebuild the interval above.
+  useEffect(() => {
+    if (!hasTimers) return;
+    const due = Object.entries(timers).filter(([, at]) => at <= clock).map(([tid]) => tid);
+    if (!due.length) return;
+    setTimers((t) => {
+      const next = { ...t };
+      for (const tid of due) delete next[tid];
+      return next;
+    });
+    for (const tile of pages.flatMap((pg) => pg.buttons)) {
+      if (due.includes(tile.id) && tile.action.type === "timer") fireTimer(tile);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clock]);
 
   function persistState(next: ProfilesState) {
     setState(next);
