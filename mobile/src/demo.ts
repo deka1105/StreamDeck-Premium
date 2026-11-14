@@ -57,8 +57,11 @@ export function demoHello() {
   return settle({ ok: true, host: "Demo Mac" }, 120);
 }
 
-/** Accepts anything and runs nothing. The deck shows a standing banner saying so. */
-export function demoSendAction(_label: string, _action: DeckAction) {
+/** Accepts anything and runs nothing — except media, which drives the simulated
+ *  volume / player state so those tiles visibly work in the demo. */
+export function demoSendAction(_label: string, action: DeckAction) {
+  if (action.type === "media") applyDemoMedia(action);
+  if (action.type === "macro") for (const s of action.steps) applyDemoMedia(s.action);
   return settle({ ok: true as boolean, error: undefined as string | undefined });
 }
 

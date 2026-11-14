@@ -20,7 +20,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import qrcode from "qrcode";
-import { execute, validateAction, frontmostApp, runningApps } from "./executor.mjs";
+import { execute, validateAction, frontmostApp, runningApps, hostStatus } from "./executor.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -145,6 +145,9 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   if (typeof allowShell === "boolean") settings.allowShell = allowShell;
   let allowedApps = loadApps(dir);
   const pendings = new Map(); // pid -> { hostKp, hostRawPub, expiresAt }
+  // The last shortcut captured in the desktop "Record a shortcut" UI. Served to
+  // phones via the status cmd for ~10 min so the tile editor can offer it.
+  const recorded = { combo: null, at: 0 };
 
   const isAppAllowed = (n) => allowedApps.some((a) => a.toLowerCase() === String(n).toLowerCase());
   function setAppAllowed(nameRaw, on) {
@@ -235,13 +238,25 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     } else if (msg.cmd === "apps") {
       // Report the running apps for the phone's "Apps" screen.
       reply = { ok: true, apps: await runningApps(), frontmost: await frontmostApp() };
+    } else if (msg.cmd === "status") {
+      // Live host state: volume, now playing, and any freshly recorded shortcut.
+      const s = await hostStatus();
+      const fresh = recorded.combo && Date.now() - recorded.at < 10 * 60_000 ? recorded.combo : null;
+      reply = { ok: true, ...s, recordedCombo: fresh };
     } else if (msg.cmd === "action") {
       const action = validateAction(msg.action);
+      // Every app the action could launch — a macro is walked so a buried step
+      // can't bypass the allowlist.
+      const appTargets = !action ? []
+        : action.type === "app" ? [action.target]
+        : action.type === "macro" ? action.steps.filter((s) => s.action.type === "app").map((s) => s.action.target)
+        : [];
+      const blockedApp = appTargets.find((t) => !isAppAllowed(t));
       if (!action) {
         reply = { ok: false, error: "invalid action" };
-      } else if (action.type === "app" && !isAppAllowed(action.target)) {
-        console.log(`⛔ blocked launch of "${action.target}" (not in Allowed apps)`);
-        reply = { ok: false, error: `“${action.target}” isn't allowed — enable it in the desktop app → Allowed apps.` };
+      } else if (blockedApp !== undefined) {
+        console.log(`⛔ blocked launch of "${blockedApp}" (not in Allowed apps)`);
+        reply = { ok: false, error: `“${blockedApp}” isn't allowed — enable it in the desktop app → Allowed apps.` };
       } else {
         console.log(`▶ ${msg.label ?? action.type} [${action.type}] from ${device.name}`);
         try {
@@ -320,6 +335,10 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       saveSettings(dir, settings);
     },
     getShellAllowlist: () => settings.shellAllowlist,
+    setRecordedCombo: (combo) => {
+      recorded.combo = typeof combo === "string" && combo.trim() ? combo.trim().slice(0, 64) : null;
+      recorded.at = Date.now();
+    },
     listen: () => new Promise((r) => server.listen(port, r)),
     stop: () => new Promise((r) => server.close(r)),
   };

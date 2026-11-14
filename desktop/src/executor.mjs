@@ -17,14 +17,46 @@ const platform = process.platform; // 'darwin' | 'win32' | 'linux'
 
 const FIELD_BY_TYPE = { app: "target", url: "target", keys: "combo", shell: "command", text: "text" };
 
-/** Minimal shape check mirroring the Next app's validateAction intent. */
-export function validateAction(action) {
+const MEDIA_COMMANDS = new Set(["playpause", "next", "previous", "volup", "voldown", "mute", "setvol"]);
+const MAX_MACRO_STEPS = 8;
+const MAX_STEP_DELAY_MS = 30_000;
+
+/** Validate one directly executable action (the string types + media). */
+function validateBasic(action) {
   if (!action || typeof action !== "object") return null;
+  if (action.type === "media") {
+    if (typeof action.command !== "string" || !MEDIA_COMMANDS.has(action.command)) return null;
+    const out = { type: "media", command: action.command };
+    if (action.command === "setvol") {
+      const v = Number(action.value);
+      out.value = Number.isFinite(v) ? Math.max(0, Math.min(100, Math.round(v))) : 50;
+    }
+    return out;
+  }
   const field = FIELD_BY_TYPE[action.type];
   if (!field) return null;
   const value = action[field];
   if (typeof value !== "string" || value.length === 0 || value.length > 4096) return null;
   return { type: action.type, [field]: value };
+}
+
+/** Minimal shape check mirroring the phone's validateAction. Macros validate
+ *  each step; "timer" never reaches the host (the phone unwraps it). */
+export function validateAction(action) {
+  if (!action || typeof action !== "object") return null;
+  if (action.type === "macro") {
+    if (!Array.isArray(action.steps) || action.steps.length === 0) return null;
+    const steps = [];
+    for (const raw of action.steps.slice(0, MAX_MACRO_STEPS)) {
+      const a = validateBasic(raw?.action);
+      if (!a) return null;
+      const d = Number(raw?.delayMs);
+      const delayMs = Number.isFinite(d) ? Math.max(0, Math.min(MAX_STEP_DELAY_MS, Math.round(d))) : 0;
+      steps.push(delayMs ? { action: a, delayMs } : { action: a });
+    }
+    return { type: "macro", steps };
+  }
+  return validateBasic(action);
 }
 
 /**
@@ -49,9 +81,14 @@ export function shellDecision(command, { allowShell = false, shellAllowlist = nu
 
 export async function execute(action, { dryRun = false, allowShell = false, shellAllowlist = null } = {}) {
   // Gate the shell RCE path *before* dry-run, so a blocked command is reported as
-  // blocked even in a preview run.
-  if (action.type === "shell") {
-    const d = shellDecision(action.command, { allowShell, shellAllowlist });
+  // blocked even in a preview run. Macros are walked so a buried shell step
+  // can't slip past the policy.
+  const shellCommands =
+    action.type === "shell" ? [action.command]
+    : action.type === "macro" ? action.steps.filter((s) => s.action.type === "shell").map((s) => s.action.command)
+    : [];
+  for (const command of shellCommands) {
+    const d = shellDecision(command, { allowShell, shellAllowlist });
     if (!d.ok) throw new Error(d.reason);
   }
   if (dryRun) {
@@ -69,9 +106,96 @@ export async function execute(action, { dryRun = false, allowShell = false, shel
       return sh(action.command);
     case "text":
       return typeText(action.text);
+    case "media":
+      return mediaControl(action);
+    case "macro": {
+      for (const step of action.steps) {
+        if (step.delayMs) await sleep(step.delayMs);
+        await execute(step.action, { dryRun, allowShell, shellAllowlist });
+      }
+      return;
+    }
     default:
       throw new Error(`Unknown action type: ${action.type}`);
   }
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// --- media controls (macOS) --------------------------------------------------
+// Volume goes through AppleScript's `set volume` (no permissions needed).
+// Transport (play/pause/next/previous) targets Spotify if it's running, else
+// Music — the first use prompts for Automation permission once.
+
+async function currentPlayer() {
+  const apps = await runningApps();
+  if (apps.includes("Spotify")) return "Spotify";
+  if (apps.includes("Music")) return "Music";
+  return null;
+}
+
+async function mediaControl(action) {
+  if (platform !== "darwin") throw new Error(`Media controls aren't implemented for ${platform}`);
+  switch (action.command) {
+    case "setvol": {
+      const v = Math.max(0, Math.min(100, Math.round(action.value ?? 50)));
+      return sh(`osascript -e 'set volume output volume ${v}'`);
+    }
+    case "mute":
+      return sh(`osascript -e 'set volume output muted (not (output muted of (get volume settings)))'`);
+    case "volup":
+      return sh(`osascript -e 'set volume output volume ((output volume of (get volume settings)) + 6)'`);
+    case "voldown":
+      return sh(`osascript -e 'set volume output volume ((output volume of (get volume settings)) - 6)'`);
+    default: {
+      const player = await currentPlayer();
+      if (!player) throw new Error("No media app is running (Spotify or Music).");
+      const verb = action.command === "playpause" ? "playpause" : action.command === "next" ? "next track" : "previous track";
+      return sh(`osascript -e 'tell application "${player}" to ${verb}'`);
+    }
+  }
+}
+
+// --- host status (volume + now playing), briefly cached ----------------------
+// Polled by every paired phone (~3s), and each probe spawns osascript, so a
+// 2s memo keeps N phones from multiplying the cost.
+
+let statusCache = { at: 0, value: null };
+
+export async function hostStatus() {
+  if (Date.now() - statusCache.at < 2000 && statusCache.value) return statusCache.value;
+  const out = { volume: null, muted: false, media: null };
+  if (platform === "darwin") {
+    try {
+      const vs = await sh(`osascript -e 'get volume settings'`);
+      const mv = vs.match(/output volume:(\d+)/);
+      out.volume = mv ? parseInt(mv[1], 10) : null;
+      out.muted = /output muted:true/.test(vs);
+    } catch {
+      // volume unavailable (rare) — report nulls
+    }
+    try {
+      const player = await currentPlayer();
+      if (player) {
+        const sep = "<|>";
+        const script = `tell application "${player}" to get (name of current track) & "${sep}" & (artist of current track) & "${sep}" & (player state as text)`;
+        const raw = await sh(`osascript -e ${q(script)}`);
+        const [track, artist, state] = raw.trim().split(sep);
+        if (track) {
+          out.media = {
+            app: player,
+            state: state === "playing" ? "playing" : state === "paused" ? "paused" : "stopped",
+            track,
+            artist: artist ?? "",
+          };
+        }
+      }
+    } catch {
+      // player running but nothing queued ("current track" errors) — no media
+    }
+  }
+  statusCache = { at: Date.now(), value: out };
+  return out;
 }
 
 async function launchApp(name) {

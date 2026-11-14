@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld("deck", {
     ipcRenderer.on("devices:changed", handler);
     return () => ipcRenderer.removeListener("devices:changed", handler);
   },
+  // "Record a shortcut": push the captured combo to the host core, where the
+  // phone's tile editor picks it up via the status cmd.
+  recordShortcut: (combo) => ipcRenderer.invoke("shortcut:record", combo),
   // Allowed-apps management
   listInstalledApps: () => ipcRenderer.invoke("apps:installed"),
   listAllowedApps: () => ipcRenderer.invoke("apps:allowed"),
