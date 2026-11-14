@@ -178,6 +178,7 @@ function SnippetEditor({
     <Modal visible transparent animationType="slide" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
+          <View style={styles.grabber} />
           <ScrollView contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled">
             <Text style={styles.heading}>{initial ? "Edit snippet" : "New snippet"}</Text>
 
@@ -263,7 +264,8 @@ const styles = StyleSheet.create({
   hint: { color: "#5d6c86", fontSize: 11, textAlign: "center", marginTop: 8, marginBottom: 4 },
 
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
+  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
+  grabber: { alignSelf: "center", width: 36, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.18)", marginTop: 10, marginBottom: -6 },
   sheetBody: { padding: 20, paddingBottom: 8 },
   heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
   fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
