@@ -2,14 +2,40 @@
 // real hex values (no Tailwind on native). The phone deck is its own store, so it
 // doesn't need to interop layouts with the web deck.
 
-export type ButtonAction =
+/** Media-control verbs the host understands (macOS; see desktop executor). */
+export type MediaCommand = "playpause" | "next" | "previous" | "volup" | "voldown" | "mute" | "setvol";
+
+/**
+ * A single, directly executable action. Macro steps and timer payloads are
+ * restricted to these, so composition is exactly one level deep — no macro of
+ * macros, no timer firing a timer.
+ */
+export type BasicAction =
   | { type: "app"; target: string }
   | { type: "url"; target: string }
   | { type: "keys"; combo: string }
   | { type: "text"; text: string }
-  | { type: "shell"; command: string };
+  | { type: "shell"; command: string }
+  | { type: "media"; command: MediaCommand; value?: number };
+
+/** One step of a macro: a basic action, optionally preceded by a pause. */
+export type MacroStep = { action: BasicAction; delayMs?: number };
+
+export type ButtonAction =
+  | BasicAction
+  /** Runs its steps in order on the host (shell steps still honor the host's shell policy). */
+  | { type: "macro"; steps: MacroStep[] }
+  /** Counts down on the phone, then fires `inner`. The host never sees "timer". */
+  | { type: "timer"; seconds: number; inner: BasicAction };
 
 export type ActionType = ButtonAction["type"];
+
+/** The action types whose editor value is one string (everything pre-1.1). */
+export type StringActionType = "app" | "url" | "keys" | "text" | "shell";
+
+export const MAX_MACRO_STEPS = 8;
+export const MAX_STEP_DELAY_MS = 30_000;
+export const MAX_TIMER_SEC = 2 * 60 * 60;
 
 /** How a tile's `icon` is rendered. */
 export type IconType = "emoji" | "text" | "image";
@@ -96,16 +122,90 @@ export const TILE_COLORS: { name: string; color: string }[] = [
   { name: "Neutral", color: "#404040" },
 ];
 
+/** Named color palettes for tiles. "Classic" is TILE_COLORS, unchanged. */
+export type TilePalette = { id: string; name: string; colors: { name: string; color: string }[] };
+
+export const TILE_PALETTES: TilePalette[] = [
+  { id: "classic", name: "Classic", colors: TILE_COLORS },
+  {
+    id: "neon",
+    name: "Neon",
+    colors: [
+      { name: "Magenta", color: "#d500f9" },
+      { name: "Purple", color: "#651fff" },
+      { name: "Blue", color: "#2962ff" },
+      { name: "Cyan", color: "#0091ea" },
+      { name: "Teal", color: "#00897b" },
+      { name: "Green", color: "#00a344" },
+      { name: "Red", color: "#ff1744" },
+      { name: "Pink", color: "#c51162" },
+      { name: "Indigo", color: "#304ffe" },
+      { name: "Orange", color: "#e65100" },
+    ],
+  },
+  {
+    id: "pastel",
+    name: "Dusk",
+    colors: [
+      { name: "Mauve", color: "#8d6e9f" },
+      { name: "Steel", color: "#6e8fb5" },
+      { name: "Sage", color: "#5f8f78" },
+      { name: "Clay", color: "#b5776f" },
+      { name: "Sand", color: "#a98b4f" },
+      { name: "Moss", color: "#71895c" },
+      { name: "Lilac", color: "#9a7fb5" },
+      { name: "Lagoon", color: "#50808e" },
+      { name: "Rosewood", color: "#a86e8e" },
+      { name: "Harbor", color: "#64748b" },
+    ],
+  },
+  {
+    id: "mono",
+    name: "Mono",
+    colors: [
+      { name: "Ink", color: "#1f2937" },
+      { name: "Slate", color: "#334155" },
+      { name: "Steel", color: "#475569" },
+      { name: "Zinc", color: "#52525b" },
+      { name: "Graphite", color: "#3f3f46" },
+      { name: "Stone", color: "#57534e" },
+      { name: "Coal", color: "#27272a" },
+      { name: "Ash", color: "#6b7280" },
+      { name: "Navy", color: "#1e293b" },
+      { name: "Smoke", color: "#44403c" },
+    ],
+  },
+  {
+    id: "sunset",
+    name: "Sunset",
+    colors: [
+      { name: "Crimson", color: "#b91c1c" },
+      { name: "Ember", color: "#c2410c" },
+      { name: "Amber", color: "#b45309" },
+      { name: "Magenta", color: "#be185d" },
+      { name: "Wine", color: "#9d174d" },
+      { name: "Rust", color: "#7c2d12" },
+      { name: "Gold", color: "#a16207" },
+      { name: "Rose", color: "#e11d48" },
+      { name: "Flame", color: "#ea580c" },
+      { name: "Bronze", color: "#92400e" },
+    ],
+  },
+];
+
 export const ACTION_TYPES: { type: ActionType; label: string }[] = [
   { type: "app", label: "App" },
   { type: "url", label: "URL" },
   { type: "keys", label: "Shortcut" },
   { type: "text", label: "Text" },
+  { type: "media", label: "Media" },
+  { type: "macro", label: "Macro" },
+  { type: "timer", label: "Timer" },
   { type: "shell", label: "Shell" },
 ];
 
-/** Per-type field metadata for the editor. */
-export const FIELD: Record<ActionType, { label: string; placeholder: string; hint: string }> = {
+/** Per-type field metadata for the editor (string-valued types only). */
+export const FIELD: Record<StringActionType, { label: string; placeholder: string; hint: string }> = {
   app: { label: "App name", placeholder: "Safari", hint: "Exact app name, e.g. “Visual Studio Code”." },
   url: { label: "URL", placeholder: "https://github.com", hint: "Opens in your default browser." },
   keys: { label: "Shortcut", placeholder: "cmd+shift+4", hint: "Modifiers + one key. macOS only." },
@@ -125,6 +225,7 @@ export const defaultButtons: DeckButton[] = [
   { id: "mute", label: "Mute", icon: "🔇", action: { type: "shell", command: "osascript -e 'set volume output muted true'" }, color: "#d97706" },
 ];
 
+/** The single string value of a string-typed action ("" for structured types). */
 export function actionValue(action: ButtonAction): string {
   switch (action.type) {
     case "keys":
@@ -133,12 +234,15 @@ export function actionValue(action: ButtonAction): string {
       return action.command;
     case "text":
       return action.text;
-    default:
+    case "app":
+    case "url":
       return action.target;
+    default:
+      return "";
   }
 }
 
-export function makeAction(type: ActionType, value: string): ButtonAction {
+export function makeAction(type: StringActionType, value: string): BasicAction {
   switch (type) {
     case "keys":
       return { type, combo: value };
@@ -151,9 +255,31 @@ export function makeAction(type: ActionType, value: string): ButtonAction {
   }
 }
 
-export function validateAction(input: unknown): ButtonAction | null {
+export const MEDIA_COMMANDS: { command: MediaCommand; label: string; icon: string }[] = [
+  { command: "playpause", label: "Play / Pause", icon: "⏯️" },
+  { command: "next", label: "Next track", icon: "⏭️" },
+  { command: "previous", label: "Previous", icon: "⏮️" },
+  { command: "volup", label: "Volume up", icon: "🔊" },
+  { command: "voldown", label: "Volume down", icon: "🔉" },
+  { command: "mute", label: "Mute", icon: "🔇" },
+  { command: "setvol", label: "Volume slider", icon: "🎚️" },
+];
+
+const MEDIA_SET = new Set<string>(MEDIA_COMMANDS.map((m) => m.command));
+
+/** Validate an untrusted basic action (string types + media). */
+function validateBasic(input: unknown): BasicAction | null {
   if (!input || typeof input !== "object") return null;
   const a = input as Record<string, unknown>;
+  if (a.type === "media") {
+    if (typeof a.command !== "string" || !MEDIA_SET.has(a.command)) return null;
+    const cmd = a.command as MediaCommand;
+    if (cmd === "setvol") {
+      const v = typeof a.value === "number" && Number.isFinite(a.value) ? Math.round(a.value) : 50;
+      return { type: "media", command: cmd, value: Math.max(0, Math.min(100, v)) };
+    }
+    return { type: "media", command: cmd };
+  }
   const value =
     typeof a.target === "string" ? a.target
     : typeof a.combo === "string" ? a.combo
@@ -169,6 +295,38 @@ export function validateAction(input: unknown): ButtonAction | null {
   return null;
 }
 
+export function validateAction(input: unknown): ButtonAction | null {
+  if (!input || typeof input !== "object") return null;
+  const a = input as Record<string, unknown>;
+  if (a.type === "macro") {
+    if (!Array.isArray(a.steps) || a.steps.length === 0) return null;
+    const steps: MacroStep[] = [];
+    for (const raw of a.steps.slice(0, MAX_MACRO_STEPS)) {
+      if (!raw || typeof raw !== "object") return null;
+      const s = raw as Record<string, unknown>;
+      const action = validateBasic(s.action);
+      if (!action) return null;
+      const delayMs =
+        typeof s.delayMs === "number" && Number.isFinite(s.delayMs)
+          ? Math.max(0, Math.min(MAX_STEP_DELAY_MS, Math.round(s.delayMs)))
+          : undefined;
+      steps.push(delayMs ? { action, delayMs } : { action });
+    }
+    return steps.length ? { type: "macro", steps } : null;
+  }
+  if (a.type === "timer") {
+    const inner = validateBasic(a.inner);
+    if (!inner) return null;
+    const seconds =
+      typeof a.seconds === "number" && Number.isFinite(a.seconds)
+        ? Math.max(1, Math.min(MAX_TIMER_SEC, Math.round(a.seconds)))
+        : null;
+    if (seconds === null) return null;
+    return { type: "timer", seconds, inner };
+  }
+  return validateBasic(input);
+}
+
 export function describeAction(action: ButtonAction): string {
   switch (action.type) {
     case "app":
@@ -181,7 +339,23 @@ export function describeAction(action: ButtonAction): string {
       return `Run: ${action.command}`;
     case "text":
       return `Type: ${action.text}`;
+    case "media": {
+      const meta = MEDIA_COMMANDS.find((m) => m.command === action.command);
+      return `Media: ${meta?.label ?? action.command}`;
+    }
+    case "macro":
+      return `Macro: ${action.steps.length} step${action.steps.length === 1 ? "" : "s"}`;
+    case "timer":
+      return `Timer ${action.seconds}s → ${describeAction(action.inner)}`;
   }
+}
+
+/** Every app name an action could launch — used by the host's app allowlist. */
+export function appTargetsOf(action: ButtonAction): string[] {
+  if (action.type === "app") return [action.target];
+  if (action.type === "macro") return action.steps.flatMap((s) => (s.action.type === "app" ? [s.action.target] : []));
+  if (action.type === "timer") return action.inner.type === "app" ? [action.inner.target] : [];
+  return [];
 }
 
 export function newButtonId(): string {
