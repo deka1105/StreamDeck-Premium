@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   body: { padding: 20, paddingBottom: 8 },
   heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
   fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)" },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   iconInput: { width: 60, textAlign: "center", fontSize: 22 },
   textIconInput: { textAlign: "center", fontSize: 18, fontWeight: "800", letterSpacing: 1 },

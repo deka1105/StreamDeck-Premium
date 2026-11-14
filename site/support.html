@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<title>Support — DeskAssist</title>
+<meta name="description" content="DeskAssist support: setup help, troubleshooting for pairing, connections and keyboard shortcuts, frequently asked questions, and how to reach us.">
+<link rel="icon" type="image/png" href="./app-icon.png">
+<style>
+  :root {
+    --ground: #070b14;
+    --panel: #0e1626;
+    --panel-2: #121c30;
+    --line: rgba(255,255,255,.09);
+    --line-strong: rgba(255,255,255,.16);
+    --ink: #e8eef9;
+    --muted: #8a99b2;
+    --muted-2: #6b7a94;
+    --accent: #46bdf6;
+    --good: #4ade80;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 16.5px; line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar { position: sticky; top: 0; z-index: 10; background: rgba(7,11,20,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .bar .wrap { max-width: 44rem; margin: 0 auto; padding: 12px 1.5rem; display: flex; align-items: center; gap: 14px; }
+  .bar img { width: 22px; height: 22px; border-radius: 6px; }
+  .bar .name { font-weight: 700; margin-right: auto; }
+  .bar a { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  .bar a:hover, .bar a.here { color: var(--ink); }
+  main { max-width: 44rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+  a { color: var(--accent); }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.5rem); letter-spacing: -0.025em; margin: 0 0 .5rem; line-height: 1.15; }
+  h2 { font-size: 1.2rem; letter-spacing: -0.01em; margin: 2.8rem 0 .8rem; }
+  p, li { color: #cdd7e8; margin: 0 0 1rem; }
+  ul, ol { padding-left: 1.2rem; }
+  li { margin-bottom: .5rem; }
+  .lede { font-size: 1.08rem; color: var(--muted); margin-bottom: 2rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.3rem; margin: 1.5rem 0; }
+  .panel p:last-child { margin-bottom: 0; }
+  code { font-family: var(--mono); font-size: .88em; background: rgba(255,255,255,.06); padding: .1em .35em; border-radius: 3px; }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: .85rem 1.15rem; margin: 0 0 .7rem; }
+  details[open] { border-color: var(--line-strong); }
+  summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+  summary::marker { color: var(--accent); }
+  details p { margin: .7rem 0 0; }
+  .steps li { margin-bottom: .7rem; }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted-2); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <img src="./app-icon.png" alt=""><span class="name">DeskAssist</span>
+    <a href="./index.html">Home</a>
+    <a href="./support.html" class="here">Support</a>
+    <a href="./download.html">Download</a>
+    <a href="./changelog.html">Changelog</a>
+  </div>
+</header>
+<main>
+  <h1>Support</h1>
+  <p class="lede">Most problems come down to one of four things: the two devices aren't on the same network, the host isn't running, macOS hasn't granted a permission, or a safety switch is doing its job. Here's how to tell which one you've hit.</p>
+
+  <div class="panel">
+    <p><strong>Quickest route:</strong> email <a href="mailto:aryasoftechco@gmail.com">aryasoftechco@gmail.com</a> with what you tapped and what the status line at the top of the app said. The status line reports every result — it's usually the whole diagnosis. Bug reports and feature requests are also welcome on <a href="https://github.com/deka1105/StreamDeck-Premium/issues">GitHub Issues</a>.</p>
+  </div>
+
+  <h2>Setting up</h2>
+  <ol class="steps">
+    <li><strong>Run the desktop host</strong> on your computer (see <a href="./download.html">Download</a>). It lives in the menu bar / tray and shows a <em>Pair a phone</em> window with a QR code.</li>
+    <li><strong>Open DeskAssist on your phone</strong> and scan that QR. Both devices must be on the same Wi-Fi. No camera to hand? Click <em>Copy pairing data</em> on the computer and use <em>Enter pairing data manually</em> on the phone.</li>
+    <li><strong>Tap a tile.</strong> The default deck launches Safari, VS Code, Finder and friends. Tap <em>Edit</em> to make it yours.</li>
+  </ol>
+  <p>No computer nearby? Tap <strong>Explore the demo instead</strong> on the first screen — the entire app runs against a simulated Mac so you can try everything first.</p>
+
+  <h2>Troubleshooting</h2>
+
+  <details>
+    <summary>The QR code won't scan, or pairing fails</summary>
+    <p>Make sure the phone and the computer are on the <strong>same Wi-Fi network</strong> — guest networks and hotel/office Wi-Fi often isolate devices from each other ("client isolation"), which blocks the connection even when both show full bars.</p>
+    <p>If the scanner never reacts, it's probably reading a different QR nearby, or camera access is off (iOS Settings → DeskAssist → Camera). The manual route always works: <em>Copy pairing data</em> on the computer, <em>Enter pairing data manually</em> on the phone.</p>
+  </details>
+
+  <details>
+    <summary>"Can't reach host" after it used to work</summary>
+    <p>The host app has to be running on the computer — look for its icon in the menu bar (macOS) or tray (Windows). If the computer went to sleep, changed networks, or got a new IP address from the router, unpair on the phone (Edit → Unpair) and scan a fresh QR.</p>
+    <p>A firewall prompt you dismissed can also block it: allow incoming connections for the host app in your firewall settings.</p>
+  </details>
+
+  <details>
+    <summary>Keyboard shortcuts and text typing don't work (macOS)</summary>
+    <p>Sending keystrokes needs macOS <strong>Accessibility permission</strong>. Open <em>System Settings → Privacy &amp; Security → Accessibility</em> and switch the host app on. App launching and URLs work without it — only <em>Shortcut</em> and <em>Text</em> tiles need it.</p>
+  </details>
+
+  <details>
+    <summary>Shell tiles say they're blocked</summary>
+    <p>That's deliberate. Shell commands are arbitrary code execution, so they ship <strong>disabled by default</strong> and must be switched on in the host's tray menu on the computer itself — a paired phone can never enable them remotely. There's also an optional allowlist so only exact commands you approve can run.</p>
+  </details>
+
+  <details>
+    <summary>A tile presses but nothing happens</summary>
+    <p>Check the status line at the top of the deck — every press reports success or the exact error. For <em>App</em> tiles the name must match the real application name exactly (e.g. <code>Visual Studio Code</code>, not <code>VS Code</code>). The <strong>Apps</strong> screen (🖥 button) lists the names the computer actually reports — pinning from there always gets it right.</p>
+  </details>
+
+  <details>
+    <summary>How do I start over?</summary>
+    <p>Edit → <em>Unpair</em> disconnects from the computer and returns to the pairing screen; your deck layout stays. <em>Reset page</em> (in edit mode) restores a page's default tiles. Deleting the app removes everything it ever stored — there is no account and no server-side copy.</p>
+  </details>
+
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>Is DeskAssist really free?</summary>
+    <p>Yes — everything, with no in-app purchases, subscriptions, accounts or ads. The code is open source under the MIT licence.</p>
+  </details>
+
+  <details>
+    <summary>Does it work away from home, over the internet?</summary>
+    <p>No, by design. The phone talks directly to your computer over your own network — no relay server exists, which is a big part of why it's safe to give an app the ability to type into your windows.</p>
+  </details>
+
+  <details>
+    <summary>What platforms are supported?</summary>
+    <p>The phone app runs on iOS and Android. The desktop host runs on macOS and Windows: app launching, URLs, keyboard shortcuts and text typing work on both; shortcuts/text use AppleScript on macOS and SendKeys on Windows.</p>
+  </details>
+
+  <details>
+    <summary>Why does the app want camera access?</summary>
+    <p>Solely to scan the pairing QR code. Nothing is recorded, stored or uploaded, and you can skip the camera entirely with manual pairing or the demo. See the <a href="./privacy.html">Privacy Policy</a>.</p>
+  </details>
+
+  <details>
+    <summary>Is the connection actually secure?</summary>
+    <p>Pairing performs an X25519 key exchange (the QR carries a public key, never a secret), and every command is sealed with AES-256-GCM with replay protection. Tampered or replayed messages are rejected. The full design is documented <a href="https://github.com/deka1105/StreamDeck-Premium/blob/main/SECURE-PAIRING-PLAN.md">in the repository</a>.</p>
+  </details>
+
+  <h2>Contact</h2>
+  <p>Email <a href="mailto:aryasoftechco@gmail.com">aryasoftechco@gmail.com</a> — include your phone OS, computer OS, and what the status line said. We read everything.</p>
+
+  <footer>
+    <p>DeskAssist · <a href="./index.html">Home</a> · <a href="./download.html">Download</a> · <a href="./changelog.html">Changelog</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a> · <a href="https://github.com/deka1105/StreamDeck-Premium">GitHub</a></p>
+  </footer>
+</main>
+</body>
+</html>

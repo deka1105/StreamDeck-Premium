@@ -55,9 +55,9 @@ export function NamePrompt({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center", padding: 24 },
-  card: { width: "100%", maxWidth: 380, backgroundColor: "#0e1626", borderRadius: 20, padding: 20 },
+  card: { width: "100%", maxWidth: 380, backgroundColor: "#0e1626", borderRadius: 20, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
   heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 14 },
-  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)" },
   actions: { flexDirection: "row", gap: 10, marginTop: 16, justifyContent: "flex-end" },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   btnDisabled: { opacity: 0.4 },

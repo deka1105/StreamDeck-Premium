@@ -40,6 +40,7 @@ export function ProfileSettings({
     <Modal visible transparent animationType="slide" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
+          <View style={styles.grabber} />
           <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
             <Text style={styles.heading}>Profile settings</Text>
 
@@ -119,11 +120,12 @@ export function ProfileSettings({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
-  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
+  sheet: { backgroundColor: "#0e1626", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
+  grabber: { alignSelf: "center", width: 36, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.18)", marginTop: 10, marginBottom: -6 },
   body: { padding: 20, paddingBottom: 8 },
   heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
   fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)" },
   hint: { fontSize: 12, color: "#6b7a94", marginBottom: 8 },
   empty: { fontSize: 12, color: "#5d6c86", marginBottom: 4 },
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 4 },

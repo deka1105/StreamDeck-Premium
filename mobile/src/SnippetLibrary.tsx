@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   sheetBody: { padding: 20, paddingBottom: 8 },
   heading: { color: "#e8eef9", fontSize: 18, fontWeight: "700", marginBottom: 12 },
   fieldLabel: { color: "#8a99b2", fontSize: 12, fontWeight: "600", marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  input: { backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)" },
   textArea: { minHeight: 132, paddingTop: 12 },
   counter: { color: "#5d6c86", fontSize: 11, textAlign: "right", marginTop: 6 },
   actions: { flexDirection: "row", gap: 10, padding: 20, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" },
