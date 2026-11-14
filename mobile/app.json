@@ -3,7 +3,7 @@
     "name": "DeskAssist",
     "slug": "deskassist",
     "scheme": "deskassist",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,11 +17,11 @@
           "NSAllowsLocalNetworking": true
         }
       },
-      "buildNumber": "10"
+      "buildNumber": "11"
     },
     "android": {
       "package": "com.dekisuki05.deskassist",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

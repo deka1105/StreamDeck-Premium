@@ -114,6 +114,9 @@ native phone app  ──AES-256-GCM over your LAN──▶  macOS host app  ─�
 | `keys` | `{ type: "keys", combo: "cmd+shift+4" }` | Send a keyboard shortcut | macOS · Windows |
 | `text` | `{ type: "text", text: "Hello!" }` | Type a literal string into the focused app | macOS · Windows |
 | `shell` | `{ type: "shell", command: "…" }` | Run a shell command | all |
+| `media` | `{ type: "media", command: "playpause" }` | Volume / mute / play-pause / next / previous (Spotify or Music) | macOS |
+| `macro` | `{ type: "macro", steps: […] }` | Run up to 8 actions in sequence, with optional pauses | per step |
+| `timer` | `{ type: "timer", seconds: 300, inner: … }` | Count down on the phone, then fire the inner action | per inner |
 
 `keys` and `text` synthesize keystrokes (macOS AppleScript `System Events` /
 Windows PowerShell `SendKeys`) and need **macOS Accessibility permission**.
