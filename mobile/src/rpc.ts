@@ -63,7 +63,7 @@ function serialize<T>(fn: () => Promise<T>): Promise<T> {
 async function sendCmd<T = unknown>(p: Pairing, cmd: Record<string, unknown>): Promise<T> {
   return serialize(async () => {
     const key = b64ToBytes(p.key);
-    const ctr = await nextCounter();
+    const ctr = await nextCounter(p.kid);
     const envelope = { kid: p.kid, ...seal(key, { ctr, ...cmd }) };
 
     const res = await postJson(`http://${p.host}:${p.port}/rpc`, envelope);
@@ -93,4 +93,17 @@ export function foreground(p: Pairing) {
 /** Ask the host for the list of running apps (for the Apps screen). */
 export function apps(p: Pairing) {
   return sendCmd<{ ok: boolean; apps: string[]; frontmost: string | null }>(p, { cmd: "apps" });
+}
+
+/** Live host state: volume, now playing, and any shortcut recorded on the desktop. */
+export type HostStatus = {
+  ok: boolean;
+  volume: number | null;
+  muted: boolean;
+  media: { app: string; state: "playing" | "paused" | "stopped"; track: string; artist: string } | null;
+  recordedCombo: string | null;
+};
+
+export function status(p: Pairing) {
+  return sendCmd<HostStatus>(p, { cmd: "status" });
 }

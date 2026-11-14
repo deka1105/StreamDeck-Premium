@@ -4,7 +4,7 @@
 // conditionals at any call site — and no demo code can ever reach the encrypted
 // transport, because the branch happens before `sendCmd`.
 
-import { isDemo, demoApps, demoForeground, demoHello, demoSendAction } from "./demo";
+import { isDemo, demoApps, demoForeground, demoHello, demoSendAction, demoStatus } from "./demo";
 import * as rpc from "./rpc";
 import type { DeckAction } from "./rpc";
 import type { Pairing } from "./storage";
@@ -25,6 +25,10 @@ export function foreground(p: Pairing) {
 
 export function apps(p: Pairing) {
   return isDemo(p) ? demoApps() : rpc.apps(p);
+}
+
+export function status(p: Pairing) {
+  return isDemo(p) ? demoStatus() : rpc.status(p);
 }
 
 // Pairing itself is never simulated — a demo session is created locally, not

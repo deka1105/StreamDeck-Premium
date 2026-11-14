@@ -69,3 +69,74 @@ export function demoForeground() {
 export function demoApps() {
   return settle({ ok: true, apps: RUNNING, frontmost: frontmostNow() as string | null }, 140);
 }
+
+// --- live host state (volume / now playing), simulated --------------------
+//
+// The demo keeps a tiny mutable state so media tiles genuinely work: the
+// volume slider moves a real number, mute toggles, play/pause flips the
+// player state, and next/previous walk a playlist.
+
+const PLAYLIST = [
+  { track: "Midnight Drive", artist: "Neon Harbor" },
+  { track: "Paper Planes", artist: "Field Recordings" },
+  { track: "Second Sunrise", artist: "Analog Tide" },
+  { track: "Glass City", artist: "Monorail" },
+];
+
+const demoState = {
+  volume: 55,
+  muted: false,
+  playing: true,
+  trackIdx: 0,
+};
+
+/** Apply a media action to the simulated Mac (called from demoSendAction). */
+function applyDemoMedia(action: DeckAction) {
+  if (action.type !== "media") return;
+  switch (action.command) {
+    case "playpause":
+      demoState.playing = !demoState.playing;
+      break;
+    case "next":
+      demoState.trackIdx = (demoState.trackIdx + 1) % PLAYLIST.length;
+      demoState.playing = true;
+      break;
+    case "previous":
+      demoState.trackIdx = (demoState.trackIdx + PLAYLIST.length - 1) % PLAYLIST.length;
+      demoState.playing = true;
+      break;
+    case "volup":
+      demoState.volume = Math.min(100, demoState.volume + 6);
+      demoState.muted = false;
+      break;
+    case "voldown":
+      demoState.volume = Math.max(0, demoState.volume - 6);
+      break;
+    case "mute":
+      demoState.muted = !demoState.muted;
+      break;
+    case "setvol":
+      demoState.volume = Math.max(0, Math.min(100, Math.round(action.value ?? 50)));
+      demoState.muted = false;
+      break;
+  }
+}
+
+export function demoStatus() {
+  const t = PLAYLIST[demoState.trackIdx];
+  return settle(
+    {
+      ok: true,
+      volume: demoState.volume as number | null,
+      muted: demoState.muted,
+      media: {
+        app: "Music",
+        state: (demoState.playing ? "playing" : "paused") as "playing" | "paused" | "stopped",
+        track: t.track,
+        artist: t.artist,
+      } as { app: string; state: "playing" | "paused" | "stopped"; track: string; artist: string } | null,
+      recordedCombo: null as string | null,
+    },
+    80,
+  );
+}
