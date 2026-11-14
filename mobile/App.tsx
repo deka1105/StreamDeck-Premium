@@ -714,6 +714,14 @@ function DeckScreen({
       setEditor(tile);
       return;
     }
+    if (tile.action.type === "timer") {
+      toggleTimer(tile);
+      return;
+    }
+    if (tile.action.type === "media" && tile.action.command === "setvol") {
+      setShowVolume(true);
+      return;
+    }
     if (busy) return;
     setBusy(true);
     setStatus(`Sending ${tile.label}…`);
@@ -728,6 +736,55 @@ function DeckScreen({
       setStatus(`${tile.label}: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBusy(false);
+    }
+  }
+
+  /** Fire an armed timer tile's inner action (its countdown reached zero). */
+  async function fireTimer(tile: DeckButton) {
+    if (tile.action.type !== "timer") return;
+    setStatus(`⏱ ${tile.label}: firing…`);
+    try {
+      const r = await sendAction(pairing, tile.label, tile.action.inner);
+      setOk(r.ok);
+      resultFeedback(r.ok);
+      setStatus(r.ok ? `⏱ ${tile.label} ✓` : `${tile.label}: ${r.error ?? "failed"}`);
+    } catch (e) {
+      setOk(false);
+      resultFeedback(false);
+      setStatus(`${tile.label}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  /** Arm a timer tile, or cancel it if it's already counting down. */
+  function toggleTimer(tile: DeckButton) {
+    if (tile.action.type !== "timer") return;
+    if (timers[tile.id]) {
+      setTimers((t) => {
+        const next = { ...t };
+        delete next[tile.id];
+        return next;
+      });
+      setStatus(`⏱ ${tile.label} cancelled`);
+      return;
+    }
+    const seconds = tile.action.seconds;
+    setClock(Date.now());
+    setTimers((t) => ({ ...t, [tile.id]: Date.now() + seconds * 1000 }));
+    setStatus(`⏱ ${tile.label} in ${seconds}s — tap again to cancel`);
+  }
+
+  /** Send a media action that has no tile press behind it (now-playing strip /
+   *  volume sheet), then nudge the status poll so the UI catches up fast. */
+  async function sendMedia(label: string, action: DeckButton["action"]) {
+    try {
+      const r = await sendAction(pairing, label, action);
+      setOk(r.ok);
+      if (!r.ok) setStatus(`${label}: ${r.error ?? "failed"}`);
+      const s = await fetchStatus(pairing);
+      setHostStatus(s);
+    } catch (e) {
+      setOk(false);
+      setStatus(`${label}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -953,9 +1010,9 @@ function DeckScreen({
               </PressableScale>
               {/* Unpair is a management action, so it lives in edit mode. Demo
                   sessions get their own exit via the banner below. */}
-              {editing && (
-                <PressableScale style={styles.pill} accessibilityRole="button" onPress={() => { selectFeedback(); onUnpair(); }}>
-                  <Text style={styles.pillText}>Unpair</Text>
+              {(editing || hosts.length > 1) && (
+                <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Computers" onPress={() => { selectFeedback(); setShowHosts(true); }}>
+                  <Text style={styles.pillText}>💻{hosts.length > 1 ? ` ${hosts.length}` : ""}</Text>
                 </PressableScale>
               )}
             </>
@@ -967,7 +1024,7 @@ function DeckScreen({
           the banner itself is the way out, so leaving the demo never means
           hunting for a control. */}
       {isDemo(pairing) && (
-        <PressableScale scaleTo={0.98} style={styles.demoBanner} accessibilityRole="button" onPress={() => { selectFeedback(); onUnpair(); }}>
+        <PressableScale scaleTo={0.98} style={styles.demoBanner} accessibilityRole="button" onPress={() => { selectFeedback(); onAddHost(); }}>
           <Text style={styles.demoBannerText} numberOfLines={2}>
             Demo — a simulated Mac. Nothing is actually sent.
           </Text>
@@ -1040,6 +1097,24 @@ function DeckScreen({
           )}
         </ScrollView>
       </View>
+
+      {/* Now playing on the host — tap to play/pause. */}
+      {hostStatus?.media ? (
+        <PressableScale
+          scaleTo={0.98}
+          style={styles.nowPlaying}
+          accessibilityRole="button"
+          accessibilityLabel="Play or pause"
+          onPress={() => { selectFeedback(); sendMedia("Play/Pause", { type: "media", command: "playpause" }); }}
+        >
+          <Text style={styles.nowPlayingIcon}>{hostStatus.media.state === "playing" ? "♫" : "⏸"}</Text>
+          <Text style={styles.nowPlayingText} numberOfLines={1}>
+            {hostStatus.media.track}
+            {hostStatus.media.artist ? ` — ${hostStatus.media.artist}` : ""}
+          </Text>
+          <Text style={styles.nowPlayingApp}>{hostStatus.media.app}</Text>
+        </PressableScale>
+      ) : null}
 
       {/* Live "intuitive mode" indicator: what's focused → which profile it maps to. */}
       {autoMode && (
@@ -1144,12 +1219,24 @@ function DeckScreen({
               const target = tile.action.type === "app" ? tile.action.target.toLowerCase() : null;
               const running = !!target && !!runningApps?.apps.some((a) => a.toLowerCase() === target);
               const frontmost = !!target && frontLower === target;
+              const timerAt = timers[tile.id];
+              const caption =
+                tile.action.type === "timer" && timerAt
+                  ? fmtCountdown(Math.max(0, Math.ceil((timerAt - clock) / 1000)))
+                  : tile.action.type === "media" && tile.action.command === "setvol" && hostStatus
+                    ? hostStatus.muted
+                      ? "muted"
+                      : hostStatus.volume !== null
+                        ? `${hostStatus.volume}%`
+                        : null
+                    : null;
               return (
                 <TileCell
                   key={tile.id}
                   tile={tile}
                   box={box}
                   order={i}
+                  caption={caption}
                   editing={editing}
                   dragging={dragId === tile.id}
                   running={running}
@@ -1187,6 +1274,9 @@ function DeckScreen({
 
       {editing && (
         <View style={styles.editFooter}>
+          <Pressable style={styles.resetButton} onPress={() => { selectFeedback(); setShowImport(true); }}>
+            <Text style={styles.resetText}>Import profile</Text>
+          </Pressable>
           <Pressable style={styles.resetButton} onPress={confirmReset}>
             <Text style={styles.resetText}>Reset page</Text>
           </Pressable>
@@ -1209,6 +1299,7 @@ function DeckScreen({
         <TileEditor
           initial={editor === "new" ? null : editor}
           maxW={cols}
+          recordedCombo={hostStatus?.recordedCombo ?? null}
           onSave={saveTile}
           onCancel={() => setEditor(null)}
           onDelete={editor === "new" ? undefined : () => deleteTile(editor)}
@@ -1235,6 +1326,57 @@ function DeckScreen({
           onCancel={() => setShowSettings(false)}
         />
       )}
+
+      {showHosts && (
+        <HostsSheet
+          hosts={hosts}
+          activeKid={activeKid}
+          onSelect={(kid) => {
+            selectFeedback();
+            onSwitchHost(kid);
+            setShowHosts(false);
+          }}
+          onRemove={(kid) => {
+            onRemoveHost(kid);
+            if (hosts.length <= 1) setShowHosts(false); // that was the last one — back to pairing
+          }}
+          onAdd={() => {
+            setShowHosts(false);
+            onAddHost();
+          }}
+          onClose={() => setShowHosts(false)}
+        />
+      )}
+
+      {showVolume && (
+        <VolumeSheet
+          volume={hostStatus?.volume ?? null}
+          muted={hostStatus?.muted ?? false}
+          onSetVolume={(v) => {
+            setHostStatus((s) => (s ? { ...s, volume: v, muted: false } : s));
+            sendMedia("Volume", { type: "media", command: "setvol", value: v });
+          }}
+          onToggleMute={() => {
+            setHostStatus((s) => (s ? { ...s, muted: !s.muted } : s));
+            sendMedia("Mute", { type: "media", command: "mute" });
+          }}
+          onClose={() => setShowVolume(false)}
+        />
+      )}
+
+      {showImport && (
+        <ImportProfileSheet
+          onImport={(p) => {
+            if (!state) return;
+            persistState({ ...state, profiles: [...state.profiles, p], activeId: p.id });
+            setPageIdx(0);
+            setShowImport(false);
+            setOk(true);
+            setStatus(`Imported “${p.name}”`);
+          }}
+          onClose={() => setShowImport(false)}
+        />
+      )}
     </View>
   );
 }
@@ -1254,6 +1396,7 @@ function TileCell({
   tile,
   box,
   order,
+  caption,
   editing,
   dragging,
   running,
@@ -1266,6 +1409,7 @@ function TileCell({
   tile: DeckButton;
   box: ViewStyle;
   order: number;
+  caption?: string | null;
   editing: boolean;
   dragging: boolean;
   running: boolean;
@@ -1344,6 +1488,11 @@ function TileCell({
             <Text style={styles.tileLabel} numberOfLines={1}>
               {tile.label}
             </Text>
+            {caption ? (
+              <Text style={styles.tileCaption} numberOfLines={1}>
+                {caption}
+              </Text>
+            ) : null}
           </Pressable>
         </Animated.View>
       </Reveal>
@@ -1411,7 +1560,7 @@ const styles = StyleSheet.create({
   profileAddText: { color: "#8a99b2", fontSize: 13, fontWeight: "600" },
   fgRow: { marginTop: -8, marginBottom: 12, paddingHorizontal: 2 },
   fgText: { color: "#6b7a94", fontSize: 12 },
-  editFooter: { flexDirection: "row", justifyContent: "center", gap: 24 },
+  editFooter: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 18 },
   colsRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
   tileWrap: { ...shadow(2) },
   tileFill: { width: "100%", height: "100%" },
@@ -1501,6 +1650,11 @@ const styles = StyleSheet.create({
   demoBanner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12, borderWidth: 1, borderColor: "rgba(251,191,36,0.3)" },
   demoBannerText: { flexShrink: 1, color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
   demoBannerLink: { color: "#fde68a", fontSize: 11.5, fontWeight: "800" },
+  nowPlaying: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(56,189,248,0.08)", borderWidth: 1, borderColor: "rgba(56,189,248,0.25)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
+  nowPlayingIcon: { color: "#7dd3fc", fontSize: 14 },
+  nowPlayingText: { flex: 1, color: "#cdd7e8", fontSize: 12, fontWeight: "600" },
+  nowPlayingApp: { color: "#5d6c86", fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
+  tileCaption: { color: "rgba(255,255,255,0.85)", fontSize: 10.5, fontWeight: "700", marginTop: -2 },
   manualInput: {
     width: "100%",
     minHeight: 120,
