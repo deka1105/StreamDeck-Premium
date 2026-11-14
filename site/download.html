@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<title>Download — DeskAssist</title>
+<meta name="description" content="Get DeskAssist: the iOS app (in App Store review), the Android app, and the free macOS/Windows desktop host — or build everything from source today.">
+<link rel="icon" type="image/png" href="./app-icon.png">
+<style>
+  :root {
+    --ground: #070b14;
+    --panel: #0e1626;
+    --panel-2: #121c30;
+    --line: rgba(255,255,255,.09);
+    --line-strong: rgba(255,255,255,.16);
+    --ink: #e8eef9;
+    --muted: #8a99b2;
+    --muted-2: #6b7a94;
+    --accent: #46bdf6;
+    --accent-deep: #0ea5e9;
+    --good: #4ade80;
+    --warn: #fbbf24;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 16.5px; line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar { position: sticky; top: 0; z-index: 10; background: rgba(7,11,20,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .bar .wrap { max-width: 44rem; margin: 0 auto; padding: 12px 1.5rem; display: flex; align-items: center; gap: 14px; }
+  .bar img { width: 22px; height: 22px; border-radius: 6px; }
+  .bar .name { font-weight: 700; margin-right: auto; }
+  .bar a { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  .bar a:hover, .bar a.here { color: var(--ink); }
+  main { max-width: 44rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+  a { color: var(--accent); }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.5rem); letter-spacing: -0.025em; margin: 0 0 .5rem; line-height: 1.15; }
+  h2 { font-size: 1.2rem; letter-spacing: -0.01em; margin: 2.6rem 0 .8rem; }
+  p, li { color: #cdd7e8; margin: 0 0 1rem; }
+  ul { padding-left: 1.2rem; }
+  .lede { font-size: 1.08rem; color: var(--muted); margin-bottom: 2rem; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.2rem 1.4rem; margin: 1rem 0; }
+  .card h3 { margin: 0 0 .3rem; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card p { margin: .4rem 0 0; }
+  .tag { font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 3px 10px; border: 1px solid var(--line-strong); }
+  .tag.soon { color: var(--warn); border-color: rgba(251,191,36,.4); background: rgba(251,191,36,.08); }
+  .tag.now { color: var(--good); border-color: rgba(74,222,128,.4); background: rgba(74,222,128,.08); }
+  pre { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1.1rem; overflow-x: auto; font-family: var(--mono); font-size: .82rem; line-height: 1.7; color: #cdd7e8; margin: .8rem 0 0; }
+  pre .c { color: var(--muted-2); }
+  code { font-family: var(--mono); font-size: .88em; background: rgba(255,255,255,.06); padding: .1em .35em; border-radius: 3px; }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted-2); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <img src="./app-icon.png" alt=""><span class="name">DeskAssist</span>
+    <a href="./index.html">Home</a>
+    <a href="./support.html">Support</a>
+    <a href="./download.html" class="here">Download</a>
+    <a href="./changelog.html">Changelog</a>
+  </div>
+</header>
+<main>
+  <h1>Get DeskAssist</h1>
+  <p class="lede">Two halves: the phone app (the buttons) and the free desktop host (the hands). Everything is free and open source — and everything can be built from source today, straight from <a href="https://github.com/deka1105/StreamDeck-Premium">the repository</a>.</p>
+
+  <h2>Phone app</h2>
+
+  <div class="card">
+    <h3>iPhone <span class="tag soon">In App&nbsp;Store review</span></h3>
+    <p>DeskAssist for iOS has been submitted and is currently in review. When it's live, this page will link straight to the App Store. Until then, you can run it from source on your own device with a free Apple ID:</p>
+    <pre>git clone https://github.com/deka1105/StreamDeck-Premium.git
+cd StreamDeck-Premium/mobile &amp;&amp; npm install
+npx expo run:ios --device  <span class="c"># needs Xcode on a Mac</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>Android <span class="tag soon">Pre-release</span></h3>
+    <p>The Android build runs today from source; a Play Store release is in the works (Google requires a closed-testing period first).</p>
+    <pre>cd StreamDeck-Premium/mobile &amp;&amp; npm install
+npx expo run:android  <span class="c"># needs Android Studio / an SDK</span></pre>
+  </div>
+
+  <p>Just want to see it? The app ships with a full <strong>demo mode</strong> — tap <em>Explore the demo instead</em> on the first screen and everything runs against a simulated Mac, no computer required.</p>
+
+  <h2>Desktop host</h2>
+
+  <div class="card">
+    <h3>macOS &amp; Windows <span class="tag now">Run from source</span></h3>
+    <p>The host is a small Electron tray app that shows the pairing QR and executes your taps. Installers (DMG / installer EXE) will be attached to GitHub Releases; today it runs from source in under a minute:</p>
+    <pre>git clone https://github.com/deka1105/StreamDeck-Premium.git
+cd StreamDeck-Premium/desktop &amp;&amp; npm install
+npm start  <span class="c"># menu-bar / tray app + "Pair a phone" window</span></pre>
+    <p>On macOS, grant Accessibility permission (System Settings → Privacy &amp; Security → Accessibility) if you want keyboard-shortcut and text tiles — app launching and URLs work without it.</p>
+  </div>
+
+  <h2>Requirements</h2>
+  <ul>
+    <li>Phone and computer on the <strong>same Wi-Fi network</strong>. No account, no cloud — the link is end-to-end encrypted (X25519 + AES-256-GCM).</li>
+    <li><strong>Node.js 20+</strong> for running either half from source.</li>
+    <li>Shell-command tiles are <strong>off by default</strong> on the host and can only be enabled on the computer itself.</li>
+  </ul>
+
+  <p>Stuck? The <a href="./support.html">Support page</a> covers the common failure modes, or email <a href="mailto:aryasoftechco@gmail.com">aryasoftechco@gmail.com</a>.</p>
+
+  <footer>
+    <p>DeskAssist · <a href="./index.html">Home</a> · <a href="./support.html">Support</a> · <a href="./changelog.html">Changelog</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a> · <a href="https://github.com/deka1105/StreamDeck-Premium">GitHub</a></p>
+  </footer>
+</main>
+</body>
+</html>

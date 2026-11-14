@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<title>Changelog — DeskAssist</title>
+<meta name="description" content="What's new in DeskAssist — release notes for the phone app and the desktop host.">
+<link rel="icon" type="image/png" href="./app-icon.png">
+<style>
+  :root {
+    --ground: #070b14;
+    --panel: #0e1626;
+    --line: rgba(255,255,255,.09);
+    --line-strong: rgba(255,255,255,.16);
+    --ink: #e8eef9;
+    --muted: #8a99b2;
+    --muted-2: #6b7a94;
+    --accent: #46bdf6;
+    --good: #4ade80;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 16.5px; line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar { position: sticky; top: 0; z-index: 10; background: rgba(7,11,20,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .bar .wrap { max-width: 44rem; margin: 0 auto; padding: 12px 1.5rem; display: flex; align-items: center; gap: 14px; }
+  .bar img { width: 22px; height: 22px; border-radius: 6px; }
+  .bar .name { font-weight: 700; margin-right: auto; }
+  .bar a { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  .bar a:hover, .bar a.here { color: var(--ink); }
+  main { max-width: 44rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+  a { color: var(--accent); }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.5rem); letter-spacing: -0.025em; margin: 0 0 .5rem; line-height: 1.15; }
+  .lede { font-size: 1.08rem; color: var(--muted); margin-bottom: 2.5rem; }
+  p, li { color: #cdd7e8; }
+  ul { padding-left: 1.2rem; margin: .6rem 0 0; }
+  li { margin-bottom: .45rem; }
+  .release { border-left: 2px solid var(--line-strong); padding: 0 0 2.2rem 1.4rem; position: relative; }
+  .release::before { content: ""; position: absolute; left: -7px; top: .45em; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(70,189,246,.15); }
+  .release:last-of-type { padding-bottom: .5rem; }
+  .release h2 { margin: 0 0 .1rem; font-size: 1.2rem; letter-spacing: -0.01em; }
+  .meta { font-family: var(--mono); font-size: .74rem; color: var(--muted-2); text-transform: uppercase; letter-spacing: .1em; }
+  .big { color: var(--good); font-weight: 600; }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted-2); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <img src="./app-icon.png" alt=""><span class="name">DeskAssist</span>
+    <a href="./index.html">Home</a>
+    <a href="./support.html">Support</a>
+    <a href="./download.html">Download</a>
+    <a href="./changelog.html" class="here">Changelog</a>
+  </div>
+</header>
+<main>
+  <h1>Changelog</h1>
+  <p class="lede">What's changed, newest first. The full commit-level history lives in <a href="https://github.com/deka1105/StreamDeck-Premium">the repository</a>.</p>
+
+  <div class="release">
+    <p class="meta">1.0 · build 10 · November 2026</p>
+    <h2><span class="big">DeskAssist is now completely free</span></h2>
+    <ul>
+      <li>The Pro tier and its paywall are gone: unlimited profiles, unlimited pages, unlimited snippets, image tile faces and all five action types for everyone.</li>
+      <li>The payment SDK was removed from the app entirely — no purchase code ships in the binary at all.</li>
+      <li>The website moved to always-on hosting so policy and support links can never go dark.</li>
+    </ul>
+  </div>
+
+  <div class="release">
+    <p class="meta">1.0 · build 8 · November 2026</p>
+    <h2>Review polish</h2>
+    <ul>
+      <li>New app icon on iOS and Android.</li>
+      <li>Correct export-compliance declaration for the app's encryption, so updates no longer prompt for it.</li>
+      <li>Camera permission flow reworked: the landing screen is always reachable, and the scanner is an explicit step you can back out of.</li>
+    </ul>
+  </div>
+
+  <div class="release">
+    <p class="meta">1.0 · first submission · October 2026</p>
+    <h2>The initial release</h2>
+    <ul>
+      <li><strong>Pair by QR</strong> — an X25519 handshake with end-to-end AES-256-GCM encryption and replay protection. No account, no cloud, no analytics.</li>
+      <li><strong>The deck</strong> — a resizable grid (2–5 columns, tiles up to 4×4) of tiles that launch apps, open URLs, fire keyboard shortcuts, type text, or run (opt-in) shell commands.</li>
+      <li><strong>Profiles &amp; pages</strong> — named decks with multiple pages, drag-to-reorder, and per-tile emoji, text or image faces.</li>
+      <li><strong>Auto mode</strong> — the active profile follows whichever app is focused on your computer.</li>
+      <li><strong>Running apps</strong> — a live list of what's open on the computer; tap to focus, or pin any app as a tile.</li>
+      <li><strong>Snippets</strong> — a library of saved text that types itself on the computer, with an optional countdown so you can focus the right window first.</li>
+      <li><strong>Demo mode</strong> — the whole app against a simulated Mac, so you can try it with nothing installed.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>DeskAssist · <a href="./index.html">Home</a> · <a href="./support.html">Support</a> · <a href="./download.html">Download</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a> · <a href="https://github.com/deka1105/StreamDeck-Premium">GitHub</a></p>
+  </footer>
+</main>
+</body>
+</html>
