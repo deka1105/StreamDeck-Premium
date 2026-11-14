@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { DeckProfile } from "./buttons";
+import { exportProfile } from "./deckStorage";
 
 export function ProfileSettings({
   profile,
@@ -95,6 +96,17 @@ export function ProfileSettings({
                   : "＋ Use current app (focus an app on your computer)"}
               </Text>
             </Pressable>
+            <Text style={styles.fieldLabel}>Share</Text>
+            <Pressable
+              style={styles.shareBtn}
+              accessibilityRole="button"
+              onPress={() => Share.share({ message: exportProfile(profile) }).catch(() => {})}
+            >
+              <Text style={styles.shareBtnText}>Share profile…</Text>
+            </Pressable>
+            <Text style={styles.hint}>
+              Sends this profile as text (AirDrop, Messages, Notes…). On the other phone: Edit → Import profile.
+            </Text>
           </ScrollView>
 
           <View style={styles.actions}>
@@ -139,6 +151,8 @@ const styles = StyleSheet.create({
   useCurrentDisabled: { borderColor: "rgba(255,255,255,0.1)" },
   useCurrentText: { color: "#7dd3fc", fontWeight: "600", fontSize: 13 },
   useCurrentTextDisabled: { color: "#5d6c86" },
+  shareBtn: { backgroundColor: "rgba(56,189,248,0.16)", borderRadius: 12, paddingVertical: 12, alignItems: "center", marginBottom: 6 },
+  shareBtnText: { color: "#7dd3fc", fontWeight: "700", fontSize: 14 },
   actions: { flexDirection: "row", gap: 10, padding: 20, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)" },
   btn: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   btnDisabled: { opacity: 0.4 },

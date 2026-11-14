@@ -143,6 +143,53 @@ function coerceProfile(input: unknown): DeckProfile | null {
   };
 }
 
+/**
+ * Serialize a profile for sharing (Share sheet / paste on another phone).
+ * Image tile faces are kept while the payload stays reasonable; past ~150KB
+ * they are swapped for a star so the share text stays portable.
+ */
+export function exportProfile(profile: DeckProfile): string {
+  const full = JSON.stringify({ deskassist: 1, kind: "profile", profile });
+  if (full.length <= 150_000) return full;
+  const slim: DeckProfile = {
+    ...profile,
+    pages: profile.pages.map((pg) => ({
+      ...pg,
+      buttons: pg.buttons.map((b) =>
+        b.iconType === "image" ? { ...b, icon: "⭐", iconType: "emoji" as IconType } : b,
+      ),
+    })),
+  };
+  return JSON.stringify({ deskassist: 1, kind: "profile", profile: slim });
+}
+
+/**
+ * Parse a shared profile (the export format above, or a bare profile object).
+ * Every id is regenerated so an import can never collide with existing tiles.
+ * Returns null when the text isn't a usable profile.
+ */
+export function importProfile(raw: string): DeckProfile | null {
+  try {
+    const parsed: unknown = JSON.parse(raw.trim());
+    const candidate =
+      parsed && typeof parsed === "object" && "profile" in (parsed as Record<string, unknown>)
+        ? (parsed as Record<string, unknown>).profile
+        : parsed;
+    const prof = coerceProfile(candidate);
+    if (!prof) return null;
+    return {
+      ...prof,
+      id: newProfileId(),
+      pages: prof.pages.map((pg) => ({
+        id: newPageId(),
+        buttons: pg.buttons.map((b) => ({ ...b, id: newButtonId() })),
+      })),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** Validate/normalize one stored page; null if unusable. */
 function coercePage(input: unknown): DeckPage | null {
   if (!input || typeof input !== "object") return null;
