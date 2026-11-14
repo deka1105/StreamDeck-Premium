@@ -493,6 +493,8 @@
       <a href="#security">Security</a>
       <a href="#pricing">Pricing</a>
       <a href="#start">Get running</a>
+      <a href="./download.html">Download</a>
+      <a href="./support.html">Support</a>
     </nav>
   </div>
 </header>
@@ -846,6 +848,9 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
     <span>DeskAssist — a Stream Deck that lives on your phone.</span>
     <span class="mono">Expo · React Native · Electron · X25519 + AES-256-GCM</span>
   </div>
+  <div class="wrap" style="margin-top:14px">
+    <span><a href="./download.html">Download</a> · <a href="./support.html">Support</a> · <a href="./changelog.html">Changelog</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a> · <a href="https://github.com/deka1105/StreamDeck-Premium">GitHub</a></span>
+  </div>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1001,7 +1006,7 @@ npx expo run:ios --device  <span class="c"># or run:android</span></pre></div></
   }
 
   /* ---- scrollspy nav ---- */
-  var navLinks = Array.prototype.slice.call(document.querySelectorAll(".bar nav a"));
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.bar nav a[href^="#"]'));
   var sections = navLinks.map(function (a) { return document.querySelector(a.getAttribute("href")); });
   if ("IntersectionObserver" in window) {
     var spy = new IntersectionObserver(function (entries) {
