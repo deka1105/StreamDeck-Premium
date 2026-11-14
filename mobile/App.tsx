@@ -1149,12 +1149,21 @@ function DeckScreen({ pairing, onUnpair }: { pairing: Pairing; onUnpair: () => v
   );
 }
 
+// Live connection indicator next to the status line: green when the last
+// exchange succeeded, red and pulsing while the host is unreachable.
+function ConnDot({ ok }: { ok: boolean }) {
+  const pulse = usePulse(!ok);
+  return <Animated.View style={[styles.connDot, { backgroundColor: ok ? "#34d399" : "#fb7185", opacity: pulse }]} />;
+}
+
 // One grid tile: press to send/edit, delete badge, live running/frontmost dot,
 // and PanResponder drag-to-reorder (claims only after the finger moves, so a tap
-// still opens the editor).
+// still opens the editor). Press feedback is a spring scale; edit mode wiggles
+// the tile (home-screen style) so draggability is visible.
 function TileCell({
   tile,
   box,
+  order,
   editing,
   dragging,
   running,
@@ -1166,6 +1175,7 @@ function TileCell({
 }: {
   tile: DeckButton;
   box: ViewStyle;
+  order: number;
   editing: boolean;
   dragging: boolean;
   running: boolean;
@@ -1175,49 +1185,86 @@ function TileCell({
   onPickUp: (id: string) => void;
   onDrop: (dx: number, dy: number) => void;
 }) {
-  const pan = useMemo(() => new Animated.ValueXY(), []);
-  const responder = PanResponder.create({
-    onStartShouldSetPanResponder: () => false,
-    onMoveShouldSetPanResponder: (_, g) => editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
-    // Capture the drag before the inner Pressable so reorder wins once the finger
-    // moves (a tap, with no move, still falls through to the Pressable = edit).
-    onMoveShouldSetPanResponderCapture: (_, g) => editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
-    onPanResponderGrant: () => onPickUp(tile.id),
-    onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
-    onPanResponderRelease: (_, g) => {
-      onDrop(g.dx, g.dy);
-      Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
-    },
-    onPanResponderTerminate: () => {
-      onDrop(0, 0);
-      pan.setValue({ x: 0, y: 0 });
-    },
-  });
+  const pan = useRef(new Animated.ValueXY()).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
+  const wiggle = useWiggle(editing && !dragging, seedFor(tile.id));
+  const dotPulse = usePulse(frontmost && !editing);
+
+  // The responder is created once per tile; this ref keeps its callbacks
+  // current so a parent re-render can never reset an in-flight gesture.
+  const live = useRef({ editing, onPickUp, onDrop });
+  live.current = { editing, onPickUp, onDrop };
+
+  const responder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_, g) => live.current.editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
+        // Capture the drag before the inner Pressable so reorder wins once the
+        // finger moves (a tap, with no move, still falls through = edit).
+        onMoveShouldSetPanResponderCapture: (_, g) => live.current.editing && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8),
+        onPanResponderGrant: () => live.current.onPickUp(tile.id),
+        onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
+        onPanResponderRelease: (_, g) => {
+          live.current.onDrop(g.dx, g.dy);
+          Animated.spring(pan, { toValue: { x: 0, y: 0 }, speed: 24, bounciness: 7, useNativeDriver: false }).start();
+        },
+        onPanResponderTerminate: () => {
+          live.current.onDrop(0, 0);
+          Animated.spring(pan, { toValue: { x: 0, y: 0 }, speed: 24, bounciness: 7, useNativeDriver: false }).start();
+        },
+      }),
+    [pan, tile.id],
+  );
+
+  const springTo = (v: number) =>
+    Animated.spring(pressScale, { toValue: v, speed: 40, bounciness: 6, useNativeDriver: true }).start();
+
   return (
-    <Animated.View style={[box, { transform: pan.getTranslateTransform() }, dragging && styles.tileCellDragging]} {...responder.panHandlers}>
-      <Pressable
-        style={({ pressed }) => [
-          styles.tile,
-          { backgroundColor: tile.color },
-          pressed && styles.tilePressed,
-          frontmost && !editing && styles.tileFrontmost,
-        ]}
-        onPress={() => onPress(tile)}
-      >
-        {!editing && running && <View style={[styles.runDot, frontmost && styles.runDotFront]} />}
-        {isImageIcon(tile) ? (
-          <Image source={{ uri: tile.icon }} style={styles.tileImage} resizeMode="cover" alt="" />
-        ) : (
-          <Text style={[styles.tileIcon, tile.iconType === "text" && styles.tileIconText]} numberOfLines={1}>
-            {tile.icon}
-          </Text>
-        )}
-        <Text style={styles.tileLabel} numberOfLines={1}>
-          {tile.label}
-        </Text>
-      </Pressable>
+    <Animated.View
+      style={[
+        box,
+        styles.tileWrap,
+        { transform: [...pan.getTranslateTransform(), { scale: dragging ? 1.06 : 1 }] },
+        dragging && styles.tileCellDragging,
+      ]}
+      {...responder.panHandlers}
+    >
+      <Reveal delay={Math.min(order, 11) * 28} style={styles.tileFill}>
+        <Animated.View style={[styles.tileFill, { transform: [{ scale: pressScale }, { rotate: wiggle.rotate }] }]}>
+          <Pressable
+            style={[styles.tile, { backgroundColor: tile.color }, frontmost && !editing && styles.tileFrontmost]}
+            onPress={() => onPress(tile)}
+            onPressIn={() => springTo(0.93)}
+            onPressOut={() => springTo(1)}
+            accessibilityRole="button"
+            accessibilityLabel={editing ? `Edit tile ${tile.label}` : tile.label}
+          >
+            <View style={styles.tileSheen} pointerEvents="none" />
+            {!editing && running && (
+              <Animated.View style={[styles.runDot, frontmost && styles.runDotFront, { opacity: dotPulse }]} />
+            )}
+            {isImageIcon(tile) ? (
+              <Image source={{ uri: tile.icon }} style={styles.tileImage} resizeMode="cover" alt="" />
+            ) : (
+              <Text style={[styles.tileIcon, tile.iconType === "text" && styles.tileIconText]} numberOfLines={1}>
+                {tile.icon}
+              </Text>
+            )}
+            <Text style={styles.tileLabel} numberOfLines={1}>
+              {tile.label}
+            </Text>
+          </Pressable>
+        </Animated.View>
+      </Reveal>
       {editing && (
-        <Pressable style={styles.badge} onPress={() => onDelete(tile)} hitSlop={8}>
+        <Pressable
+          style={styles.badge}
+          onPress={() => onDelete(tile)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete ${tile.label}`}
+        >
           <Text style={styles.badgeText}>✕</Text>
         </Pressable>
       )}
@@ -1236,18 +1283,20 @@ const styles = StyleSheet.create({
   header: { flexDirection: "column", marginBottom: 16, gap: 12 },
   titleRow: { gap: 2 },
   headerButtons: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 8 },
-  title: { color: "#e8eef9", fontSize: 20, fontWeight: "700" },
+  title: { color: "#e8eef9", fontSize: 22, fontWeight: "800", letterSpacing: 0.2 },
   dim: { color: "#8a99b2", textAlign: "center" },
-  status: { fontSize: 13, marginTop: 4 },
-  pill: { backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  pillActive: { backgroundColor: "#0ea5e9" },
+  status: { fontSize: 13, flexShrink: 1 },
+  statusRow: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 5 },
+  connDot: { width: 7, height: 7, borderRadius: 4 },
+  pill: { backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: "rgba(255,255,255,0.09)" },
+  pillActive: { backgroundColor: "#0ea5e9", borderColor: "rgba(125,211,252,0.5)" },
   pillText: { color: "#cdd7e8", fontSize: 13, fontWeight: "600" },
   pillTextActive: { color: "#fff" },
   // Amber is reserved for Pro — the only non-sky accent in the app, so the
   // upgrade affordance never reads as just another control.
   sendArea: { marginBottom: 16 },
   sendRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  sendInput: { flex: 1, backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15 },
+  sendInput: { flex: 1, backgroundColor: "#16233a", color: "#e8eef9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)" },
   sendBtn: { backgroundColor: "#0ea5e9", borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11, minWidth: 92, alignItems: "center" },
   cancelBtn: { backgroundColor: "#e11d48" },
   saveSnipBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, paddingHorizontal: 13, justifyContent: "center", alignItems: "center" },
@@ -1264,8 +1313,8 @@ const styles = StyleSheet.create({
   gridScroll: { paddingBottom: 24 },
   profileRow: { marginBottom: 16 },
   profileRowContent: { gap: 8, paddingRight: 8 },
-  profilePill: { maxWidth: 180, backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  profilePillActive: { backgroundColor: "#0ea5e9" },
+  profilePill: { maxWidth: 180, backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: "rgba(255,255,255,0.09)" },
+  profilePillActive: { backgroundColor: "#0ea5e9", borderColor: "rgba(125,211,252,0.5)" },
   profilePillText: { color: "#cdd7e8", fontSize: 13, fontWeight: "600" },
   profilePillTextActive: { color: "#fff" },
   profileAddPill: { borderWidth: 1, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.25)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
@@ -1274,14 +1323,16 @@ const styles = StyleSheet.create({
   fgText: { color: "#6b7a94", fontSize: 12 },
   editFooter: { flexDirection: "row", justifyContent: "center", gap: 24 },
   colsRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
-  tile: { width: "100%", height: "100%", borderRadius: 20, alignItems: "center", justifyContent: "center", gap: 6, padding: 6 },
-  tilePressed: { opacity: 0.75, transform: [{ scale: 0.96 }] },
+  tileWrap: { ...shadow(2) },
+  tileFill: { width: "100%", height: "100%" },
+  tile: { width: "100%", height: "100%", borderRadius: 20, alignItems: "center", justifyContent: "center", gap: 6, padding: 6, borderWidth: 1, borderColor: "rgba(255,255,255,0.14)", overflow: "hidden" },
+  tileSheen: { position: "absolute", top: 0, left: 0, right: 0, height: "46%", backgroundColor: "rgba(255,255,255,0.08)" },
   tileIcon: { fontSize: 34 },
   tileIconText: { fontSize: 20, fontWeight: "800", letterSpacing: 0.5 },
   tileImage: { width: 40, height: 40, borderRadius: 8 },
-  tileLabel: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "center" },
+  tileLabel: { color: "#fff", fontSize: 13, fontWeight: "700", textAlign: "center" },
   tileFrontmost: { borderWidth: 2, borderColor: "rgba(125,211,252,0.7)" },
-  tileCellDragging: { zIndex: 20, elevation: 8, opacity: 0.92 },
+  tileCellDragging: { zIndex: 20, elevation: 12, opacity: 0.95, shadowOpacity: 0.5, shadowRadius: 14 },
   runDot: { position: "absolute", top: 7, left: 7, width: 8, height: 8, borderRadius: 4, backgroundColor: "#34d399", zIndex: 2 },
   runDotFront: { backgroundColor: "#7dd3fc" },
   pageRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 4, marginBottom: 2 },
@@ -1357,7 +1408,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   demoNote: { color: "#6b7a94", fontSize: 12, marginTop: 8, textAlign: "center", paddingHorizontal: 24 },
-  demoBanner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12 },
+  demoBanner: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, backgroundColor: "rgba(251,191,36,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12, borderWidth: 1, borderColor: "rgba(251,191,36,0.3)" },
   demoBannerText: { flexShrink: 1, color: "#fbbf24", fontSize: 11.5, fontWeight: "600", lineHeight: 16 },
   demoBannerLink: { color: "#fde68a", fontSize: 11.5, fontWeight: "800" },
   manualInput: {
