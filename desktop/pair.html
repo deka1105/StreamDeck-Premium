@@ -55,6 +55,17 @@
   </div>
 </div>
 
+<div class="card" style="margin-top:14px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div>
+      <div style="font-weight:600">Record a shortcut</div>
+      <div class="sub" style="margin:0">Press keys here; the phone's tile editor offers the result.</div>
+    </div>
+    <button class="ghost mini" id="rec">Record</button>
+  </div>
+  <div id="recout" style="margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#7dd3fc;min-height:18px"></div>
+</div>
+
 <div class="devices">
   <h2>Paired devices</h2>
   <div id="deviceList"><div class="empty">None yet.</div></div>
@@ -142,6 +153,59 @@
       list.appendChild(row);
     }
   }
+
+  // --- shortcut recorder -------------------------------------------------
+  // Captures ONE chord and hands it to the host core. Names match the phone's
+  // keys.ts / the executor's comboToAppleScript (cmd/ctrl/alt/shift + key).
+  let recording = false;
+  const KEY_NAMES = {
+    " ": "space", Enter: "return", Tab: "tab", Backspace: "delete", Delete: "delete",
+    ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down",
+    Home: "home", End: "end", PageUp: "pageup", PageDown: "pagedown",
+  };
+  function comboFromEvent(e) {
+    const mods = [];
+    if (e.metaKey) mods.push("cmd");
+    if (e.ctrlKey) mods.push("ctrl");
+    if (e.altKey) mods.push("alt");
+    if (e.shiftKey) mods.push("shift");
+    let key = KEY_NAMES[e.key];
+    if (!key && /^F([1-9]|1[0-2])$/.test(e.key)) key = e.key.toLowerCase();
+    if (!key && e.key.length === 1 && e.key !== " ") key = e.key.toLowerCase();
+    if (!key) return null; // a bare modifier, or something we can't name
+    return [...mods, key].join("+");
+  }
+  function stopRecording(message) {
+    recording = false;
+    $("rec").textContent = "Record";
+    if (message) $("recout").textContent = message;
+  }
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if (!recording) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.key === "Escape" && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        stopRecording("Cancelled.");
+        return;
+      }
+      const combo = comboFromEvent(e);
+      if (!combo) return; // modifier only — keep waiting for the real key
+      window.deck.recordShortcut(combo);
+      stopRecording(combo + "  →  sent to the phone's tile editor (valid ~10 min)");
+    },
+    true,
+  );
+  $("rec").onclick = () => {
+    if (recording) {
+      stopRecording("Cancelled.");
+      return;
+    }
+    recording = true;
+    $("rec").textContent = "Press keys… (Esc cancels)";
+    $("recout").textContent = "";
+  };
 
   $("new").onclick = startPairing;
   $("copydata").onclick = async () => {
