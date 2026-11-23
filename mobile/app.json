@@ -23,7 +23,7 @@
       "package": "com.dekisuki05.deskassist",
       "versionCode": 4,
       "adaptiveIcon": {
-        "backgroundColor": "#070b14",
+        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
