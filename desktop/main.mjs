@@ -8,7 +8,7 @@
 //         DECK_DRY_RUN=1 npm start  (log actions instead of running them)
 //         SMOKE=1 npm start         (boot the core, print SMOKE OK, exit — no UI)
 
-import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, dialog } from "electron";
+import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, dialog, shell } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readdirSync } from "node:fs";
