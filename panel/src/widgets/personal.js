@@ -224,14 +224,18 @@ export const battery = {
   mount(el, ctx) {
     el.classList.add("w-battery");
     el.innerHTML = `<div class="bat-icon"><i></i></div><div class="bat-pct">—</div><div class="bat-state muted"></div>`;
-    const show = (b) => {
+    const show = (b, why = "") => {
       const ok = b && Number.isFinite(b.level);
       el.querySelector(".bat-pct").textContent = ok ? `${Math.round(b.level * 100)}%` : "—";
       el.querySelector(".bat-icon i").style.width = ok ? `${Math.round(b.level * 100)}%` : "0";
-      el.querySelector(".bat-state").textContent = !ok ? "Only on the phone" : b.charging ? "Charging" : b.lowPower ? "Low Power Mode" : "On battery";
+      el.querySelector(".bat-state").textContent = !ok
+        ? /unknown method|not available here|no computer/i.test(why) || ctx.bridge.kind === "http"
+          ? "Only on the phone"
+          : "Not available on this device"
+        : b.charging ? "Charging" : b.lowPower ? "Low Power Mode" : "On battery";
       el.dataset.level = ok && b.level < 0.2 && !b.charging ? "low" : "";
     };
-    ctx.request("phone.battery").then(show, () => show(null));
+    ctx.request("phone.battery").then(show, (err) => show(null, err?.message));
     ctx.subscribe("battery", show);
   },
 };
