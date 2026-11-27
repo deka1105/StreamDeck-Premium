@@ -74,6 +74,68 @@ export function cleanOption(def, value) {
   }
 }
 
+// ---- Stage 10: appearance ("look") and display ----------------------------
+// A look is a set of optional overrides; null/absent = inherit
+// (panel defaults → layout.look → page.look → widget.look).
+const FONTS = ["system", "rounded", "serif", "mono", "condensed"];
+const THEMES = ["dark", "light", "oled"];
+const hex = (v) => (typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : undefined);
+const inRange = (v, lo, hi) => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? undefined : Math.max(lo, Math.min(hi, Number(v))));
+function cleanWallpaper(w) {
+  if (!w || typeof w !== "object") return undefined;
+  const src = typeof w.src === "string" ? w.src.trim() : "";
+  const ok = /^https:\/\/[^\s"'()<>]+$/i.test(src) ? src.slice(0, 2000) : /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(src) && src.length <= 1_500_000 ? src : null;
+  if (!ok) return undefined;
+  return { src: ok, dim: inRange(w.dim, 0, 0.9) ?? 0.35, blur: inRange(w.blur, 0, 30) ?? 0 };
+}
+export function cleanLook(raw, { widget = false } = {}) {
+  if (!raw || typeof raw !== "object") return undefined;
+  const out = {
+    accent: hex(raw.accent),
+    tile: hex(raw.tile),
+    ink: hex(raw.ink),
+    radius: inRange(raw.radius, 0, 40),
+    border: typeof raw.border === "boolean" ? raw.border : undefined,
+    shadow: typeof raw.shadow === "boolean" ? raw.shadow : undefined,
+    opacity: inRange(raw.opacity, 0, 1),
+  };
+  if (!widget) {
+    Object.assign(out, {
+      preset: typeof raw.preset === "string" && /^[a-z0-9-]{1,24}$/.test(raw.preset) ? raw.preset : undefined,
+      theme: THEMES.includes(raw.theme) ? raw.theme : undefined,
+      bg: hex(raw.bg),
+      font: FONTS.includes(raw.font) ? raw.font : undefined,
+      scale: inRange(raw.scale, 0.7, 1.5),
+      gap: inRange(raw.gap, 0, 24),
+      padding: inRange(raw.padding, 0, 32),
+      wallpaper: raw.wallpaper === null ? null : cleanWallpaper(raw.wallpaper),
+    });
+  }
+  for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k];
+  return Object.keys(out).length ? out : undefined;
+}
+const NAVS = ["dots", "bar", "side-left", "side-right", "none"];
+const hhmm = (v, d) => (typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : d);
+export function cleanDisplay(raw) {
+  const r = raw && typeof raw === "object" ? raw : {};
+  const n = r.night && typeof r.night === "object" ? r.night : {};
+  return {
+    nav: NAVS.includes(r.nav) ? r.nav : "dots",
+    badges: r.badges !== false,
+    oledShift: r.oledShift === true,
+    dimAfterMin: inRange(r.dimAfterMin, 0, 240) ?? 0,
+    dimLevel: inRange(r.dimLevel, 0.1, 0.9) ?? 0.5,
+    followPcSleep: r.followPcSleep === true,
+    night: {
+      mode: ["off", "schedule", "pc"].includes(n.mode) ? n.mode : "off",
+      from: hhmm(n.from, "22:30"),
+      to: hhmm(n.to, "07:00"),
+      style: ["clock", "black"].includes(n.style) ? n.style : "clock",
+      brightness: inRange(n.brightness, 0.05, 0.6) ?? 0.25,
+    },
+  };
+}
+
 export function sanitizeWidget(raw, catalogByType, used) {
   if (!raw || typeof raw !== "object") return null;
   const def = catalogByType.get(raw.type);
@@ -88,6 +150,8 @@ export function sanitizeWidget(raw, catalogByType, used) {
   const box = clampBox(raw, COLS, ROWS, def.min, def.max);
   const out = { id, type: def.type, ...box, options: {} };
   if (raw.portrait && typeof raw.portrait === "object") out.portrait = clampBox(raw.portrait, ROWS, COLS, def.min, def.max);
+  const look = cleanLook(raw.look, { widget: true });
+  if (look) out.look = look;
   const opts = raw.options && typeof raw.options === "object" ? raw.options : {};
   for (const o of def.options ?? []) {
     if (!(o.key in opts)) continue;
@@ -115,6 +179,7 @@ export function sanitizePage(raw, catalogByType, usedPageIds, index) {
     hidden: raw.hidden === true,
     staySec: stay,
     widgets,
+    ...(cleanLook(raw.look) ? { look: cleanLook(raw.look) } : {}),
   };
 }
 
@@ -125,7 +190,7 @@ export function sanitizeLayout(raw, catalogByType) {
     .map((p, i) => sanitizePage(p, catalogByType, usedPageIds, i))
     .filter(Boolean);
   const home = pages.some((p) => p.id === raw?.home && !p.hidden) ? raw.home : pages.find((p) => !p.hidden)?.id ?? null;
-  return { pages, home };
+  return { pages, home, look: cleanLook(raw?.look) ?? {}, display: cleanDisplay(raw?.display) };
 }
 
 const num = (v, lo, hi) => (Number.isFinite(Number(v)) ? Math.max(lo, Math.min(hi, Number(v))) : null);
