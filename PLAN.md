@@ -7,11 +7,22 @@ paired with a desktop host (`desktop/`, Electron + plain Node, macOS + Windows)
 over an X25519 / AES-256-GCM encrypted link. Today it is a touch deck: tiles
 that launch apps, open URLs, send keys, run macros, control media and volume.
 
-The goal is **feature parity with [ersinkoc/phonebox](https://github.com/ersinkoc/phonebox)**
-(a phone desk panel: live widgets, pages and templates, a desktop layout editor,
-webhooks, rules, AI-session widgets, a control deck), **built clean-room**: we
-learn *what it does* from its public docs and screenshots, and write every line
-ourselves. See "Clean-room rules" below. They are not optional.
+The goal is **feature parity with two reference projects**, **built clean-room**:
+we learn *what they do* from their public docs and screenshots, and write every
+line ourselves. See "Clean-room rules" below. They are not optional.
+
+- **[ersinkoc/phonebox](https://github.com/ersinkoc/phonebox)**: a phone desk panel
+  with live widgets, pages and templates, a desktop layout editor, webhooks, rules,
+  AI-session widgets and a control deck. Most of this plan.
+- **[zacharyinserra/deskhub](https://github.com/zacharyinserra/deskhub)**: an ESP32
+  desk display fed by a Windows companion. We match its *features* on the phone
+  panel, not its hardware: 3D-printer monitoring (10 brands), an internet-quality
+  page, a GitHub contributions page, deeper Claude Code / Codex usage and
+  "waiting for you" alerts, Plex/Jellyfin, a Steam games page (including
+  non-Steam games), and the panel following the PC's sleep. The ESP32 firmware,
+  USB flashing and over-the-air updates have no phone equivalent and are out of
+  scope. Its ROADMAP's *unbuilt* ideas are out of scope too, except where
+  PhoneBox already has them.
 
 **Chosen approach:** one panel renderer written in plain JS/HTML (`panel/`),
 **bundled inside the phone app** and shown in a WebView. The same bundle is also
