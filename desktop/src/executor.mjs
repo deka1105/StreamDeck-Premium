@@ -134,7 +134,15 @@ async function currentPlayer() {
   return null;
 }
 
+// Windows: the standard media / volume virtual keys via WScript.Shell.
+const WIN_MEDIA_KEYS = { playpause: 179, next: 176, previous: 177, volup: 175, voldown: 174, mute: 173 };
+
 async function mediaControl(action) {
+  if (platform === "win32") {
+    const key = WIN_MEDIA_KEYS[action.command];
+    if (!key) throw new Error("Setting an exact volume on Windows arrives with the Windows audio controls.");
+    return execFileAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", `(New-Object -ComObject WScript.Shell).SendKeys([char]${key})`], { windowsHide: true });
+  }
   if (platform !== "darwin") throw new Error(`Media controls aren't implemented for ${platform}`);
   switch (action.command) {
     case "setvol": {

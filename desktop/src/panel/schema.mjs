@@ -179,6 +179,18 @@ function cleanFeeds(list) {
   return out;
 }
 
+function cleanMediaServers(list) {
+  const out = [];
+  for (const m of Array.isArray(list) ? list.slice(0, 4) : []) {
+    const url = cleanUrlOrPath(m?.url);
+    const type = m?.type === "plex" ? "plex" : m?.type === "jellyfin" ? "jellyfin" : null;
+    const id = cleanId(m?.id, null);
+    if (!url || !type || !id || out.some((x) => x.id === id)) continue;
+    out.push({ id, type, name: cleanText(m.name, 40) || (type === "plex" ? "Plex" : "Jellyfin"), url });
+  }
+  return out;
+}
+
 export function sanitizeConfig(raw, catalog) {
   const byType = new Map((catalog?.widgets ?? []).map((w) => [w.type, w]));
   const devices = {};
@@ -204,6 +216,8 @@ export function sanitizeConfig(raw, catalog) {
       calendars: cleanCalendars(raw?.settings?.calendars),
       calendarDays: Math.max(1, Math.min(31, int(raw?.settings?.calendarDays, 7))),
       feeds: cleanFeeds(raw?.settings?.feeds),
+      mediaServers: cleanMediaServers(raw?.settings?.mediaServers),
+      mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],
     },
   };
 }

@@ -8,15 +8,29 @@ import { net } from "./net.mjs";
 import { procs } from "./procs.mjs";
 import { createNetq } from "./netq.mjs";
 import { createWebProviders } from "./web.mjs";
+import { createMedia } from "./media.mjs";
+import { createMediaServers, createRadio } from "./mediaExtras.mjs";
+import { hostStatus } from "../executor.mjs";
 
 /**
  * Providers for a host. `dir` persists netq usage; `getSettings` reads panel
  * settings; `getWidgets(type)` lists that widget type's options in the layout;
  * `secrets` holds integration credentials.
  */
-export function createProviders({ dir, getSettings = () => ({}), getWidgets = () => [], secrets } = {}) {
+export function createProviders({ dir, getSettings = () => ({}), getWidgets = () => [], secrets, dryRun = false } = {}) {
   const netq = createNetq({ dir, getSettings: () => getSettings().netq ?? {} });
-  return { system, gpu, disks, net, procs, netq, ...createWebProviders({ getSettings, getWidgets, secrets }) };
+  return {
+    system,
+    gpu,
+    disks,
+    net,
+    procs,
+    netq,
+    ...createWebProviders({ getSettings, getWidgets, secrets }),
+    media: createMedia({ getVolume: hostStatus }),
+    mediaServer: createMediaServers({ getSettings, secrets }),
+    radio: createRadio({ dryRun }),
+  };
 }
 
 // Kept for callers that just need the stateless set (tests).

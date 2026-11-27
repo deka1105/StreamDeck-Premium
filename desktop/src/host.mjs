@@ -30,6 +30,7 @@ import { createPanelStore } from "./panel/store.mjs";
 import { createEditorRoutes } from "./panel/editorRoutes.mjs";
 import { createWidgetState } from "./panel/widgetState.mjs";
 import { createSecrets } from "./secrets.mjs";
+import { createLyrics, parseStations } from "./providers/mediaExtras.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -162,7 +163,8 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   };
   const findWidget = (client, pageId, widgetId) =>
     panelStore.layoutFor(client).pages.find((p) => p.id === pageId)?.widgets.find((w) => w.id === widgetId) ?? null;
-  const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets });
+  const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun });
+  const lyrics = createLyrics();
   const sampler = createSampler({ providers: provs, publish: bus.publish });
   /** Does this client's layout contain a widget of `type` (id `widgetId`) with option `key` on? */
   const widgetAllows = (client, widgetId, type, key) =>
@@ -204,6 +206,55 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         if (buf.length > 3_000_000) return { ok: false, error: "Image is larger than 3 MB." };
         return { ok: true, src: `data:${type.split(";")[0]};base64,${buf.toString("base64")}` };
       },
+      // ---- media (Stage 7) ----
+      "media.control": async ({ command, value } = {}) => {
+        const cmd = String(command ?? "");
+        if (["playpause", "next", "previous", "seek"].includes(cmd)) {
+          if (dryRun) return console.log(`  (dry-run) media ${cmd} ${value ?? ""}`), { ok: true };
+          await provs.media.control(cmd, value);
+        } else if (["mute", "volup", "voldown", "setvol"].includes(cmd)) {
+          await execute({ type: "media", command: cmd, value: Number(value) }, { dryRun });
+        } else return { ok: false, error: "unknown command" };
+        bus.publish("data", { kind: "media", value: await provs.media.sample() });
+        return { ok: true };
+      },
+      "media.art": async ({ artId } = {}) => ({ src: await provs.media.art(String(artId ?? "")) }),
+      // Lyrics only for a lyrics widget whose "look up lyrics" option is on.
+      "lyrics.get": async ({ pageId, widgetId } = {}, ctx) => {
+        const w = findWidget(ctx.client, pageId, widgetId);
+        if (!w || w.type !== "lyrics" || w.options?.lookup !== true) return { ok: false, error: "Turn on “Look up lyrics on LRCLIB” for this widget." };
+        const m = sampler.latest("media");
+        if (!m?.title) return { ok: true, found: false, idle: true };
+        return lyrics.get(m);
+      },
+      // Radio plays a station from the widget's own list (set in the editor).
+      "radio.play": async ({ pageId, widgetId, index } = {}, ctx) => {
+        const w = findWidget(ctx.client, pageId, widgetId);
+        const station = w?.type === "radio" ? parseStations(w.options?.stations)[Number(index)] : null;
+        if (!station) return { ok: false, error: "No such station." };
+        try {
+          const r = provs.radio.play(station);
+          bus.publish("data", { kind: "radio", value: await provs.radio.sample() });
+          return r;
+        } catch (err) {
+          return { ok: false, error: err.message };
+        }
+      },
+      "radio.stop": async () => {
+        provs.radio.stop();
+        bus.publish("data", { kind: "radio", value: await provs.radio.sample() });
+        return { ok: true };
+      },
+      "mediaServer.control": async ({ server, session, command, value } = {}) => {
+        try {
+          if (dryRun) return console.log(`  (dry-run) media server ${server} ${command}`), { ok: true };
+          await provs.mediaServer.control(String(server), String(session), String(command), value);
+          return { ok: true };
+        } catch (err) {
+          return { ok: false, error: err.message };
+        }
+      },
+      "mediaServer.poster": async ({ server, session } = {}) => ({ src: await provs.mediaServer.poster(String(server), String(session)).catch(() => null) }),
       "state.get": ({ key } = {}) => ({ key, value: widgetState.get(key) }),
       "state.set": ({ key, value } = {}, ctx) => widgetState.set(key, value, ctx.client),
       "netq.speedtest": async () => {
@@ -446,6 +497,7 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       new Promise((r) => {
         sampler.stop();
         provs.netq?.stopUsage?.();
+        provs.radio?.stop?.();
         widgetState.flush();
         bus.close(); // release held long-polls so close() can finish
         server.close(r);
