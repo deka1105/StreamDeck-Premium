@@ -89,6 +89,10 @@ function boot() {
     }
     document.body.dataset.page = page?.id ?? "";
     renderDots();
+    requestAnimationFrame(() => {
+      const g = holder.querySelector(".page-grid")?.getBoundingClientRect();
+      debug(`render page=${page?.id} of ${list.length} viewport=${innerWidth}x${innerHeight} grid=${g ? `${Math.round(g.width)}x${Math.round(g.height)}` : "none"} widgets=${page?.widgets?.length ?? 0}`);
+    });
   }
 
   function go(i, { animate = true } = {}) {
@@ -132,6 +136,7 @@ function boot() {
       index = keepId ? indexAfterReload(layout, keepId) : homeIndex(layout);
       render(0);
     } catch (err) {
+      debug(`panel.layout failed: ${err.message}`);
       if (!layout) {
         pagesEl.innerHTML = `<div class="empty">Waiting for your computer…</div>`;
       }

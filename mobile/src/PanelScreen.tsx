@@ -128,6 +128,10 @@ export function PanelScreen({
       } catch {
         return;
       }
+      if (msg?.t === "debug") {
+        if (__DEV__) console.log(`[panel] ${msg.msg}`);
+        return;
+      }
       if (msg?.t === "ready") {
         const gen = ++generation.current;
         // The demo page runs its own simulated computer; there's nothing to poll.
