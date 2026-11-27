@@ -448,6 +448,8 @@ function DeckScreen({
   const safeIdx = Math.min(pageIdx, Math.max(0, pages.length - 1));
   const deck = pages[safeIdx]?.buttons ?? [];
   const full = deck.length >= MAX_TILES_PER_PROFILE;
+  // What the panel's Deck widget shows: the active profile's current page.
+  const panelDeck = useMemo(() => ({ name: active?.name ?? "", tiles: deck }), [active?.name, deck]);
   const autoMode = state?.autoMode ?? false;
 
   function changeCols(n: number) {
