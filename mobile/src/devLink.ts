@@ -30,6 +30,7 @@ export function parseDevLink(url: string | null): DevLink | null {
       /* ignore */
     }
   }
+  if (q.get("demo") === "1") out.demo = true;
   const view = q.get("view");
   if (view === "panel" || view === "deck") out.view = view;
   return out;

@@ -108,6 +108,11 @@ export default function App() {
         console.warn("[dev link] pairing failed", e);
       }
     }
+    if (link.demo) {
+      const cur = hostsRef.current;
+      setHosts(await addPairing(cur === "loading" ? { pairings: [], activeKid: null } : cur, demoPairing()));
+      setAddingHost(false);
+    }
     if (link.view) setDevView((d) => ({ view: link.view!, n: (d?.n ?? 0) + 1 }));
   }, []);
   useDevLink(onDevLink);
