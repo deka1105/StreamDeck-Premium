@@ -1680,6 +1680,169 @@
       "options": []
     },
     {
+      "type": "sessions",
+      "name": "Agent sessions",
+      "category": "ai",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "tap",
+          "type": "bool",
+          "label": "Tap a session to bring its window forward",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "aiquota",
+      "name": "AI plan limits",
+      "category": "ai",
+      "size": {
+        "w": 3,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "agent",
+          "type": "choice",
+          "label": "Agent",
+          "default": "auto",
+          "choices": [
+            {
+              "value": "auto",
+              "label": "Most recently used"
+            },
+            {
+              "value": "claude",
+              "label": "Claude Code"
+            },
+            {
+              "value": "codex",
+              "label": "Codex"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "tokens",
+      "name": "Token use",
+      "category": "ai",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "agent",
+          "type": "choice",
+          "label": "Agent",
+          "default": "claude",
+          "choices": [
+            {
+              "value": "auto",
+              "label": "Most recently used"
+            },
+            {
+              "value": "claude",
+              "label": "Claude Code"
+            },
+            {
+              "value": "codex",
+              "label": "Codex"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "agentalerts",
+      "name": "Waiting for you",
+      "category": "ai",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "contributions",
+      "name": "GitHub contributions",
+      "category": "ai",
+      "size": {
+        "w": 6,
+        "h": 2
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "weeks",
+          "type": "number",
+          "label": "Weeks to show",
+          "default": 26,
+          "min": 4,
+          "max": 53
+        }
+      ]
+    },
+    {
+      "type": "prs",
+      "name": "Pull requests",
+      "category": "ai",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "show",
+          "type": "choice",
+          "label": "Show",
+          "default": "both",
+          "choices": [
+            {
+              "value": "both",
+              "label": "Mine and review requests"
+            },
+            {
+              "value": "mine",
+              "label": "My open PRs"
+            },
+            {
+              "value": "reviews",
+              "label": "Waiting for my review"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "customhtml",
       "name": "Custom HTML",
       "category": "layout",

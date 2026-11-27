@@ -971,6 +971,126 @@
       }
     },
     {
+      "id": "ai",
+      "name": "AI & code",
+      "description": "Agent sessions, plan limits, tokens and anything waiting for you.",
+      "page": {
+        "name": "AI",
+        "widgets": [
+          {
+            "type": "sessions",
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          },
+          {
+            "type": "aiquota",
+            "x": 6,
+            "y": 0,
+            "w": 3,
+            "h": 4,
+            "options": {
+              "agent": "claude"
+            }
+          },
+          {
+            "type": "aiquota",
+            "x": 9,
+            "y": 0,
+            "w": 3,
+            "h": 4,
+            "options": {
+              "agent": "codex"
+            }
+          },
+          {
+            "type": "agentalerts",
+            "x": 0,
+            "y": 4,
+            "w": 6,
+            "h": 2
+          },
+          {
+            "type": "tokens",
+            "x": 6,
+            "y": 4,
+            "w": 6,
+            "h": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "deepwork",
+      "name": "Deep work",
+      "description": "A focus timer beside your coding agents.",
+      "page": {
+        "name": "Deep work",
+        "widgets": [
+          {
+            "type": "pomodoro",
+            "x": 0,
+            "y": 0,
+            "w": 5,
+            "h": 6
+          },
+          {
+            "type": "sessions",
+            "x": 5,
+            "y": 0,
+            "w": 7,
+            "h": 3
+          },
+          {
+            "type": "agentalerts",
+            "x": 5,
+            "y": 3,
+            "w": 4,
+            "h": 3
+          },
+          {
+            "type": "aiquota",
+            "x": 9,
+            "y": 3,
+            "w": 3,
+            "h": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "description": "Contribution graph, your pull requests and reviews waiting for you.",
+      "page": {
+        "name": "GitHub",
+        "widgets": [
+          {
+            "type": "contributions",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 2
+          },
+          {
+            "type": "prs",
+            "x": 0,
+            "y": 2,
+            "w": 7,
+            "h": 4
+          },
+          {
+            "type": "sessions",
+            "x": 7,
+            "y": 2,
+            "w": 5,
+            "h": 4
+          }
+        ]
+      }
+    },
+    {
       "id": "clock",
       "name": "Clock",
       "description": "A big clock with seconds.",

@@ -175,7 +175,7 @@ export function createPromptCard(root, bridge) {
         c.className = "prompt-card";
         c.dataset.id = p.id;
         const left = Math.max(0, Math.round((p.expiresAt - Date.now()) / 1000));
-        c.innerHTML = `<div class="sw-why">Claude Code · ${esc(p.project)}</div><div class="prompt-tool">${esc(p.tool)}</div><pre class="prompt-detail">${esc(p.detail)}</pre><div class="sw-actions"><button class="btn prompt-deny">Deny</button><button class="btn primary prompt-allow">Allow</button></div><div class="muted prompt-left">Asks in the terminal in ${left} s</div>`;
+        c.innerHTML = `<div class="sw-why">Claude Code · ${esc(p.project)}</div><div class="prompt-tool">${esc(p.tool)}</div><pre class="prompt-detail">${esc(p.detail)}</pre><div class="sw-actions"><button class="tbtn prompt-deny">Deny</button><button class="tbtn primary prompt-allow">Allow</button></div><div class="muted prompt-left">Asks in the terminal in ${left} s</div>`;
         return c;
       }),
     );
