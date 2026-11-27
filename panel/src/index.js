@@ -23,6 +23,12 @@ function boot() {
 
   const bridge = createBridge();
   const store = createStore();
+  // Inside the phone app, diagnostics go to the app's dev log (ignored in release).
+  const debug = (msg) => {
+    if (bridge.kind === "native") window.ReactNativeWebView.postMessage(JSON.stringify({ t: "debug", msg: String(msg).slice(0, 500) }));
+  };
+  window.addEventListener("error", (e) => debug(`error: ${e.message} @ ${e.filename}:${e.lineno}`));
+  window.addEventListener("unhandledrejection", (e) => debug(`unhandled: ${e.reason?.message ?? e.reason}`));
   const env = { store, bridge, goto: (id) => gotoId(id) };
   document.body.dataset.bridge = bridge.kind;
   if (bridge.demo) {
