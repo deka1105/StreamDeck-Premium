@@ -27,7 +27,10 @@ const me = () => {
  */
 export function procName(p) {
   let n = String(p?.name ?? "");
-  if (p?.command && n === p.command && /\s/.test(n)) n = n.split(/\s+/)[0];
+  // With a known path, the OS reported the executable's real name (spaces are
+  // part of it: "Activity Monitor") and arguments separately. Without one, the
+  // name is the raw command line, so keep only the program.
+  if (!p?.path && /\s/.test(n)) n = n.split(/\s+/)[0];
   if (/[\\/]/.test(n)) n = n.split(/[\\/]/).filter(Boolean).pop() ?? n;
   return n.slice(0, 80);
 }

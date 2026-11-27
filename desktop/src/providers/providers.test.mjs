@@ -67,12 +67,13 @@ test("procs: names never carry command-line arguments", () => {
     [
       { pid: 1, name: "sleep 300", command: "sleep 300", cpu: 0, memRss: 1, user: "me" },
       { pid: 2, name: "/usr/bin/python3 tool.py --token=SECRET", command: "/usr/bin/python3 tool.py --token=SECRET", cpu: 0, memRss: 1, user: "me" },
-      { pid: 3, name: "Google Chrome Helper", command: "/Applications/Google Chrome.app/…/Google Chrome Helper --type=renderer", cpu: 0, memRss: 1, user: "me" },
+      { pid: 3, name: "Google Chrome Helper", command: "Google Chrome Helper", params: "--type=renderer", path: "/Applications/Google Chrome.app/Contents/Frameworks", cpu: 0, memRss: 1, user: "me" },
+      { pid: 4, name: "Activity Monitor", command: "Activity Monitor", params: "", path: "/System/Applications/Utilities/Activity Monitor.app/Contents/MacOS", cpu: 0, memRss: 1, user: "me" },
     ],
     { user: "me", platform: "darwin" },
   );
   const names = list.map((g) => g.name).sort();
-  assert.deepEqual(names, ["Google Chrome Helper", "python3", "sleep"]);
+  assert.deepEqual(names, ["Activity Monitor", "Google Chrome Helper", "python3", "sleep"]);
   assert.ok(!JSON.stringify(list).includes("SECRET"));
 });
 
