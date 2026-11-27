@@ -141,19 +141,22 @@ function boot() {
 
   async function loadLayout() {
     if (preview) return;
+    let next;
     try {
-      const next = await bridge.request("panel.layout");
-      const keepId = layout ? pages()[index]?.id : null;
-      layout = next;
-      index = keepId ? indexAfterReload(layout, keepId) : homeIndex(layout);
-      render(0);
-      alarms.watch(layout);
+      next = await bridge.request("panel.layout");
     } catch (err) {
+      // The computer didn't answer: keep what we have and try again on resync.
       debug(`panel.layout failed: ${err.message}`);
-      if (!layout) {
-        pagesEl.innerHTML = `<div class="empty">Waiting for your computer…</div>`;
-      }
+      if (!layout) pagesEl.innerHTML = `<div class="empty">Waiting for your computer…</div>`;
+      return;
     }
+    // Render errors are bugs: let them surface (console / dev log) instead of
+    // being mistaken for "computer offline".
+    const keepId = layout ? pages()[index]?.id : null;
+    layout = next;
+    index = keepId ? indexAfterReload(layout, keepId) : homeIndex(layout);
+    render(0);
+    alarms.watch(layout);
   }
 
   bridge.on("event", (e) => {
