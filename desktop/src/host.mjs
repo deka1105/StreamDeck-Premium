@@ -141,8 +141,13 @@ function saveApps(dir, apps) {
 
 // --- host --------------------------------------------------------------------
 
-export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell } = {}) {
+export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell, providers = PROVIDERS } = {}) {
   mkdirSync(dir, { recursive: true });
+  // Panel plumbing: an event queue, an on-demand sampler feeding it, and the
+  // method table both the phone (RPC) and browser panels (loopback) call.
+  const bus = createEventBus();
+  const sampler = createSampler({ providers, publish: bus.publish });
+  const panelApi = createPanelApi({ bus, sampler, hostName: name });
   let devices = loadDevices(dir);
   const settings = loadSettings(dir);
   // An explicit `allowShell` option (e.g. from an env var) overrides the stored setting.
@@ -228,13 +233,29 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     } catch {
       return { status: 401, json: { error: "auth failed" } };
     }
-    if (typeof msg.ctr !== "number" || msg.ctr <= device.lastCtr) {
+    // Two independent counter channels. The main channel ("cmd") carries every
+    // command, exactly as before. The event channel ("ev") carries ONLY the
+    // panel's events.wait long-poll, so a 25-second wait never blocks a button
+    // press waiting its turn for the next counter. Each channel is strictly
+    // increasing on its own; ev can only read events, never act.
+    const evChannel = msg.ch === "ev";
+    if (evChannel && !(msg.cmd === "panel" && msg.method === "events.wait")) {
+      return { status: 400, json: { error: "event channel only carries events.wait" } };
+    }
+    const lastKey = evChannel ? "lastEvCtr" : "lastCtr";
+    if (typeof msg.ctr !== "number" || msg.ctr <= (device[lastKey] ?? 0)) {
       return { status: 409, json: { error: "replay" } };
     }
-    device.lastCtr = msg.ctr;
+    device[lastKey] = msg.ctr;
 
     let reply;
-    if (msg.cmd === "hello") {
+    if (msg.cmd === "panel") {
+      try {
+        reply = { ok: true, result: await panelApi.call(msg.method, msg.params, { client: device.deviceId }) };
+      } catch (err) {
+        reply = { ok: false, error: err.message };
+      }
+    } else if (msg.cmd === "hello") {
       reply = { ok: true, host: name };
     } else if (msg.cmd === "foreground") {
       // Report the focused app so the phone can auto-switch profiles.
@@ -343,8 +364,20 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       recorded.combo = typeof combo === "string" && combo.trim() ? combo.trim().slice(0, 64) : null;
       recorded.at = Date.now();
     },
-    listen: () => new Promise((r) => server.listen(port, r)),
-    stop: () => new Promise((r) => server.close(r)),
+    bus,
+    sampler,
+    panelApi,
+    listen: () =>
+      new Promise((r) => {
+        sampler.start();
+        server.listen(port, r);
+      }),
+    stop: () =>
+      new Promise((r) => {
+        sampler.stop();
+        bus.close(); // release held long-polls so close() can finish
+        server.close(r);
+      }),
   };
 }
 
