@@ -127,7 +127,7 @@ test("panel: headlines, agenda, next up, weather and the moon from the host", as
   await expect(page.locator(".nu-title")).toHaveText("Project sync");
   await expect(page.locator(".nu-when")).toHaveText(/^In (\d+ min|1 h( \d+ min)?)$/);
   await expect(page.locator(".moon-name")).toHaveText(/moon|crescent|quarter|gibbous/i);
-  await expect(page.locator(".wx-temp")).toHaveText(/^-?\d+°$/, { timeout: 30_000 });
+  await expect(page.locator(".wx-temp")).toHaveText("18°", { timeout: 15_000 }); // the fixture, not the live API
   await expect(page.locator(".wx-place")).toContainText("Charlotte");
   // The page with the calendar marks "still an event today" on its dot.
   await expect(page.locator("#dots .dot").first()).toHaveAttribute("data-badge", "1");
