@@ -34,6 +34,11 @@ test.beforeAll(async () => {
     port: 18930,
     localPort: 18931,
     config: {
+      settings: {
+        location: { name: "Charlotte, North Carolina, US", lat: 35.227, lon: -80.843, tz: "America/New_York" },
+        feeds: [{ name: "Fixture", url: `${fixtureBase}/feed.xml`, category: "Local" }],
+        calendars: [{ id: "work", name: "Work", kind: "ics", url: `${fixtureBase}/cal.ics`, color: "#f472b6" }],
+      },
       default: {
         home: "web",
         pages: [
@@ -66,14 +71,15 @@ test("editor settings: import feeds, add a calendar, pick a location", async ({ 
   await page.click("#settingsToggle");
   await expect(page.locator("#settingsView")).toBeVisible();
 
-  await page.fill("#feedBulk", `Local | Fixture | ${fixtureBase}/feed.xml\nnot a feed`);
+  // The config already has the fixture feed: importing it again adds nothing new.
+  await page.fill("#feedBulk", `Local | Fixture | ${fixtureBase}/feed.xml\nWorld | Other | ${fixtureBase}/other.xml\nnot a feed`);
   await page.click("#importBulk");
   await expect(page.locator("#flash")).toContainText("Added 1 feed");
 
-  await page.fill("#icsName", "Work");
+  await page.fill("#icsName", "Home");
   await page.fill("#icsUrl", `${fixtureBase}/cal.ics`);
   await page.click("#addIcs");
-  await expect(page.locator(".set-row", { hasText: "Work" })).toBeVisible();
+  await expect(page.locator(".set-row", { hasText: "Home" })).toBeVisible();
 
   // Real geocoding through the host (needs the internet, like the product does).
   await page.fill("#geoSearch", "Charlotte");
@@ -95,7 +101,7 @@ test("panel: headlines, agenda, next up, weather and the moon from the host", as
   await expect(page.locator(".ag-title").first()).toHaveText("Project sync", { timeout: 20_000 });
   await expect(page.locator(".ag-day").first()).toHaveText("Today");
   await expect(page.locator(".nu-title")).toHaveText("Project sync");
-  await expect(page.locator(".nu-when")).toHaveText(/^In \d+ min$/);
+  await expect(page.locator(".nu-when")).toHaveText(/^In (\d+ min|1 h( \d+ min)?)$/);
   await expect(page.locator(".moon-name")).toHaveText(/moon|crescent|quarter|gibbous/i);
   await expect(page.locator(".wx-temp")).toHaveText(/^-?\d+°$/, { timeout: 30_000 });
   await expect(page.locator(".wx-place")).toContainText("Charlotte");

@@ -363,7 +363,14 @@ export const nextup = {
       const next = (c?.events ?? []).find((e) => !e.allDay && e.end > now);
       if (!next) return needsSetup(el, c ? "Nothing else today." : "Loading calendar…");
       const mins = Math.round((next.start - now) / 60_000);
-      const when = next.start <= now ? `Now · until ${hm(next.end)}` : mins < 60 ? `In ${mins} min` : `${dayLabel(next.start)} · ${hm(next.start)}`;
+      const when =
+        next.start <= now
+          ? `Now · until ${hm(next.end)}`
+          : mins < 60
+            ? `In ${mins} min`
+            : mins < 180
+              ? `In ${Math.floor(mins / 60)} h${mins % 60 ? ` ${mins % 60} min` : ""}`
+              : `${dayLabel(next.start)} · ${hm(next.start)}`;
       el.innerHTML = `<div class="nu-when" style="color:${esc(next.color ?? "#38bdf8")}">${esc(when)}</div><div class="nu-title">${esc(next.title)}</div><div class="muted nu-loc">${esc(next.location ?? "")}</div>`;
     };
     ctx.subscribe("calendar", (c) => ((last = c), render()));
