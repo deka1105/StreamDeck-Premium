@@ -9,7 +9,7 @@
 import { useEffect } from "react";
 import { Linking } from "react-native";
 
-export type DevLink = { pair?: unknown; view?: "deck" | "panel" };
+export type DevLink = { pair?: unknown; demo?: boolean; view?: "deck" | "panel" };
 
 export function parseDevLink(url: string | null): DevLink | null {
   if (!url) return null;
