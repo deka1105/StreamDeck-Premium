@@ -4,9 +4,10 @@ import { REGISTRY, withDefaults } from "./widgets/index.js";
 import { resolveLayout } from "./grid.js";
 
 /** Build the per-widget context. Everything registered here is torn down on unmount. */
-function makeContext({ store, bridge, options, onCleanup }) {
+function makeContext({ store, bridge, options, onCleanup, widgetId }) {
   return {
     options,
+    widgetId,
     bridge,
     now: () => new Date(),
     request: (method, params) => bridge.request(method, params),
@@ -34,7 +35,7 @@ export function mountWidget(host, instance, { store, bridge }) {
     return { needs: [], destroy: () => body.remove() };
   }
   const options = withDefaults(def, instance.options);
-  const ctx = makeContext({ store, bridge, options, onCleanup: (fn) => cleanups.push(fn) });
+  const ctx = makeContext({ store, bridge, options, widgetId: instance.id, onCleanup: (fn) => cleanups.push(fn) });
   let handle;
   try {
     handle = def.mount(body, ctx) ?? {};
