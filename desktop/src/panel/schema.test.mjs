@@ -58,7 +58,7 @@ test("ids are made unique and pages get safe defaults", () => {
         home: "nope",
         pages: [
           { id: "a", name: "", widgets: [{ id: "x", type: "clock" }, { id: "x", type: "clock" }] },
-          { id: "a", hidden: true, stayMin: -5, widgets: [] },
+          { id: "a", hidden: true, staySec: -5, widgets: [] },
           "garbage",
         ],
       },
@@ -70,7 +70,7 @@ test("ids are made unique and pages get safe defaults", () => {
   assert.notEqual(p1.widgets[0].id, p1.widgets[1].id);
   assert.notEqual(p1.id, p2.id);
   assert.equal(p1.name, "Page 1");
-  assert.equal(p2.stayMin, 0);
+  assert.equal(p2.staySec, 0);
   assert.equal(cfg.default.home, "a"); // invalid home → first visible page
 });
 

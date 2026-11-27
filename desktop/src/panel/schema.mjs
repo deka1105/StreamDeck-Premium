@@ -106,12 +106,12 @@ export function sanitizePage(raw, catalogByType, usedPageIds, index) {
     .slice(0, MAX_WIDGETS)
     .map((w) => sanitizeWidget(w, catalogByType, used))
     .filter(Boolean);
-  const stay = raw.stayMin === null || raw.stayMin === undefined ? null : Math.max(0, Math.min(24 * 60, int(raw.stayMin, 0)));
+  const stay = raw.staySec === null || raw.staySec === undefined ? null : Math.max(0, Math.min(24 * 3600, int(raw.staySec, 0)));
   return {
     id,
     name: cleanText(raw.name, 40) || `Page ${index + 1}`,
     hidden: raw.hidden === true,
-    stayMin: stay,
+    staySec: stay,
     widgets,
   };
 }
