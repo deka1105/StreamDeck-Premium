@@ -148,7 +148,15 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   // method table both the phone (RPC) and browser panels (loopback) call.
   const bus = createEventBus();
   const sampler = createSampler({ providers, publish: bus.publish });
-  const panelApi = createPanelApi({ bus, sampler, hostName: name });
+  const panelStore = createPanelStore({ dir, onChange: (rev) => bus.publish("layout", { rev }) });
+  const panelApi = createPanelApi({
+    bus,
+    sampler,
+    hostName: name,
+    extra: {
+      "panel.layout": (_params, ctx) => panelStore.layoutFor(ctx.client),
+    },
+  });
   let devices = loadDevices(dir);
   const settings = loadSettings(dir);
   // An explicit `allowShell` option (e.g. from an env var) overrides the stored setting.
