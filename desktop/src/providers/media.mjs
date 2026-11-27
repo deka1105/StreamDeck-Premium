@@ -43,6 +43,7 @@ export function parseMacReply(player, raw) {
 
 async function macNowPlaying() {
   const players = await runningPlayers().catch(() => []);
+  let fallback = null; // a paused player, used if none is playing
   // Prefer the one that's playing; Spotify first when both are.
   for (const player of players.sort((a) => (a === "Spotify" ? -1 : 1))) {
     const art = player === "Spotify" ? `(artwork url of t)` : `""`;
@@ -53,12 +54,12 @@ async function macNowPlaying() {
       );
       const m = parseMacReply(player, raw);
       if (m && (m.state === "playing" || players.length === 1)) return m;
-      if (m) var fallback = fallback ?? m; // eslint-disable-line no-var
+      if (m) fallback ??= m;
     } catch {
       /* nothing queued in this player */
     }
   }
-  return typeof fallback !== "undefined" ? fallback : null;
+  return fallback;
 }
 
 async function macArtwork(m) {
