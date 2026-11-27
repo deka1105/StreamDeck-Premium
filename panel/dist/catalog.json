@@ -1527,6 +1527,179 @@
           "default": true
         }
       ]
+    },
+    {
+      "type": "bigbutton",
+      "name": "Big button",
+      "category": "controls",
+      "size": {
+        "w": 3,
+        "h": 3
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "shortcut",
+          "type": "text",
+          "label": "Shortcut id",
+          "default": "",
+          "maxLength": 40
+        }
+      ]
+    },
+    {
+      "type": "shortcutgrid",
+      "name": "Shortcut grid",
+      "category": "controls",
+      "size": {
+        "w": 6,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "ids",
+          "type": "list",
+          "label": "Shortcut ids, one per line (empty = all)",
+          "default": []
+        }
+      ]
+    },
+    {
+      "type": "pushvalue",
+      "name": "Pushed value",
+      "category": "controls",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "key",
+          "type": "text",
+          "label": "Key (POST /api/push/<key>)",
+          "default": "temperature",
+          "maxLength": 64
+        },
+        {
+          "key": "title",
+          "type": "text",
+          "label": "Title (optional)",
+          "default": ""
+        },
+        {
+          "key": "style",
+          "type": "choice",
+          "label": "Style",
+          "default": "value",
+          "choices": [
+            {
+              "value": "value",
+              "label": "Value"
+            },
+            {
+              "value": "progress",
+              "label": "Value with a bar"
+            },
+            {
+              "value": "gauge",
+              "label": "Ring"
+            },
+            {
+              "value": "list",
+              "label": "List"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "notifications",
+      "name": "Notifications",
+      "category": "controls",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": []
+    },
+    {
+      "type": "command",
+      "name": "Command output",
+      "category": "controls",
+      "size": {
+        "w": 6,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "command",
+          "type": "text",
+          "label": "Command id (defined in the editor's Shortcuts tab)",
+          "default": "",
+          "maxLength": 40
+        },
+        {
+          "key": "title",
+          "type": "text",
+          "label": "Title",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "type": "rules",
+      "name": "Rules",
+      "category": "controls",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "customhtml",
+      "name": "Custom HTML",
+      "category": "layout",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "html",
+          "type": "textarea",
+          "label": "Your HTML, CSS and JavaScript (window.deskassist: on, data, goto, run)",
+          "default": "<h3 style='color:#fff;font-family:sans-serif'>Hello</h3>",
+          "maxLength": 20000
+        }
+      ]
     }
   ]
 }

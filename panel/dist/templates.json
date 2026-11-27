@@ -843,6 +843,134 @@
       }
     },
     {
+      "id": "automation",
+      "name": "Automation",
+      "description": "Pushed values, notifications, rules and a few keys.",
+      "page": {
+        "name": "Automation",
+        "widgets": [
+          {
+            "type": "pushvalue",
+            "x": 0,
+            "y": 0,
+            "w": 3,
+            "h": 2,
+            "options": {
+              "key": "temperature",
+              "title": "Temperature"
+            }
+          },
+          {
+            "type": "pushvalue",
+            "x": 3,
+            "y": 0,
+            "w": 3,
+            "h": 2,
+            "options": {
+              "key": "build",
+              "title": "Build",
+              "style": "progress"
+            }
+          },
+          {
+            "type": "rules",
+            "x": 6,
+            "y": 0,
+            "w": 3,
+            "h": 2
+          },
+          {
+            "type": "nextup",
+            "x": 9,
+            "y": 0,
+            "w": 3,
+            "h": 2
+          },
+          {
+            "type": "notifications",
+            "x": 0,
+            "y": 2,
+            "w": 6,
+            "h": 4
+          },
+          {
+            "type": "shortcutgrid",
+            "x": 6,
+            "y": 2,
+            "w": 6,
+            "h": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "description": "Command output and build keys.",
+      "page": {
+        "name": "DevOps",
+        "widgets": [
+          {
+            "type": "command",
+            "x": 0,
+            "y": 0,
+            "w": 8,
+            "h": 4,
+            "options": {
+              "command": "status",
+              "title": "Status"
+            }
+          },
+          {
+            "type": "pushvalue",
+            "x": 8,
+            "y": 0,
+            "w": 4,
+            "h": 2,
+            "options": {
+              "key": "build",
+              "title": "CI",
+              "style": "progress"
+            }
+          },
+          {
+            "type": "bigbutton",
+            "x": 8,
+            "y": 2,
+            "w": 4,
+            "h": 2,
+            "options": {
+              "shortcut": "deploy"
+            }
+          },
+          {
+            "type": "shortcutgrid",
+            "x": 0,
+            "y": 4,
+            "w": 12,
+            "h": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "shortcuts",
+      "name": "Shortcuts",
+      "description": "Every shortcut defined on the computer, as keys.",
+      "page": {
+        "name": "Shortcuts",
+        "widgets": [
+          {
+            "type": "shortcutgrid",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 6
+          }
+        ]
+      }
+    },
+    {
       "id": "clock",
       "name": "Clock",
       "description": "A big clock with seconds.",

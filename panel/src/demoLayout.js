@@ -53,6 +53,19 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "auto",
+      name: "Automation",
+      widgets: [
+        { id: "pv", type: "pushvalue", x: 0, y: 0, w: 3, h: 2, options: { key: "temperature", title: "Living room" } },
+        { id: "pb", type: "pushvalue", x: 3, y: 0, w: 3, h: 2, options: { key: "build", title: "Build", style: "progress" } },
+        { id: "rl", type: "rules", x: 6, y: 0, w: 3, h: 2 },
+        { id: "bb", type: "bigbutton", x: 9, y: 0, w: 3, h: 2, options: { shortcut: "deploy" } },
+        { id: "nt", type: "notifications", x: 0, y: 2, w: 6, h: 4 },
+        { id: "cm", type: "command", x: 6, y: 2, w: 6, h: 2, options: { command: "disk", title: "Disk" } },
+        { id: "sg", type: "shortcutgrid", x: 6, y: 4, w: 6, h: 2 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [
