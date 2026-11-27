@@ -113,3 +113,18 @@ test("Custom HTML: sandboxed (no panel, no network) but gets data and can run sh
   await frame.locator("#bar").fill("63");
   await expect.poll(() => host.log()).toContain('program ["/bin/echo","set","63"]');
 });
+
+test("LAN webhooks: off by default, then only with the webhook key", async () => {
+  const lan = `http://127.0.0.1:18960/hook/push/door`;
+  expect((await fetch(lan, { method: "POST", body: "open" })).status).toBe(404); // off
+  const st = await (await fetch(`${host.base}/api/editor/state`)).json();
+  st.config.settings.webhooks = { lan: true };
+  await fetch(`${host.base}/api/editor/config`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ config: st.config, baseRev: st.rev }) });
+  const { key } = await (await fetch(`${host.base}/api/editor/webhook-key`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })).json();
+  expect((await fetch(lan, { method: "POST", body: "open" })).status).toBe(401); // no key
+  expect((await fetch(lan, { method: "POST", body: "open", headers: { authorization: "Bearer wrong" } })).status).toBe(401);
+  expect((await fetch(lan, { method: "POST", body: "open", headers: { authorization: `Bearer ${key}` } })).status).toBe(200);
+  expect((await fetch(`${lan}?token=${key}`, { method: "POST", body: "shut" })).status).toBe(200);
+  // The key opens webhooks only — never the phone API.
+  expect((await fetch(`http://127.0.0.1:18960/rpc`, { method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" }, body: "{}" })).status).toBe(400);
+});
