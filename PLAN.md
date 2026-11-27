@@ -1,0 +1,330 @@
+# PLAN — DeskAssist Panel (feature parity with PhoneBox, clean-room)
+
+## Handoff block — paste this first in every new session
+
+DeskAssist is a phone app (`mobile/`, Expo SDK 54 / React Native, iOS + Android)
+paired with a desktop host (`desktop/`, Electron + plain Node, macOS + Windows)
+over an X25519 / AES-256-GCM encrypted link. Today it is a touch deck: tiles
+that launch apps, open URLs, send keys, run macros, control media and volume.
+
+The goal is **feature parity with [ersinkoc/phonebox](https://github.com/ersinkoc/phonebox)**
+(a phone desk panel: live widgets, pages and templates, a desktop layout editor,
+webhooks, rules, AI-session widgets, a control deck), **built clean-room**: we
+learn *what it does* from its public docs and screenshots, and write every line
+ourselves. See "Clean-room rules" below. They are not optional.
+
+**Chosen approach:** one panel renderer written in plain JS/HTML (`panel/`),
+**bundled inside the phone app** and shown in a WebView. The same bundle is also
+served by the desktop host for the editor's live preview and a browser panel.
+The panel never talks to the network itself. It talks to a `bridge`. On the
+phone the bridge rides the existing encrypted RPC. In a desktop browser it calls
+the host's loopback API. Layouts live on the host, per paired device.
+
+**Work happens on branch `panel-parity`.** `main` holds the build that is in App
+Store review (1.1.0, build 13). Every file write is auto-committed and **pushed
+to a public repo** within seconds, so never write a secret into this tree.
+
+**Status:** Stage 0 not started. Update the checklist below as steps land.
+**Next:** Stage 0, step 0.1.
+
+---
+
+## Progress checklist
+
+- [ ] Stage 0 — Groundwork (tests, CI on macOS + Windows, clean-room log)
+- [ ] Stage 1 — Walking skeleton: a live CPU number from the computer on the phone
+- [ ] Stage 2 — Pages, grid and navigation; tiles become a widget; demo mode
+- [ ] Stage 3 — Desktop layout editor
+- [ ] Stage 4 — Computer widgets (CPU / GPU / RAM / disks / network / processes)
+- [ ] Stage 5 — Time and personal widgets
+- [ ] Stage 6 — Weather, sky and web-data widgets
+- [ ] Stage 7 — Media widgets
+- [ ] Stage 8 — Shortcuts by ID, webhooks, notifications, rules, Custom HTML
+- [ ] Stage 9 — AI and code widgets, permission prompts on the phone
+- [ ] Stage 10 — Appearance, display, Smart Stack, night / burn-in
+- [ ] Stage 11 — Control Deck, cross-platform part
+- [ ] Stage 12 — Control Deck, Windows-native part
+- [ ] Stage 13 — Android-only features
+- [ ] Stage 14 — Integration long tail
+- [ ] Stage 15 — Languages, release
+
+---
+
+## Decisions (with the alternatives we rejected)
+
+| # | Decision | Rejected alternatives and why |
+|---|---|---|
+| D1 | **Bundled WebView panel.** Widgets are plain ES modules in `panel/`, built by esbuild into one self-contained HTML file. The phone loads it from the app bundle; the host serves the same file. | **Native React Native widgets:** the desktop editor could never show a true live preview without a second copy of every widget (~130 of them). **Panel loaded from the host:** Apple treats UI code downloaded after install as a guideline 2.5.2 risk, and the phone would show nothing without a computer, which breaks the demo mode App Review depends on. |
+| D2 | **Layouts live on the host** (`config.json`, per paired device), edited in the desktop editor and synced to the phone. | **Phone-local layouts** (today's model): there's no desktop editor, no multi-phone setup and no browser panel. The existing phone-local tile deck keeps working as the "Deck" widget. Stage 2 migrates it once. |
+| D3 | **Live events via an encrypted long-poll** (`events.wait`, held for up to 25 s). Every event uses the same sealed envelope as RPC, plus a host sequence number. | **SSE / streamed fetch:** React Native's `fetch` doesn't reliably deliver a streamed body on iOS. **WebSocket:** a second transport to secure and keep alive. Long-poll reuses everything we already trust. |
+| D4 | **Sampling on demand.** The panel tells the host which data kinds its visible widgets need (`needs`), and providers run only while something is watching. | **Sample everything always:** wastes CPU, and process lists and command widgets are expensive. |
+| D5 | **macOS and Windows ship together.** Every stage's host work has a provider for each OS. Windows is verified by CI on `windows-latest`; Windows-native audio and device features (Stage 12) also need a real Windows box. | **macOS first:** rejected by the owner. |
+| D6 | **Both phones, gated by platform.** The shared panel runs on iOS and Android. Android-only features (USB/adb, kiosk, volume keys, notification access) are Stage 13 and are hidden on iOS. | **Android only:** iOS is the shipping platform. |
+| D7 | **Shortcut and command widgets send IDs, not commands**, for anything that runs a program the host has configured. The existing app/URL/keys tile actions keep their current typed, validated form. | **Sending commands from the phone:** a paired phone or a leaked key would become remote code execution. |
+| D8 | **Host tests use `node --test`** (no new dependency). The panel and editor get Playwright in Stage 3. | **Vitest/Jest:** an extra toolchain for a codebase that's mostly plain ESM. |
+| D9 | **Host system data comes from the `systeminformation` npm package** (MIT, macOS + Windows + Linux). Anything it lacks gets a small per-OS helper (Stages 7, 11, 12). | **Writing every probe by hand:** months of OS work before the first chart. |
+
+---
+
+## Clean-room rules (apply to every step)
+
+1. **Reference material allowed:** PhoneBox's README, `docs/*.md`, `PRIVACY.md`,
+   screenshots, and the live demo used *as a user*. These describe behavior.
+2. **Never open PhoneBox source:** nothing under `agent/`, `android/`, `ios/`,
+   `tools/`, `packaging/`, `bucket/`, `scripts/`, and not `widgets.json`,
+   `templates.json`, `main.js` or `style.css`. That includes not fetching them
+   with `gh api`, not reading them in a browser, and not asking a subagent to.
+   If an answer needs their code, design it ourselves and record that in
+   `docs/CLEANROOM.md`.
+3. **Our own names and assets.** Don't use "PhoneBox", its icon, its screenshots,
+   its demo data or its exact catalogue and template JSON. Widget *categories*
+   (clock, weather, CPU) are generic and fine. Our scripting global is
+   `window.deskassist`, not `window.phonebox`.
+4. **Our own formats.** The config schema, widget catalogue format, event names
+   and HTTP routes are designed here. Where a public, documented convention
+   exists (Open-Meteo's API, a Claude Code `PermissionRequest` hook, RSS/OPML,
+   ICS), follow the *public spec*, not PhoneBox.
+5. **Log it.** `docs/CLEANROOM.md` records, per stage, which PhoneBox docs were
+   consulted and the feature list taken from them. That's the evidence if the
+   work is ever questioned.
+
+(PhoneBox is MIT-licensed, so copying with attribution would be legal. The owner
+chose clean-room anyway. Keep to it.)
+
+---
+
+## Architecture target
+
+```
+ phone app (mobile/)                         desktop host (desktop/)
+ ┌──────────────────────────────┐            ┌──────────────────────────────────────┐
+ │ App.tsx                      │            │ src/host.mjs   LAN :8788  /pair /rpc │
+ │  ├─ existing deck screens    │  sealed    │   ├─ rpc: action.*, panel.*, events.* │
+ │  └─ PanelScreen (WebView) ◀──┼─ RPC ─────▶│   ├─ src/panel/ store (config.json)   │
+ │       panel.html (bundled)   │  long-poll │   ├─ src/providers/<kind>/{mac,win}   │
+ │       bridge = postMessage   │            │   └─ src/events.mjs (seq'd queue)     │
+ └──────────────────────────────┘            │ src/local.mjs  127.0.0.1:8789 only   │
+                                             │   ├─ /panel/  (same bundle, bridge=fetch)
+ panel/ (shared source)                      │   ├─ /editor/ (layout editor)         │
+  core/    grid, pages, nav, store, bridge   │   └─ /api/push /api/notify /api/goto  │
+  widgets/ one file per widget               └──────────────────────────────────────┘
+  catalog.json  templates.json   → esbuild → panel/dist/panel.html
+                                            → copied to mobile/src/generated/panelHtml.ts
+                                            → served by desktop/src/local.mjs
+```
+
+**Widget contract (ours):** `export default { id, needs: ["cpu", ...], mount(el, ctx) → { update(data), unmount() } }`.
+`ctx` has `options`, `size`, `bridge`, `t()` and `theme`. Catalogue entries in
+`panel/catalog.json` carry `{ id, category, name, defaultSize:{w,h}, minSize, options:[{key,type,label,default,choices}] }`.
+The editor builds its option forms from these entries.
+
+**Data kinds** (the `needs` vocabulary, grown stage by stage): `system`, `gpu`, `disks`, `net`,
+`procs`, `media`, `volume`, `weather` (phone-side), `push`, `notify`, `sessions`, `quotas`,
+`github`, `rules`, `apps`, `foreground`.
+
+---
+
+## Stage 0 — Groundwork
+**Visible at the end:** a green CI run on both macOS and Windows on the `panel-parity` branch, and `docs/CLEANROOM.md` exists.
+
+**0.1 Clean-room log**
+- Goal: create `docs/CLEANROOM.md` with the rules above and a list of the PhoneBox docs consulted so far (README, GUIDE, CONTROL-DECK, DEVELOPMENT, APPEARANCE, SETUP, PRIVACY), plus the feature inventory distilled from them (the widget list in GUIDE §Widgets, the template list in §Pages & templates).
+- Where: `docs/CLEANROOM.md`.
+- Verify: `grep -c "^- " docs/CLEANROOM.md` shows at least 40 inventory lines, and `grep -ri "phonebox" desktop mobile/src panel 2>/dev/null` prints nothing.
+- Fence: no code. Don't copy PhoneBox doc prose wholesale; summarize it in our own words.
+
+**0.2 Host test harness**
+- Goal: `npm test` in `desktop/` runs `node --test src/**/*.test.mjs`. Add first tests for the existing `validateAction` and `seal`/`unseal` round trip (export them if needed, without changing behavior).
+- Where: `desktop/package.json`, `desktop/src/*.test.mjs`, and minimal `export` additions in `desktop/src/host.mjs` / `executor.mjs`.
+- Verify: `cd desktop && npm test` passes with at least 4 tests.
+- Fence: no behavior changes to pairing or execution. Don't add Jest or Vitest (D8).
+
+**0.3 CI matrix**
+- Goal: `.github/workflows/ci.yml` runs `npm ci && npm test` in `desktop/` on `macos-latest` and `windows-latest`, plus `npx tsc --noEmit` in `mobile/` on Ubuntu, for pushes to `panel-parity`.
+- Where: `.github/workflows/ci.yml`.
+- Verify: `gh run list --branch panel-parity --workflow ci.yml --limit 1` shows `completed success`.
+- Fence: don't touch `pages.yml`. Don't build Electron installers in CI yet.
+
+---
+
+## Stage 1 — Walking skeleton
+**Visible at the end:** the phone opens a "Panel" screen showing a clock and the computer's live CPU % (updating about every 2 s). The same page loads in a browser at `http://127.0.0.1:8789/panel/`. This works with a Mac host, and the Windows CI provider test passes.
+
+**1.1 Panel package skeleton**
+- Goal: create `panel/` with `core/app.js` (renders one fixed page: a CSS grid of 12×6), `core/bridge.js` (interface: `request(method, params)`, `on(event, fn)`, `setNeeds(kinds)`), two widgets (`widgets/clock.js` and `widgets/metric.js`, which shows `data.system.cpu`), and `build.mjs` (esbuild → single `panel/dist/panel.html` with inlined JS/CSS). Add `panel/package.json` with `build` and `test` scripts.
+- Where: `panel/**`.
+- Verify: `cd panel && npm run build && open dist/panel.html` shows the clock ticking and the metric reading "—" (no bridge yet). `npm test` runs one `node --test` for the grid-placement maths.
+- Fence: no framework (no React/Vue in the panel). No network calls from the panel.
+
+**1.2 Host system provider + on-demand sampler**
+- Goal: add `desktop/src/providers/system.mjs`, which uses `systeminformation` to return `{cpu, mem:{used,total}, at}`, and `desktop/src/sampler.mjs`, which runs providers only for kinds someone currently needs (D4), at a 2 s period, and caches the last value.
+- Where: `desktop/src/providers/`, `desktop/src/sampler.mjs`, `desktop/package.json` (add `systeminformation`).
+- Verify: `node --test` covers "sampler starts on need, stops 10 s after the last need, and hands out a cached value". CI passes on macOS **and** Windows (this is the Windows tripwire, R2).
+- Fence: CPU and memory only. No GPU or processes yet.
+
+**1.3 Encrypted event queue + `events.wait`**
+- Goal: add `desktop/src/events.mjs` (per-device queue, monotonic `seq`, keeps the last 200 events) and RPC methods `panel.needs({kinds})`, `panel.snapshot()` and `events.wait({after, timeoutMs≤25000})` in `host.mjs`, sealed with the existing envelope. The sampler publishes `data` events.
+- Where: `desktop/src/host.mjs`, `desktop/src/events.mjs`, tests.
+- Verify: extend `desktop/src/test-client.mjs` (or add `test-panel-client.mjs`) to pair, call `panel.needs(["system"])`, then `events.wait` and print 3 CPU readings. Run it against `npm run host:dry`.
+- Fence: don't change the pairing handshake, key derivation or counter rules. Existing `action` RPCs must still pass the old test client.
+
+**1.4 Loopback server for the browser panel**
+- Goal: add `desktop/src/local.mjs`, which listens on **127.0.0.1:8789 only**, serves `panel/dist/panel.html` at `/panel/` and offers `/api/panel/*` JSON equivalents of the RPC methods. It rejects requests whose `Host` isn't `127.0.0.1:8789`/`localhost:8789` and any cross-site `Origin`. In the browser, `bridge.js` picks the fetch transport.
+- Where: `desktop/src/local.mjs`, wiring in `desktop/main.mjs` and the `host` script, `panel/core/bridge.js`.
+- Verify: `npm run host:dry`, then open `http://127.0.0.1:8789/panel/` and watch the CPU number move. `curl -H "Host: evil.com" http://127.0.0.1:8789/panel/` returns 403. `curl` from another machine to the LAN IP on 8789 fails to connect.
+- Fence: no editor and no webhooks yet. Never bind to 0.0.0.0.
+
+**1.5 Phone Panel screen**
+- Goal: `npx expo install react-native-webview`. Add `mobile/src/PanelScreen.tsx`, which loads the bundled panel HTML (generated `mobile/src/generated/panelHtml.ts`, written by `panel/build.mjs`), bridges `postMessage` ⇄ `rpc.ts` (new `panelRequest` and an `events.wait` loop that pauses when the app goes to the background), and adds an entry point from the deck header.
+- Where: `mobile/src/PanelScreen.tsx`, `mobile/src/rpc.ts`, `mobile/App.tsx` (entry button only), `mobile/package.json`.
+- Verify: build a dev client (`npx expo run:ios` on the simulator) paired to `npm run host:dry`. The Panel screen shows the clock and a moving CPU %. Turn off Wi-Fi and it shows "offline" within 30 s, then recovers when Wi-Fi is back.
+- Fence: don't restyle or refactor the existing deck UI. The panel's HTML comes only from the app bundle, never from the network (D1).
+
+---
+
+## Stage 2 — Pages, grid, navigation; tiles inside the panel; demo mode
+**Visible at the end:** several pages on the phone, switched by swiping, page dots or an overview. The existing tile deck appears as a widget on a page. With no computer (demo mode), the panel shows realistic, clearly labelled simulated data.
+
+**2.1 Layout model + store on the host**
+- Goal: define our layout schema (`{version, devices:{[deviceId]:{pages:[{id,name,widgets:[{id,type,x,y,w,h,options}]}], home}}, shortcuts:[], ...}`) in `desktop/src/panel/schema.mjs` with validation and clamping (x+w ≤ 12, y+h ≤ 6, unknown widget types dropped). Store it in the host's user-data `config.json` (mode 0600). Add RPC `panel.layout()`.
+- Verify: unit tests for clamping, unknown-type removal and a round trip through `config.json`.
+- Fence: schema only. No editor.
+
+**2.2 Multi-page rendering + navigation**
+- Goal: the panel renders the device's pages. Horizontal swipe, page dots, an overview on long-press of the dots (tap to jump), idle → home page after N minutes (per-page override), portrait and landscape layouts.
+- Verify: the browser panel at 780×360 and 360×780 with a 3-page test layout. A Playwright test arrives in 3.4, so for now a manual check: swipe, tap dots, overview, and the idle return with the timeout set to 10 s.
+- Fence: no appearance options yet (Stage 10).
+
+**2.3 Deck widget (bridge to the existing tiles)**
+- Goal: widget `deck` renders tiles of the phone's active profile. Taps post `action.run` through the bridge, so the existing typed actions are reused. One-time migration: on first panel open the phone sends its profiles; the host stores them as a "Deck" page.
+- Verify: tap Safari on the panel's Deck widget and Safari opens on the Mac (dry-run log in `host:dry`).
+- Fence: the old deck screen stays as it is (users can keep using it). No ID-based shortcuts yet (Stage 8).
+
+**2.4 Demo data source**
+- Goal: `panel/core/demo.js` generates plausible data for every `needs` kind implemented so far. On the phone, demo mode (the existing "Explore the demo instead") uses it with a "Simulated" banner. Bundled default templates seed a demo layout.
+- Verify: fresh simulator install → Explore the demo → Panel shows the clock, a moving CPU and the Deck widget. No network requests (check the Metro / Xcode network log).
+- Fence: demo data must never be shown as real when a computer is paired.
+
+---
+
+## Stage 3 — Desktop layout editor
+**Visible at the end:** at `http://127.0.0.1:8789/editor/` you drag a widget onto a phone-sized canvas, resize it, change its options, press Save, and the phone updates within 3 s. Live preview shows unsaved edits with real data.
+
+- **3.1 Editor shell:** pages list (add, rename, reorder, hide, delete), a 12×6 canvas at the selected device's aspect ratio, and a device picker (paired phones plus "browser"). Verify: create, rename and reorder pages, reload, and the changes persist. Fence: no widget editing yet.
+- **3.2 Palette + inspector:** a palette grouped by category with search, generated from `catalog.json`. Drag to place, drag the corner to resize, collision-free snapping. An option form is generated from the catalogue entry. Verify: place a metric widget, set its option, save, and the phone shows it. Fence: the editor never writes a field the schema doesn't define.
+- **3.3 Live preview + push to phones:** an iframe of `/panel/?preview=1` fed by unsaved state through `postMessage`. Saving bumps a revision, and the host emits a `layout` event so phones reload within 3 s. Verify: edit with the phone open; the phone changes only after Save, the preview changes immediately.
+- **3.4 Export/import pages + Playwright:** export and import a page as a JSON file. `tools/ui-tests` Playwright suite (Chromium) for the panel and editor at 780×360 and 360×780. Verify: `npx playwright test` green locally and in CI (add the job).
+- **3.5 Templates:** `panel/templates.json` (our own content) plus a "New page from template" picker. Start with Home, System, Deck and Clock, and grow it each stage. Verify: create a page from each template, and every widget it references exists in the catalogue (unit test).
+- Fence for the whole stage: the editor is **loopback only**. LAN clients can't reach it.
+
+---
+
+## Stage 4 — Computer widgets
+**Visible at the end:** a "System" page with CPU, GPU, memory and network charts, disks, ping and a processes list where you can end a process, on both macOS and Windows.
+
+- **4.1 Providers:** `gpu`, `disks`, `net` (throughput and ping to a configurable host), `procs` (top N by CPU/RAM), with a `mac` and `win` implementation where `systeminformation` falls short (Apple-silicon GPU via `powermetrics`-free sources, or "unavailable"; NVIDIA via `nvidia-smi`). Verify: `node --test` with recorded fixtures per OS, plus a live smoke in CI on both OSes printing one sample of each kind.
+- **4.2 Widgets:** metric tile, gauge, line chart (rolling window, our own lightweight SVG renderer), GPU details, memory & disks, top processes, processes (tap → sheet → end one instance or all). Verify: Playwright snapshots with demo data, and on-device with the Mac.
+- **4.3 End-process guard:** host-side only for the current user's processes, with a deny list of critical system processes per OS and a widget option to disable it. Verify: unit tests prove the deny list and the other-user refusal.
+- **4.4 Templates:** System, Processes, Dashboard, Status (partial).
+- Fence: the processes list samples only while a processes widget is visible (D4).
+
+## Stage 5 — Time and personal widgets
+**Visible at the end:** Clock, Daily, Focus and Calm pages work with no computer data at all.
+
+- Widgets: clock (with status line), analog clock (any time zone), word clock, world clocks, calendar month, time progress (day/week/month/year), countdown, pomodoro, focus history, quick timer, stopwatch, note (edited on the phone, stored on the host), checklist (daily reset), counter, breathe, quote, title, phone battery, Computers (switch paired computer).
+- Verify per widget: a Playwright render test with a fake clock (`page.clock`), plus one on-device pass per batch of 5.
+- Fence: timers must survive a panel reload (state kept host-side, keyed by widget id).
+
+## Stage 6 — Weather, sky and web data
+**Visible at the end:** Home, Ambient, Markets, World and Planner templates show real weather, rates and headlines.
+
+- **Research first (one session):** read the public docs of Open-Meteo (forecast + air quality + geocoding), Frankfurter, CoinGecko's free endpoints and the HN Firebase API. Write the request shapes into `docs/data-sources.md`, with rate limits and attribution needs.
+- Widgets: weather, forecast (hourly / 7 days), sun & moon, moon, air quality, exchange rates, crypto, Hacker News, news feeds (RSS/Atom/OPML, fetched by the host), image/webcam URL, agenda (ICS from Google/Outlook/iCloud, parsed host-side), next up.
+- Editor: location search (geocoding), unit °C/°F, calendars and feeds sections.
+- Verify: unit tests on recorded API responses. Offline: kill the network and the widgets keep their last data with a "stale" marker.
+- Fence: public APIs need no keys. **Update `site/privacy` and the App Store privacy answers** before this ships on iOS (new outbound connections).
+
+## Stage 7 — Media
+**Visible at the end:** a Music page shows what the Mac or PC is playing, with working transport, seek and volume.
+
+- **Research first:** macOS now-playing sources (`nowplaying-cli`, the MediaRemote private-framework situation on macOS 15+, AppleScript for Spotify/Music as a fallback) and Windows SMTC (`GlobalSystemMediaTransportControlsSessionManager`, which needs a small helper: a .NET or Rust sidecar, or a Node native addon). Pick one per OS, write it up in `docs/media-helpers.md`, and **stop for owner review** if a helper needs a new signing or notarization step.
+- Widgets: now playing (art, transport, seek), volume, radio (stream played on the computer), synced lyrics (LRCLIB, opt-in per widget, fetched by the host), spectrum bars (Windows only, marked as such elsewhere).
+- Verify: play in Spotify / Apple Music (Mac) and in the browser (Windows CI can't do this, so it goes on the owner's Windows checklist).
+
+## Stage 8 — Shortcuts by ID, webhooks, notifications, rules, Custom HTML
+**Visible at the end:** `curl -X POST http://127.0.0.1:8789/api/notify -d '{"title":"Deploy","text":"live"}'` pops a toast on the phone, and a rule ("music plays → Music page") switches the page with a Stay / Go now countdown.
+
+- **8.1 Shortcut registry (D7):** host-configured shortcuts `{id,label,icon,color,kind:program|keys|text|macro|url,…,value?:{min,max,step}}`. The phone sends `{id, value?}`. Numbers are validated host-side, and programs are started without a shell, with `{value}` substitution as a standalone argument. Rate limit of 4/s per shortcut. Verify: unit tests for number parsing, step alignment and argument building, plus a 429 test.
+- **8.2 Webhook endpoints (loopback):** `POST /api/push/:key` (text or JSON; `ttl`), `GET /api/push`, `DELETE /api/push/:key`, `POST /api/notify`, `POST /api/goto/:page|next|prev`, `POST /api/refresh`. Pushed values persist across restarts. Optional LAN access with a separate webhook key that opens only these routes. Verify: a curl script in `desktop/scripts/webhook-smoke.sh`, with expected outputs.
+- **8.3 Widgets:** pushed value (text, number, progress, list, gauge styles), notifications feed, toast + vibration, big button, shortcut grid (ID-based), command (host runs a configured command every N s; the phone sees only the output).
+- **8.4 Rules engine (host):** when → then, with days/hours, "lasts N s", rest, priority, "only while it lasts" and a test button. Start with these triggers: app running, app in front, media playing, pushed value comparisons, pushed value stale, CPU above for 15 s, away from keyboard, time window, always. Actions: show page, notify, push value, run shortcut, night screen. Phone-side countdown with Stay / Go now, a minimum gap between switches, and waiting while the user touches the screen. Verify: unit tests with a fake clock for every trigger, plus an on-device run of the "music → Music page" rule.
+- **8.5 Custom HTML widget:** user HTML runs in a sandboxed `iframe srcdoc` (no same-origin), with a `window.deskassist` API (`on`, `data`, `goto`, `run(id, value?)`) over `postMessage`. Verify: a test widget that drives a shortcut by ID with a slider. Make sure the iframe can't reach the bridge directly (Playwright asserts `parent.bridge` is inaccessible).
+- Fence: none of these routes is reachable from the LAN without the webhook key, and the key never opens the phone API.
+
+## Stage 9 — AI and code
+**Visible at the end:** a Sessions page lists live Claude Code and Codex sessions on this Mac. When Claude Code asks for permission, the phone shows Allow / Deny and the answer reaches Claude Code.
+
+- **Research first:** current Claude Code hook docs (`PermissionRequest`, `PostToolUse`, `Stop`, `UserPromptSubmit`, settings.json format), the Codex hooks format, and where each tool keeps session files. Record the public specs in `docs/ai-sources.md`. Use only documented or observable file formats.
+- **9.1 Sessions provider:** Claude Code (`~/.claude` session files) and Codex (`~/.codex/sessions`), later OpenCode, Cursor and others. Expose project, status, model and token counters, **never prompt or reply text**. Verify: fixtures, plus a live check with a running `claude` session.
+- **9.2 Permission prompts:** "Install hook" in the editor merges a hook into `~/.claude/settings.json`, keeps a backup and can be removed cleanly. The hook script POSTs to loopback and waits up to N s; no answer means no decision (Claude Code asks in the terminal as usual). Phone card with Allow / Deny, an optional sound and "only when I'm away". Verify: install, trigger a Bash permission in a real `claude` session, Allow from the phone, the command runs. Remove the hook and confirm the file equals the backup.
+- **9.3 Quotas:** Claude (from the OAuth usage data Claude Code itself uses: **undocumented**, see R5), Codex (local logs), and a quota ring and quotas widget with a burn-rate forecast. GitHub widget via the `gh` CLI (reviews requested, CI status).
+- Templates: AI quotas, Sessions, Deep work, Status.
+
+## Stage 10 — Appearance and display
+**Visible at the end:** switch a preset (cards / flat / content only / seamless) in the editor and the phone restyles; a wallpaper shows behind widgets; the night clock appears on schedule.
+
+- Appearance settings with inheritance across global, page and widget (font, scale 50–200 %, radius, gap, padding, border, shadow), theme and accent, wallpaper with darken and blur, OLED burn-in pixel shift and dim-after-idle, night screen schedule, page bar / dot options, Smart Stack (up to 12 widgets in one slot, vertical swipe).
+- Verify: Playwright visual snapshots per preset, plus a unit test of the inheritance resolution.
+
+## Stage 11 — Control Deck, cross-platform part
+**Visible at the end:** a Control Deck page controls system volume and mute, OBS scenes and recording, and fires meeting shortcuts. Docker containers start and stop. A Wake-on-LAN key wakes a machine.
+
+- **Research first:** obs-websocket v5 protocol docs, Home Assistant REST/WebSocket docs, MIDI output from Node on macOS and Windows, OSC encoding spec, Wake-on-LAN magic packet, and mouse injection on macOS (CGEvent via a tiny Swift helper) and Windows (`SendInput` via a helper).
+- Features: OBS (scenes, sources, record/stream, virtual cam), Home Assistant entities and dashboard, Docker/Podman, MIDI/OSC, Wake-on-LAN (host-sent, plus phone-sent "Wake the PC"), Trackpad widget (opt-in, off by default), meeting shortcuts, dev tasks and services (owned processes only), emergency mute and "mics off, camera off" where the OS allows.
+- Verify: each integration against a local fixture (a fake obs-websocket server, a fake HA) in `node --test`, plus a live check list in `docs/CONTROL-DECK-CHECKS.md`.
+
+## Stage 12 — Control Deck, Windows-native part
+**Visible at the end, on a real Windows PC:** per-app volume faders move Spotify's level only. Default output can be switched. Push-to-talk unmutes the mic while held and restores it on release.
+
+- **Research first, then stop for owner review:** choose a helper (C# .NET sidecar vs. Rust, using Core Audio / `IAudioSessionManager2` / `IPolicyConfig`), and work out packaging and signing in electron-builder for Windows.
+- Features: per-app mixer and meters, device selection, mic volume/mute, push-to-talk with lease expiry, ducking, audio profiles, Windows services, power plans, display brightness (DDC/CI), lock/sleep with hold-to-confirm.
+- Verify: the helper's own unit tests in CI on `windows-latest`. **Live checks need the owner's Windows machine** (R2).
+
+## Stage 13 — Android-only
+**Visible at the end, on an Android phone:** the panel runs as a kiosk home screen, volume keys flip pages, and it connects over USB with no Wi-Fi.
+
+- USB transport (`adb reverse` + pinned TLS with a key the app creates), kiosk / home-screen mode, keep awake on charger, power standby, volume-key paging, ambient light/proximity, phone battery reports (for the battery-temperature rule), battery care via smart plug or a shortcut, and a phone bridge (clipboard, notifications to the Mac) as an opt-in with Android notification access.
+- Verify: each on a physical Android phone. Each one is hidden on iOS (a unit test of the platform gate).
+- Fence: Play policy review of notification access and kiosk before release (R1).
+
+## Stage 14 — Integration long tail
+Spotify (PKCE queue/playlists), Plex, Steam library (reads local Steam files), RTSP camera via ffmpeg, photo frame (folder / Immich), Discord, CodexBar, other AI CLIs (OpenCode, Cursor, Antigravity, Grok, Pi, WorkBuddy, Copilot CLI), dictation, app console, device batteries. Each one is its own step: research its public API → provider with fixture tests → widget → template if any. Order these by what the owner actually uses (ask at stage start).
+
+## Stage 15 — Languages and release
+- i18n: our own `t()` with key-based dictionaries for the panel, editor and app. Start with English, then add locales in batches. RTL support (Arabic) needs a layout check.
+- Release: app version 1.2.0 with a demo-mode walkthrough of the new panel in the review notes and an updated privacy policy. Desktop host installers for macOS (notarized) and Windows. Merge `panel-parity` → `main` **only after** 1.1.0's review is resolved.
+
+---
+
+## Risks and tripwires
+
+| # | Risk | Tripwire (when you'll know) | Fallback |
+|---|---|---|---|
+| R1 | **App Review** rejects the panel (2.5.2 downloaded code, 4.2 minimum functionality without a Mac, privacy answers out of date). | Stage 2.4: if demo mode can't show a convincing panel without a computer, stop. Each stage adding outbound connections (6, 9, 14): privacy policy not updated = don't submit. | The panel stays bundled (D1), demo mode covers every widget, and Custom HTML only runs user-typed HTML in a sandbox. If needed, ship Custom HTML Android-only. |
+| R2 | **Windows can't be verified from this Mac.** | Stage 1.2: the first Windows CI run. If `systeminformation` or the host fails on `windows-latest`, fix it before Stage 2. Stage 12 start: no Windows machine available = the stage is marked "built, unverified" and doesn't ship. | CI covers unit tests and provider smoke. Native audio/device work waits for a Windows box. |
+| R3 | **Node/Electron lacks a native API** (media sessions, mouse injection, Core Audio). | Research steps at the start of Stages 7, 11 and 12. If a helper needs new signing or notarization, the step says stop. | A small per-OS sidecar helper, spawned and talked to over stdio JSON. |
+| R4 | **React Native WebView bridge throughput** (charts at 2 s × many widgets). | Stage 4.2: if the Panel screen drops frames on a mid-range phone with the System template. | Batch `data` events into one message per tick, and send deltas instead of full arrays. |
+| R5 | **Undocumented quota endpoints** (Claude usage, Codex app-server) change or rate-limit. | Stage 9.3: a non-2xx or schema mismatch in the live check. | Show "quota unavailable" honestly. Never invent numbers. Back off at most every 3 minutes and honor 429 `Retry-After`. |
+| R6 | **Clean-room contamination.** Someone opens PhoneBox source "just to check". | Every PR touching `panel/` or `desktop/src`: the reviewer asks whether `docs/CLEANROOM.md` was updated this stage. | If source was viewed, note it in `CLEANROOM.md`, and have the affected component rewritten by a session that didn't see it. |
+| R7 | **Auto-push publishes every edit** to the public repo. | Any time you're about to write a token, key, Home Assistant URL with a token, or a personal path into the tree. | Secrets go in the host's user-data dir or an env var, never in the repo. Fixtures use made-up data. |
+| R8 | **Scope.** This is many months of work, and the plan will drift. | At each stage boundary, re-read this file. If a stage took more than twice its step count in sessions, re-plan the next one before starting it. | Cut from Stage 14 first, then Stage 12. Stages 1–10 are the product. |
+
+---
+
+## How to work a step (for any model or session)
+
+1. Read the handoff block, the decisions and the clean-room rules.
+2. Do exactly one step. Respect its **fence**.
+3. Run its **verify**. If it fails, fix it or report the failure. Don't tick the box.
+4. Tick the checklist and update the **Status / Next** line in the handoff block.
+5. If reality disagrees with this plan, edit the plan (with the reason) instead of quietly diverging.
