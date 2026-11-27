@@ -381,7 +381,7 @@ function DeckScreen({
   const [namePrompt, setNamePrompt] = useState<null | "add">(null);
   const [showSettings, setShowSettings] = useState(false);
   const [currentApp, setCurrentApp] = useState<string | null>(null);
-  const [view, setView] = useState<"deck" | "apps" | "snippets">("deck");
+  const [view, setView] = useState<"deck" | "apps" | "snippets" | "panel">(initialView ?? "deck");
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [runningApps, setRunningApps] = useState<{ apps: string[]; frontmost: string | null } | null>(null);
   const [appsLoading, setAppsLoading] = useState(false);
@@ -995,6 +995,11 @@ function DeckScreen({
               {!editing && (
                 <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Running apps" onPress={() => { selectFeedback(); animateLayout(reduced); setView("apps"); }}>
                   <Text style={styles.pillText}>🖥</Text>
+                </PressableScale>
+              )}
+              {!editing && (
+                <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Panel" onPress={() => { selectFeedback(); animateLayout(reduced); setView("panel"); }}>
+                  <Text style={styles.pillText}>Panel</Text>
                 </PressableScale>
               )}
               {!editing && (
