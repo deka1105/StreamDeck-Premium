@@ -99,6 +99,7 @@ test("process sheet: shows why ending is off, and offers it when allowed", async
 
   const open = page.locator('.w[data-id="open"]');
   const own = open.locator(".proc-row");
+  await expect(own.first()).toBeVisible({ timeout: 15_000 });
   await own.first().click();
   // Either end buttons (own process) or an explanation (system / other user) — never silently nothing.
   await expect(open.locator(".sheet-btn.danger, .sheet-msg:not(:empty)").first()).toBeVisible();

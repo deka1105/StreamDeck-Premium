@@ -33,8 +33,9 @@ test("demo panel: simulated data, deck tiles respond, no network at all", async 
   await tile.click();
   await expect(tile).toHaveAttribute("data-result", "ok");
 
-  // Swipe to the second (Deck) page.
-  await page.locator("#dots .dot").nth(1).click();
+  // Jump to the Deck page by its dot.
+  const deckDot = (await page.evaluate(() => [...document.querySelectorAll("#dots .dot")].map((d) => d.getAttribute("aria-label")))).indexOf("Deck");
+  await page.locator("#dots .dot").nth(deckDot).click();
   await expect(page.locator('body[data-page="deck"]')).toHaveCount(1);
 
   expect(requests).toEqual([]);
