@@ -119,6 +119,8 @@ function buildTrayMenu() {
     { label: `Host: ${host.name} · port ${host.port}`, enabled: false },
     { type: "separator" },
     { label: "Pair a phone…", click: createPairWindow },
+    { label: "Edit panel layout…", click: () => shell.openExternal("http://127.0.0.1:8789/editor/") },
+    { label: "Open panel in browser", click: () => shell.openExternal("http://127.0.0.1:8789/panel/?device=monitor") },
     { label: "Paired devices", submenu: deviceItems },
     { label: "Allowed apps…", click: createAppsWindow },
     { type: "separator" },
