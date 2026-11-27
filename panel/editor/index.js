@@ -527,7 +527,8 @@ function renderInspector() {
   };
   box.append(h("div", { class: "row boxrow" }, num("x", COLS - 1), num("y", ROWS - 1), num("w", COLS), num("h", ROWS)));
   for (const o of def?.options ?? []) {
-    const f = optionField(o, w.options?.[o.key], (v, quiet) => {
+    // A key missing from the saved widget means "use the default", not "off".
+    const f = optionField(o, w.options?.[o.key] ?? o.default, (v, quiet) => {
       w.options = { ...(w.options ?? {}), [o.key]: v };
       if (quiet) {
         renderHeader();
