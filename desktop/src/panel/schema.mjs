@@ -139,6 +139,13 @@ export function sanitizeConfig(raw, catalog) {
     version: 1,
     default: sanitizeLayout(raw?.default ?? {}, byType),
     devices,
-    settings: { idleSec: Math.max(0, Math.min(4 * 3600, idle)) },
+    settings: {
+      idleSec: Math.max(0, Math.min(4 * 3600, idle)),
+      // Internet widget: opt-in public IP, and an optional speed-test schedule (0 = only on tap).
+      netq: {
+        showIp: raw?.settings?.netq?.showIp === true,
+        speedtestHours: Math.max(0, Math.min(48, int(raw?.settings?.netq?.speedtestHours, 0))),
+      },
+    },
   };
 }
