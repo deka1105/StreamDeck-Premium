@@ -272,6 +272,43 @@
       ]
     },
     {
+      "type": "agenda",
+      "name": "Agenda",
+      "category": "time",
+      "size": {
+        "w": 4,
+        "h": 4
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "max",
+          "type": "number",
+          "label": "Events",
+          "default": 16,
+          "min": 1,
+          "max": 40
+        }
+      ]
+    },
+    {
+      "type": "nextup",
+      "name": "Next up",
+      "category": "time",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
       "type": "progress",
       "name": "Time progress",
       "category": "time",
@@ -421,6 +458,275 @@
         "h": 2
       },
       "options": []
+    },
+    {
+      "type": "weather",
+      "name": "Weather",
+      "category": "web",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "forecast",
+      "name": "Forecast",
+      "category": "web",
+      "size": {
+        "w": 6,
+        "h": 2
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "mode",
+          "type": "choice",
+          "label": "Show",
+          "default": "daily",
+          "choices": [
+            {
+              "value": "daily",
+              "label": "Next 7 days"
+            },
+            {
+              "value": "hourly",
+              "label": "Next 24 hours"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sunmoon",
+      "name": "Sun & moon",
+      "category": "web",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": []
+    },
+    {
+      "type": "moon",
+      "name": "Moon",
+      "category": "web",
+      "size": {
+        "w": 2,
+        "h": 2
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "airquality",
+      "name": "Air quality",
+      "category": "web",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "scale",
+          "type": "choice",
+          "label": "Index",
+          "default": "eaqi",
+          "choices": [
+            {
+              "value": "eaqi",
+              "label": "European AQI"
+            },
+            {
+              "value": "usaqi",
+              "label": "US AQI"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "rates",
+      "name": "Exchange rates",
+      "category": "web",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "base",
+          "type": "text",
+          "label": "Base currency (e.g. USD)",
+          "default": "USD",
+          "maxLength": 3
+        },
+        {
+          "key": "symbols",
+          "type": "list",
+          "label": "Currencies, one per line",
+          "default": [
+            "EUR",
+            "GBP",
+            "JPY"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "crypto",
+      "name": "Crypto prices",
+      "category": "web",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "coins",
+          "type": "list",
+          "label": "Coins (CoinGecko ids), one per line",
+          "default": [
+            "bitcoin",
+            "ethereum"
+          ]
+        },
+        {
+          "key": "vs",
+          "type": "text",
+          "label": "Currency (e.g. usd)",
+          "default": "usd",
+          "maxLength": 3
+        }
+      ]
+    },
+    {
+      "type": "hackernews",
+      "name": "Hacker News",
+      "category": "web",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "count",
+          "type": "number",
+          "label": "Stories",
+          "default": 8,
+          "min": 3,
+          "max": 15
+        }
+      ]
+    },
+    {
+      "type": "news",
+      "name": "News feeds",
+      "category": "web",
+      "size": {
+        "w": 6,
+        "h": 3
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "category",
+          "type": "text",
+          "label": "Only this category (optional)",
+          "default": ""
+        },
+        {
+          "key": "feed",
+          "type": "text",
+          "label": "Only this feed (optional)",
+          "default": ""
+        },
+        {
+          "key": "openOnPc",
+          "type": "bool",
+          "label": "Open articles on the computer when tapped",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Image / webcam",
+      "category": "web",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "url",
+          "type": "text",
+          "label": "Image address (https://…)",
+          "default": "",
+          "maxLength": 2000
+        },
+        {
+          "key": "refresh",
+          "type": "number",
+          "label": "Refresh every (seconds, 0 = never)",
+          "default": 60,
+          "min": 0,
+          "max": 86400
+        },
+        {
+          "key": "fit",
+          "type": "choice",
+          "label": "Fit",
+          "default": "cover",
+          "choices": [
+            {
+              "value": "cover",
+              "label": "Fill"
+            },
+            {
+              "value": "contain",
+              "label": "Whole picture"
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "metric",
