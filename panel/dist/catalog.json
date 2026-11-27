@@ -104,6 +104,27 @@
           "default": ""
         }
       ]
+    },
+    {
+      "type": "deck",
+      "name": "Deck tiles",
+      "category": "controls",
+      "size": {
+        "w": 12,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "labels",
+          "type": "bool",
+          "label": "Show labels",
+          "default": true
+        }
+      ]
     }
   ]
 }
