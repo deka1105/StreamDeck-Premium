@@ -5,8 +5,9 @@
 
 import clock from "./clock.js";
 import metric from "./metric.js";
+import deck from "./deck.js";
 
-export const WIDGETS = [clock, metric];
+export const WIDGETS = [clock, metric, deck];
 
 export const REGISTRY = Object.fromEntries(WIDGETS.map((w) => [w.type, w]));
 

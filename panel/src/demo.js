@@ -5,6 +5,17 @@
 
 import { DEMO_LAYOUT } from "./demoLayout.js";
 
+const DEMO_TILES = [
+  { id: "t1", label: "Safari", icon: "🧭", color: "#0ea5e9", kind: "app" },
+  { id: "t2", label: "Finder", icon: "📁", color: "#6366f1", kind: "app" },
+  { id: "t3", label: "VS Code", icon: "💻", color: "#2563eb", kind: "app" },
+  { id: "t4", label: "Spotlight", icon: "🔍", color: "#9333ea", kind: "keys" },
+  { id: "t5", label: "Screenshot", icon: "📸", color: "#c026d3", kind: "keys" },
+  { id: "t6", label: "Lock", icon: "🔒", color: "#475569", kind: "keys" },
+  { id: "t7", label: "GitHub", icon: "🐙", color: "#374151", kind: "url" },
+  { id: "t8", label: "Mute", icon: "🔇", color: "#ea580c", kind: "media" },
+];
+
 function walker(start, lo, hi, stepSize) {
   let v = start;
   return () => {
@@ -57,6 +68,8 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     },
     // Taps on controls "succeed" without doing anything.
     "action.run": () => ({ ok: true, simulated: true }),
+    "deck.tiles": () => ({ name: "Default", tiles: DEMO_TILES }),
+    "deck.press": () => ({ ok: true, simulated: true }),
   };
 
   return {
