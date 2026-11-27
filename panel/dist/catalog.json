@@ -1476,6 +1476,20 @@
           "type": "bool",
           "label": "Show as a card",
           "default": false
+        },
+        {
+          "key": "marquee",
+          "type": "bool",
+          "label": "Scroll long text (marquee)",
+          "default": false
+        },
+        {
+          "key": "speed",
+          "type": "number",
+          "label": "Scroll speed (characters per second)",
+          "default": 6,
+          "min": 1,
+          "max": 30
         }
       ]
     },

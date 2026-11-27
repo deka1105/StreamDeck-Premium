@@ -674,7 +674,6 @@ body[data-theme="oled"] { --line: rgba(255, 255, 255, 0.12); }
 .wall-img { position: absolute; inset: 0; background: center / cover no-repeat; }
 .wall-dim { position: absolute; inset: 0; background: #000; }
 body[data-wall="1"] { background: transparent; }
-body[data-wall="1"] html { background: var(--bg); }
 body[data-wall="1"] .w { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 
 /* navigation styles */
@@ -708,7 +707,7 @@ body[data-nav^="side"] .dot { width: calc(var(--side-w, 96px) - 8px); text-align
 
 /* marquee */
 .w-titletext.marquee { overflow: hidden; justify-content: flex-start !important; }
-.marquee-track { display: flex; white-space: nowrap; gap: 3em; width: max-content; }
+.marquee-track { display: flex; white-space: nowrap; width: max-content; }
 .marquee-track.on { animation: marquee linear infinite; }
 .marquee-track span { padding-right: 3em; }
 @keyframes marquee { to { transform: translateX(-50%); } }
