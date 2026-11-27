@@ -105,7 +105,7 @@ function boot() {
     if (direction) holder.style.transform = `translateX(${direction > 0 ? 100 : -100}%)`;
     pagesEl.appendChild(holder);
     look.apply(layout?.look, page?.look);
-    displayCtl.apply(layout?.display ?? DEFAULT_DISPLAY);
+    displayCtl.apply({ ...DEFAULT_DISPLAY, ...(layout?.display ?? {}), night: { ...DEFAULT_DISPLAY.night, ...(layout?.display?.night ?? {}) } });
     if (page) {
       current = { ...mountPage(holder, page, env, orientation()), holder, pageId: page.id };
     } else {
