@@ -213,7 +213,12 @@ export const title = {
     el.classList.add("w-titletext");
     el.dataset.align = ctx.options.align;
     el.closest(".w")?.classList.toggle("bare", !ctx.options.card);
-    if (!ctx.options.marquee) return void (el.textContent = ctx.options.text);
+    if (!ctx.options.marquee) {
+      const t = document.createElement("span");
+      t.className = "title-text";
+      t.textContent = ctx.options.text;
+      return void el.append(t);
+    }
     // Two copies scroll as one seamless loop; only when the text doesn't fit.
     el.classList.add("marquee");
     const track = document.createElement("div");

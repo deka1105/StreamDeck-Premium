@@ -455,7 +455,10 @@ html, body {
 .w-quote { justify-content: center; }
 .q-text { margin: 0; font-size: clamp(12px, min(11cqh, 6cqw), 26px); line-height: 1.35; font-style: italic; }
 .q-by { margin-top: 6px; font-size: clamp(10px, 7cqh, 14px); }
-.w-titletext { justify-content: center; font-weight: 800; font-size: clamp(14px, 45cqh, 80px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-titletext { justify-content: center; font-weight: 800; white-space: nowrap; overflow: hidden; }
+/* Sized on a child: container units on the container itself would resolve against the viewport. */
+.w-titletext > .title-text, .w-titletext .marquee-track { font-size: clamp(14px, min(52cqh, 14cqw), 80px); line-height: 1.15; }
+.w-titletext > .title-text { overflow: hidden; text-overflow: ellipsis; }
 .w-titletext[data-align="center"] { text-align: center; }
 .w.bare { background: transparent; border-color: transparent; }
 .w-battery { align-items: center; justify-content: center; gap: 4px; }
