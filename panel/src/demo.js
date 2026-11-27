@@ -92,6 +92,17 @@ export function demoGenerators() {
         at: Date.now(),
       };
     },
+    media: () => {
+      const dur = 214;
+      const pos = (Date.now() / 1000) % dur;
+      return { playing: true, app: "Spotify", state: "playing", title: "Golden Hour Drive", artist: "The Demo Band", album: "Night Roads", duration: dur, position: pos, artId: "demo:1", canSeek: true, volume: 42, muted: false, players: "Spotify and Music", supported: true, at: Date.now() };
+    },
+    mediaServer: () => ({
+      configured: true,
+      servers: [{ id: "demo", name: "Living room Jellyfin", type: "jellyfin", online: true, version: "10.10", library: "312 movies, 45 shows", sessions: [{ id: "s1", title: "The Long Voyage", subtitle: "2019", duration: 6300, position: 2400, state: "playing", device: "TV", user: "alex", transcoding: false, canControl: true }] }],
+      at: Date.now(),
+    }),
+    radio: () => ({ playing: null, player: "mpv", at: Date.now() }),
     netq: () => {
       const v = Math.random() < 0.03 ? -1 : Math.round(ping() * 10) / 10;
       hist.push(v);
@@ -171,6 +182,13 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "procs.kill": () => ({ ok: false, reason: "Demo — nothing is actually ended." }),
     "netq.speedtest": () => ({ ok: false, error: "Demo — no speed test is run." }),
     "feeds.open": () => ({ ok: true, simulated: true }),
+    "media.control": () => ({ ok: true, simulated: true }),
+    "media.art": () => ({ src: null }),
+    "mediaServer.poster": () => ({ src: null }),
+    "mediaServer.control": () => ({ ok: true, simulated: true }),
+    "radio.play": () => ({ ok: false, error: "Demo — radio plays on your computer." }),
+    "radio.stop": () => ({ ok: true }),
+    "lyrics.get": () => ({ ok: true, found: true, synced: Array.from({ length: 40 }, (_, i) => ({ t: i * 5.3, text: ["Headlights on the open road", "Singing to the radio", "Every mile a little gold", "Golden hour, take it slow"][i % 4] })) }),
     "image.fetch": () => ({ ok: false, error: "Images load from your computer." }),
     "deck.press": () => ({ ok: true, simulated: true }),
   };

@@ -280,6 +280,7 @@ export const mediaserver = {
   mount(el, ctx) {
     el.classList.add("w-mediaserver");
     let posterFor = null;
+    let posterSrc = null;
     ctx.subscribe("mediaServer", (d) => {
       const srv = d?.servers?.[0];
       if (!d?.configured) return (el.innerHTML = `<div class="muted setup">Add a Plex or Jellyfin server in the editor (Settings › Media servers).</div>`);
@@ -300,8 +301,12 @@ export const mediaserver = {
         el.querySelector(".np-ctrls").append(btn("⏮", "", () => send("previous")), btn("⏯", "big", () => send("playpause")), btn("⏭", "", () => send("next")));
       }
       const img = el.querySelector(".ms-poster img");
-      if (posterFor !== s.id) posterFor = s.id;
-      ctx.request("mediaServer.poster", { server: srv.id, session: s.id }).then((r) => r?.src && (img.src = r.src), () => {});
+      if (posterFor === s.id && posterSrc) img.src = posterSrc; // the card redraws every few seconds; fetch the poster once
+      else {
+        posterFor = s.id;
+        posterSrc = null;
+        ctx.request("mediaServer.poster", { server: srv.id, session: s.id }).then((r) => r?.src && posterFor === s.id && (img.src = posterSrc = r.src), () => {});
+      }
     });
   },
 };

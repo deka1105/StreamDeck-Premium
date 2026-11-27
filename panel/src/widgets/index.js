@@ -16,6 +16,7 @@ import { analog, wordclock, worldclocks, calendar, progress, countdown } from ".
 import { timer, stopwatch, pomodoro, focushistory } from "./timers.js";
 import { note, checklist, counter, breathe, quote, title, battery, computers } from "./personal.js";
 import { weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image, agendaWidget, nextup } from "./web.js";
+import { nowplaying, volume, radio, lyrics, mediaserver } from "./media.js";
 
 export const WIDGETS = [
   // time
@@ -24,6 +25,8 @@ export const WIDGETS = [
   weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image,
   // computer
   metric, gauge, chart, gpu, storage, topprocs, processes, internet,
+  // media
+  nowplaying, volume, radio, lyrics, mediaserver,
   // personal
   note, checklist, counter, breathe, quote, title, battery, computers,
   // controls

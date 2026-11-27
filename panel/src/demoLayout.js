@@ -44,6 +44,15 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "music",
+      name: "Music",
+      widgets: [
+        { id: "np", type: "nowplaying", x: 0, y: 0, w: 7, h: 4 },
+        { id: "ly", type: "lyrics", x: 7, y: 0, w: 5, h: 6, options: { lookup: true } },
+        { id: "ms", type: "mediaserver", x: 0, y: 4, w: 7, h: 2 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [
