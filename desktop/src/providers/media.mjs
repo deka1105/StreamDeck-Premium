@@ -132,7 +132,9 @@ async function ps(script, timeout = 8000) {
 export function parseWinReply(j) {
   if (!j || !j.title) return null;
   const state = { Playing: "playing", Paused: "paused" }[j.status] ?? "stopped";
-  const app = String(j.app ?? "").split("!")[0].replace(/\.exe$/i, "").split(/[._]/).filter(Boolean).pop() ?? "";
+  // "Spotify.exe", or a Store app id "Publisher.App_hash!Publisher.App": the part after "!" is readable.
+  const rawId = String(j.app ?? "");
+  const app = (rawId.includes("!") ? rawId.split("!").pop() : rawId).replace(/\.exe$/i, "").split(".").filter(Boolean).pop() ?? "";
   return {
     app: app ? app[0].toUpperCase() + app.slice(1) : "Media",
     state,
