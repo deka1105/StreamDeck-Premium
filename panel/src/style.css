@@ -1,0 +1,152 @@
+/* DeskAssist panel. Palette mirrors mobile/src/theme.ts. */
+:root {
+  --bg: #070b14;
+  --surface: #0e1626;
+  --field: #16233a;
+  --line: rgba(255, 255, 255, 0.09);
+  --ink: #e8eef9;
+  --ink-mid: #cdd7e8;
+  --ink-dim: #8a99b2;
+  --ink-faint: #6b7a94;
+  --accent: #38bdf8;
+  --accent-soft: #7dd3fc;
+  --accent-faint: rgba(56, 189, 248, 0.16);
+  --success: #34d399;
+  --danger: #fb7185;
+  --warn: #fbbf24;
+  --radius: 16px;
+  --gap: 8px;
+  --pad: 12px;
+  --page-pad: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+#pages {
+  position: absolute;
+  inset: 0;
+  padding: var(--page-pad);
+  padding-top: max(var(--page-pad), env(safe-area-inset-top));
+  padding-bottom: max(var(--page-pad), env(safe-area-inset-bottom));
+  padding-left: max(var(--page-pad), env(safe-area-inset-left));
+  padding-right: max(var(--page-pad), env(safe-area-inset-right));
+}
+
+.page-grid {
+  display: grid;
+  gap: var(--gap);
+  width: 100%;
+  height: 100%;
+}
+
+/* Portrait pages may be taller than the screen: let them scroll. */
+@media (orientation: portrait) {
+  #pages { overflow-y: auto; }
+  .page-grid { height: auto; min-height: 100%; grid-auto-rows: calc((100vh - 2 * var(--page-pad)) / 12); }
+}
+
+.w {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.w-body {
+  position: absolute;
+  inset: 0;
+  padding: var(--pad);
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+}
+
+.w-missing {
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-faint);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* --- status dot --- */
+#status {
+  position: fixed;
+  top: max(6px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  z-index: 20;
+  opacity: 0.8;
+}
+#status[data-online="1"] { background: var(--success); }
+#status[data-online="0"] { background: var(--danger); }
+
+/* --- clock --- */
+.w-clock { justify-content: center; align-items: center; text-align: center; }
+.clock-time {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-size: clamp(18px, min(38cqh, 17cqw), 220px);
+  line-height: 1;
+}
+.clock-date {
+  margin-top: 4cqh;
+  color: var(--ink-dim);
+  font-size: clamp(11px, min(11cqh, 6cqw), 40px);
+}
+
+/* --- metric --- */
+.w-metric { justify-content: space-between; }
+.metric-label {
+  color: var(--ink-dim);
+  font-size: clamp(11px, min(14cqh, 9cqw), 28px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+.metric-value .num { font-size: clamp(20px, min(42cqh, 28cqw), 160px); }
+.metric-value .unit { font-size: clamp(12px, min(18cqh, 12cqw), 60px); color: var(--ink-dim); margin-left: 2px; }
+.metric-bar {
+  height: max(4px, 5cqh);
+  border-radius: 99px;
+  background: var(--field);
+  overflow: hidden;
+}
+.metric-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 0.6s ease;
+}
+.w-metric[data-level="mid"] .metric-fill { background: var(--warn); }
+.w-metric[data-level="high"] .metric-fill { background: var(--danger); }
