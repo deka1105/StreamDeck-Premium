@@ -12,6 +12,13 @@ function makeContext({ store, bridge, options, onCleanup, widgetId, pageId, goto
     options,
     widgetId,
     pageId,
+    /** Mount another widget inside this one (Smart Stack). Cleaned up with this widget. */
+    mountChild(host, instance) {
+      const m = mountWidget(host, { ...instance, id: `${widgetId}~${instance.id}` }, { store, bridge, goto, pageId });
+      onCleanup(m.destroy);
+      return m;
+    },
+    peek: (kind) => store.get(kind),
     /**
      * Saved widget state (notes, timers, counters), kept on the computer so it
      * survives reloads and matches on every screen. `onChange` runs on load and
