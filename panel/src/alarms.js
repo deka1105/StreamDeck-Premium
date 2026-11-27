@@ -20,6 +20,12 @@ export function createAlarms({ store, bridge, overlay, badge, currentPageId, got
   let badgeTimer = null;
 
   function fire(w, endAt) {
+    // Mark a finished timer as done right away, so no other screen (or a panel
+    // opened a moment later) raises the same alarm again. Pomodoros advance
+    // their own phase, so they're left alone.
+    if (w.widget.type === "timer" && w.state?.running && w.state.endAt === endAt) {
+      bridge.request("state.set", { key: w.key, value: { running: false, endAt: null, remainingMs: 0, durationMs: 0 } }).catch(() => {});
+    }
     if (Date.now() - endAt > 60_000) return; // expired long ago (no panel was open): don't shout now
     vibrate();
     const title = w.widget.type === "pomodoro" ? "Time for the next round" : w.widget.options?.label || "Time's up";
@@ -71,7 +77,7 @@ export function createAlarms({ store, bridge, overlay, badge, currentPageId, got
           const key = `${page.id}:${widget.id}`;
           keep.add(key);
           if (watched.has(key)) continue;
-          const w = { pageId: page.id, widget, timeout: null, endAt: null, state: null };
+          const w = { key, pageId: page.id, widget, timeout: null, endAt: null, state: null };
           w.off = store.on(`state:${key}`, (st) => onState(key, w, st));
           watched.set(key, w);
           bridge.request("state.get", { key }).then((r) => store.set(`state:${key}`, r?.value ?? null), () => {});
