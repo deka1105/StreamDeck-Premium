@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "time",
+      "name": "Time"
+    },
+    {
+      "id": "computer",
+      "name": "Computer"
+    },
+    {
+      "id": "personal",
+      "name": "Personal"
+    },
+    {
+      "id": "web",
+      "name": "Weather & web"
+    },
+    {
+      "id": "media",
+      "name": "Media"
+    },
+    {
+      "id": "controls",
+      "name": "Controls"
+    },
+    {
+      "id": "ai",
+      "name": "AI & code"
+    },
+    {
+      "id": "layout",
+      "name": "Layout"
+    }
+  ],
+  "widgets": [
+    {
+      "type": "clock",
+      "name": "Clock",
+      "category": "time",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "hour12",
+          "type": "bool",
+          "label": "12-hour clock",
+          "default": false
+        },
+        {
+          "key": "seconds",
+          "type": "bool",
+          "label": "Show seconds",
+          "default": false
+        },
+        {
+          "key": "date",
+          "type": "bool",
+          "label": "Show the date",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "metric",
+      "name": "Metric",
+      "category": "computer",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "source",
+          "type": "choice",
+          "label": "Show",
+          "default": "cpu",
+          "choices": [
+            {
+              "value": "cpu",
+              "label": "CPU"
+            },
+            {
+              "value": "mem",
+              "label": "Memory"
+            }
+          ]
+        },
+        {
+          "key": "label",
+          "type": "text",
+          "label": "Label (optional)",
+          "default": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>DeskAssist panel</title>
+<style>/* DeskAssist panel. Palette mirrors mobile/src/theme.ts. */
+:root {
+  --bg: #070b14;
+  --surface: #0e1626;
+  --field: #16233a;
+  --line: rgba(255, 255, 255, 0.09);
+  --ink: #e8eef9;
+  --ink-mid: #cdd7e8;
+  --ink-dim: #8a99b2;
+  --ink-faint: #6b7a94;
+  --accent: #38bdf8;
+  --accent-soft: #7dd3fc;
+  --accent-faint: rgba(56, 189, 248, 0.16);
+  --success: #34d399;
+  --danger: #fb7185;
+  --warn: #fbbf24;
+  --radius: 16px;
+  --gap: 8px;
+  --pad: 12px;
+  --page-pad: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+#pages {
+  position: absolute;
+  inset: 0;
+  padding: var(--page-pad);
+  padding-top: max(var(--page-pad), env(safe-area-inset-top));
+  padding-bottom: max(var(--page-pad), env(safe-area-inset-bottom));
+  padding-left: max(var(--page-pad), env(safe-area-inset-left));
+  padding-right: max(var(--page-pad), env(safe-area-inset-right));
+}
+
+.page-grid {
+  display: grid;
+  gap: var(--gap);
+  width: 100%;
+  height: 100%;
+}
+
+/* Portrait pages may be taller than the screen: let them scroll. */
+@media (orientation: portrait) {
+  #pages { overflow-y: auto; }
+  .page-grid { height: auto; min-height: 100%; grid-auto-rows: calc((100vh - 2 * var(--page-pad)) / 12); }
+}
+
+.w {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.w-body {
+  position: absolute;
+  inset: 0;
+  padding: var(--pad);
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+}
+
+.w-missing {
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-faint);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* --- status dot --- */
+#status {
+  position: fixed;
+  top: max(6px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  z-index: 20;
+  opacity: 0.8;
+}
+#status[data-online="1"] { background: var(--success); }
+#status[data-online="0"] { background: var(--danger); }
+
+/* --- clock --- */
+.w-clock { justify-content: center; align-items: center; text-align: center; }
+.clock-time {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-size: clamp(18px, min(38cqh, 17cqw), 220px);
+  line-height: 1;
+}
+.clock-date {
+  margin-top: 4cqh;
+  color: var(--ink-dim);
+  font-size: clamp(11px, min(11cqh, 6cqw), 40px);
+}
+
+/* --- metric --- */
+.w-metric { justify-content: space-between; }
+.metric-label {
+  color: var(--ink-dim);
+  font-size: clamp(11px, min(14cqh, 9cqw), 28px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+.metric-value .num { font-size: clamp(20px, min(42cqh, 28cqw), 160px); }
+.metric-value .unit { font-size: clamp(12px, min(18cqh, 12cqw), 60px); color: var(--ink-dim); margin-left: 2px; }
+.metric-bar {
+  height: max(4px, 5cqh);
+  border-radius: 99px;
+  background: var(--field);
+  overflow: hidden;
+}
+.metric-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 0.6s ease;
+}
+.w-metric[data-level="mid"] .metric-fill { background: var(--warn); }
+.w-metric[data-level="high"] .metric-fill { background: var(--danger); }
+</style>
+</head>
+<body>
+<div id="status"></div>
+<div id="pages"></div>
+<script>(()=>{function v(){let e=new Map;return{on(t,o){return e.has(t)||e.set(t,new Set),e.get(t).add(o),()=>{var s;return(s=e.get(t))==null?void 0:s.delete(o)}},emit(t,o){var s;for(let n of(s=e.get(t))!=null?s:[])try{n(o)}catch(r){console.error(`[bridge] "${t}" listener failed`,r)}}}}function x(e){let t=[],o=null,s=()=>e("panel.needs",{kinds:t}).catch(()=>{});return n=>{t=[...new Set(n)].sort(),s(),clearInterval(o),o=setInterval(s,15e3)}}function _(){let e=v(),t=new Map,o=1;window.__deskassist={receive(n){if(!(!n||typeof n!="object"))if(n.t==="res"){let r=t.get(n.id);if(!r)return;t.delete(n.id),clearTimeout(r.timer),n.ok?r.resolve(n.result):r.reject(new Error(n.error||"request failed"))}else n.t==="evt"?e.emit("event",{type:n.type,data:n.data}):n.t==="status"?e.emit("status",{online:!!n.online,detail:n.detail}):n.t==="resync"&&e.emit("resync")}};let s=(n,r={})=>new Promise((i,m)=>{let c=o++,d=setTimeout(()=>{t.delete(c),m(new Error("timed out"))},3e4);t.set(c,{resolve:i,reject:m,timer:d}),window.ReactNativeWebView.postMessage(JSON.stringify({t:"req",id:c,method:n,params:r}))});return setTimeout(()=>window.ReactNativeWebView.postMessage(JSON.stringify({t:"ready"})),0),{kind:"native",request:s,on:e.on,setNeeds:x(s)}}function q(){let e=v(),o=(new URLSearchParams(location.search).get("device")||"").replace(/[^a-z0-9]/gi,"").slice(0,32)||"browser";async function s(i,m={}){let c=new AbortController,d=setTimeout(()=>c.abort(),3e4);try{let a=await fetch("/api/panel/rpc",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({method:i,params:m,client:o}),signal:c.signal}),l=await a.json().catch(()=>({}));if(!a.ok||!l.ok)throw new Error(l.error||`HTTP ${a.status}`);return l.result}finally{clearTimeout(d)}}let n=null,r=(i,m)=>{i!==n&&(n=i,e.emit("status",{online:i,detail:m}))};return(async function(){let m=0,c=null,d=1e3;for(;;)try{let a=await s("events.wait",{after:m,boot:c,timeoutMs:25e3});r(!0),(a.boot!==c||a.fresh)&&(c=a.boot,e.emit("resync"));for(let l of a.events)e.emit("event",l);m=a.seq,d=1e3}catch(a){r(!1,a.message),await new Promise(l=>setTimeout(l,d)),d=Math.min(d*2,15e3)}})(),{kind:"http",client:o,request:s,on:e.on,setNeeds:x(s)}}function $(){let e=v();return setTimeout(()=>e.emit("status",{online:!1,detail:"no computer"}),0),{kind:"offline",request:()=>Promise.reject(new Error("no computer connected")),on:e.on,setNeeds:()=>{}}}function g(){return typeof window!="undefined"&&window.ReactNativeWebView?_():typeof location!="undefined"&&/^https?:$/.test(location.protocol)?q():$()}function E(){let e=new Map,t=new Map;return{get:o=>e.get(o),has:o=>e.has(o),set(o,s){var n;e.set(o,s);for(let r of(n=t.get(o))!=null?n:[])try{r(s)}catch(i){console.error(`[panel] subscriber for "${o}" failed`,i)}},on(o,s){return t.has(o)||t.set(o,new Set),t.get(o).add(s),()=>{var n;return(n=t.get(o))==null?void 0:n.delete(s)}}}}var k={type:"clock",meta:{name:"Clock",category:"time",size:{w:4,h:2},min:{w:2,h:1},options:[{key:"hour12",type:"bool",label:"12-hour clock",default:!1},{key:"seconds",type:"bool",label:"Show seconds",default:!1},{key:"date",type:"bool",label:"Show the date",default:!0}]},needs:()=>[],mount(e,t){e.classList.add("w-clock"),e.innerHTML='<div class="clock-time"></div><div class="clock-date"></div>';let o=e.querySelector(".clock-time"),s=e.querySelector(".clock-date"),n=()=>{let r=t.now(),i=t.options;o.textContent=r.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:i.seconds?"2-digit":void 0,hour12:!!i.hour12}),s.textContent=i.date?r.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"}):"",s.hidden=!i.date};n(),t.every(1e3,n)}};var S={cpu:{label:"CPU",kind:"system",unit:"%",pick:e=>e==null?void 0:e.cpu,max:100},mem:{label:"Memory",kind:"system",unit:"%",pick:e=>{var t;return(t=e==null?void 0:e.mem)!=null&&t.total?100*e.mem.used/e.mem.total:void 0},max:100}},b={type:"metric",meta:{name:"Metric",category:"computer",size:{w:3,h:2},min:{w:2,h:1},options:[{key:"source",type:"choice",label:"Show",default:"cpu",choices:Object.entries(S).map(([e,t])=>({value:e,label:t.label}))},{key:"label",type:"text",label:"Label (optional)",default:""}]},needs:e=>{var t,o;return[(o=(t=S[e.source])==null?void 0:t.kind)!=null?o:"system"]},mount(e,t){var i;let o=(i=S[t.options.source])!=null?i:S.cpu;e.classList.add("w-metric"),e.innerHTML=`
+      <div class="metric-label"></div>
+      <div class="metric-value"><span class="num">\u2014</span><span class="unit"></span></div>
+      <div class="metric-bar"><div class="metric-fill"></div></div>`,e.querySelector(".metric-label").textContent=t.options.label||o.label;let s=e.querySelector(".num"),n=e.querySelector(".unit"),r=e.querySelector(".metric-fill");t.subscribe(o.kind,m=>{let c=o.pick(m);if(!Number.isFinite(c)){s.textContent="\u2014",n.textContent="",r.style.width="0%";return}s.textContent=String(Math.round(c)),n.textContent=o.unit;let d=Math.max(0,Math.min(100,100*c/o.max));r.style.width=`${d}%`,e.dataset.level=d>=90?"high":d>=70?"mid":"low"})}};var P=[k,b],T=Object.fromEntries(P.map(e=>[e.type,e]));function C(e,t={}){var s,n;let o={};for(let r of(s=e.meta.options)!=null?s:[])o[r.key]=(n=t[r.key])!=null?n:r.default;return{...t,...o}}var f=(e,t)=>Number.isFinite(Number(e))?Math.round(Number(e)):t;function O(e,t=12,o=6,{min:s={w:1,h:1},max:n={w:t,h:o}}={}){let r=Math.max(1,Math.min(f(s.w,1),t)),i=Math.max(1,Math.min(f(s.h,1),o)),m=Math.max(r,Math.min(f(n.w,t),t)),c=Math.max(i,Math.min(f(n.h,o),o)),d=Math.max(r,Math.min(m,f(e==null?void 0:e.w,r))),a=Math.max(i,Math.min(c,f(e==null?void 0:e.h,i))),l=Math.max(0,Math.min(t-d,f(e==null?void 0:e.x,0))),p=Math.max(0,Math.min(o-a,f(e==null?void 0:e.y,0)));return{x:l,y:p,w:d,h:a}}function W(e,t){return e.x<t.x+t.w&&t.x<e.x+e.w&&e.y<t.y+t.h&&t.y<e.y+e.h}function R(e,t="landscape"){if(t!=="portrait")return{cols:12,rows:6,boxes:e.map(a=>O(a,12,6))};let o=6,s=12,n=e.map((a,l)=>({w:a,i:l})).sort((a,l)=>a.w.y-l.w.y||a.w.x-l.w.x||a.i-l.i),r=new Array(e.length),i=[];for(let{w:a,i:l}of n)a.portrait&&(r[l]=O(a.portrait,o,s),i.push(r[l]));let m=n.filter(({w:a})=>!a.portrait),c=[...i];for(let{w:a,i:l}of m){let p=Math.max(1,Math.min(o,f(a.w,1))),h=Math.max(1,Math.min(s,f(a.h,1))),u=null;for(let w=0;!u&&w+h<=s;w++)for(let y=0;y+p<=o;y++){let M={x:y,y:w,w:p,h};if(!c.some(I=>W(I,M))){u=M;break}}u||(u={x:0,y:c.reduce((y,M)=>Math.max(y,M.y+M.h),0),w:p,h}),c.push(u),r[l]=u}let d=Math.max(s,...r.map(a=>a.y+a.h));return{cols:o,rows:d,boxes:r}}function U({store:e,bridge:t,options:o,onCleanup:s}){return{options:o,bridge:t,now:()=>new Date,request:(n,r)=>t.request(n,r),every(n,r){let i=setInterval(r,n);return s(()=>clearInterval(i)),i},subscribe(n,r){e.has(n)&&r(e.get(n)),s(e.on(n,r))}}}function j(e,t,{store:o,bridge:s}){var a;let n=T[t.type],r=[],i=document.createElement("div");if(i.className="w-body",e.appendChild(i),!n)return i.classList.add("w-missing"),i.textContent=`Unknown widget "${t.type}"`,{needs:[],destroy:()=>i.remove()};let m=C(n,t.options),c=U({store:o,bridge:s,options:m,onCleanup:l=>r.push(l)}),d;try{d=(a=n.mount(i,c))!=null?a:{}}catch(l){console.error(`[panel] widget "${t.type}" failed to mount`,l),i.classList.add("w-missing"),i.textContent="This widget failed to load.",d={}}return{needs:n.needs?n.needs(m):[],destroy(){var l;for(let p of r.splice(0))p();(l=d.unmount)==null||l.call(d),i.remove()}}}function L(e,t,o,s){var a;let n=document.createElement("div");n.className="page-grid";let r=(a=t.widgets)!=null?a:[],{cols:i,rows:m,boxes:c}=R(r,s);n.style.gridTemplateColumns=`repeat(${i}, minmax(0, 1fr))`,n.style.gridTemplateRows=`repeat(${m}, minmax(0, 1fr))`,n.style.setProperty("--rows",m);let d=r.map((l,p)=>{var y;let h=c[p],u=document.createElement("div");return u.className="w",u.dataset.type=l.type,u.dataset.id=(y=l.id)!=null?y:"",u.style.gridColumn=`${h.x+1} / span ${h.w}`,u.style.gridRow=`${h.y+1} / span ${h.h}`,n.appendChild(u),{...j(u,l,o),cell:u}});return e.appendChild(n),{el:n,needs:[...new Set(d.flatMap(l=>l.needs))],destroy(){for(let l of d)l.destroy();n.remove()}}}var A={id:"home",name:"Home",widgets:[{id:"w1",type:"clock",x:0,y:0,w:6,h:3,options:{seconds:!0}},{id:"w2",type:"metric",x:6,y:0,w:3,h:3,options:{source:"cpu"}},{id:"w3",type:"metric",x:9,y:0,w:3,h:3,options:{source:"mem"}}]};function N(){return window.innerHeight>window.innerWidth?"portrait":"landscape"}function B(){let e=document.getElementById("pages"),t=document.getElementById("status"),o=g(),s=E(),n={store:s,bridge:o},r=null,i=N();o.on("event",c=>{var d;c.type==="data"&&((d=c.data)!=null&&d.kind)&&s.set(c.data.kind,c.data.value)}),o.on("status",({online:c,detail:d})=>{t.dataset.online=c?"1":"0",t.title=c?"Connected":`Offline${d?`: ${d}`:""}`});let m=()=>{r==null||r.destroy(),r=L(e,A,n,i),o.setNeeds(r.needs)};o.on("resync",async()=>{var c,d;try{let a=await o.request("panel.snapshot",{kinds:(c=r==null?void 0:r.needs)!=null?c:[]});for(let[l,p]of Object.entries((d=a==null?void 0:a.data)!=null?d:{}))s.set(l,p)}catch{}}),window.addEventListener("resize",()=>{let c=N();c!==i&&(i=c,m())}),m()}B();})();
+</script>
+</body>
+</html>

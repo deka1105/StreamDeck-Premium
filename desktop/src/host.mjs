@@ -26,6 +26,7 @@ import { createSampler } from "./sampler.mjs";
 import { createPanelApi } from "./panelApi.mjs";
 import { PROVIDERS } from "./providers/index.mjs";
 import { createLocalServer } from "./local.mjs";
+import { createPanelStore } from "./panel/store.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -376,6 +377,7 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     bus,
     sampler,
     panelApi,
+    panelStore,
     listen: () =>
       new Promise((r) => {
         sampler.start();

@@ -1,1 +1,3 @@
 node_modules/
+# The built panel is tracked: the host serves it and the editor reads catalog.json.
+!dist/
