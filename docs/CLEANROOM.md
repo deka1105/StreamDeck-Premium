@@ -134,3 +134,9 @@ Add an entry per stage: what was consulted again (if anything) and any design
 decision made *without* reference material because the docs were silent.
 
 - **Stage 0** — no further consultation.
+- **Stages 1–3** — no further consultation. Designed here without reference
+  material: the panel bridge and its three transports, the encrypted long-poll
+  on a second counter channel, the `{type, meta, needs, mount}` widget module
+  shape and the catalogue generated from it, the layout schema and its
+  sanitizer, the editor's page/canvas/inspector design, template content, and
+  the live-tile Deck widget.
