@@ -140,8 +140,9 @@ The owner chose clean-room anyway. Keep to it.)
 The editor builds its option forms from these entries.
 
 **Data kinds** (the `needs` vocabulary, grown stage by stage): `system`, `gpu`, `disks`, `net`,
-`procs`, `media`, `volume`, `weather` (phone-side), `push`, `notify`, `sessions`, `quotas`,
-`github`, `rules`, `apps`, `foreground`.
+`netq`, `procs`, `media`, `mediaServer`, `volume`, `weather` (phone-side), `calendar`, `push`,
+`notify`, `sessions`, `quotas`, `usage`, `alerts`, `github`, `contrib`, `rules`, `apps`,
+`foreground`, `pcpower`, `toggles`, `printers`, `games`.
 
 ---
 
@@ -320,10 +321,37 @@ The editor builds its option forms from these entries.
 - Verify: each on a physical Android phone. Each one is hidden on iOS (a unit test of the platform gate).
 - Fence: Play policy review of notification access and kiosk before release (R1).
 
-## Stage 14 — Integration long tail
-Spotify (PKCE queue/playlists), Plex, Steam library (reads local Steam files), RTSP camera via ffmpeg, photo frame (folder / Immich), Discord, CodexBar, other AI CLIs (OpenCode, Cursor, Antigravity, Grok, Pi, WorkBuddy, Copilot CLI), dictation, app console, device batteries. Each one is its own step: research its public API → provider with fixture tests → widget → template if any. Order these by what the owner actually uses (ask at stage start).
+## Stage 14 — 3D printers (DeskHub)
+**Visible at the end:** a Printer page shows up to 4 printers at once (state, progress, time left, layer, nozzle/bed/chamber temperatures, speed, errors, filament slot colours with the active slot highlighted), plus a compact Printer widget. Printers are added in the desktop editor with a "Test connection" button.
 
-## Stage 15 — Languages and release
+- **14.0 Ask, then research (one session, no code).**
+  - **Ask the owner which printers they own.** Real hardware is the only true verification. Every brand without hardware ships as "built from the published protocol, untested on hardware", which is DeskHub's own stance.
+  - Collect each protocol's **public** documentation into `docs/printers.md`: maker docs, published specs, or protocol write-ups (not code).
+  - Add a table per brand: transport, auth, what fields exist, how many clients the printer allows at once, and whether a documented source exists at all.
+  - Fence: if a brand's only source is someone else's code, mark it "no clean source" and skip it (R9).
+- **14.1 Normalized model + printer page/widget** (D11): the shape `{name, model, online, state, pct, remainingMin, layer, layers, file, temps:{nozzle, bed, chamber}, speed, error, slots:[{color, material, active}]}`. The page and widget render from that shape. A demo-data printer covers App Review. Verify: Playwright with 1, 2 and 4 printers, plus an error state.
+- **14.2 Documented-API brands first:** Klipper/Moonraker (HTTP, port 7125 or 80, optional API key, poll every 2 s, slicer time estimate, layer from print stats, filament colours from file metadata), OctoPrint (REST + API key; layers only if its plugin reports them), PrusaLink (HTTP Digest auth; no layers or colours). Verify per brand: a fixture HTTP server in `node --test`, plus a live check if the owner has one.
+- **14.3 Brands with published or community-documented protocols:**
+  - Bambu Lab: MQTT over TLS on the LAN with serial + access code. Cloud login is a separate, later step because it's reverse-engineered (R9).
+  - Elegoo Centauri Carbon: SDCP over WebSocket.
+  - Flashforge: HTTP API on newer models, G-code port 8899 on older ones.
+  - Anycubic LAN Mode (MQTT).
+  - Creality stock firmware: WebSocket on port 9999.
+  - Snapmaker 2.0 (touchscreen Wi-Fi API with an on-screen approve step).
+  - Snapmaker J1/Artisan (SACP on port 8888).
+  - Each one: a fixture (a local MQTT broker / WebSocket server) test, back-off when the printer allows only one client, and credentials per D10.
+- Fence: the host polls only while a printer widget or page is visible, or a rule needs it. The phone never connects to a printer (D11).
+
+## Stage 15 — Games and integration long tail
+- **Games page (DeskHub + PhoneBox):**
+  - The Steam game being played (cover, session time) and the 5 most recent with tap-to-launch (`steam://rungameid/<id>`, only for listed games, launch is opt-in). Read from Steam's local files: library manifests, `localconfig.vdf`, and the running app id from the registry on Windows or `registry.vdf` on macOS. Covers from local cache, else Steam's public CDN.
+  - An optional Steam Web API key (D10) for friends in game and total playtime.
+  - **Non-Steam games:** the user adds them from a "pick from running programs" list, matched by process name, command-line text or window title, with optional cover and launch target. The host tracks last played and duration.
+  - We write **our own** list of well-known games to recognise; DeskHub's list is not copied (clean-room rule 3).
+  - Verify: fixture `.vdf`/`.acf` files and a fake process list in `node --test`.
+- The rest, each its own step (research its public API → provider with fixture tests → widget → template if any): Spotify (PKCE queue/playlists), Plex playlists/queue control, RTSP camera via ffmpeg, photo frame (folder / Immich), Discord, CodexBar, other AI CLIs (OpenCode, Cursor, Antigravity, Grok, Pi, WorkBuddy, Copilot CLI), dictation, app console, device batteries. Order them by what the owner actually uses (ask at stage start).
+
+## Stage 16 — Languages and release
 - i18n: our own `t()` with key-based dictionaries for the panel, editor and app. Start with English, then add locales in batches. RTL support (Arabic) needs a layout check.
 - Release: app version 1.2.0 with a demo-mode walkthrough of the new panel in the review notes and an updated privacy policy. Desktop host installers for macOS (notarized) and Windows. Merge `panel-parity` → `main` **only after** 1.1.0's review is resolved.
 
@@ -333,14 +361,16 @@ Spotify (PKCE queue/playlists), Plex, Steam library (reads local Steam files), R
 
 | # | Risk | Tripwire (when you'll know) | Fallback |
 |---|---|---|---|
-| R1 | **App Review** rejects the panel (2.5.2 downloaded code, 4.2 minimum functionality without a Mac, privacy answers out of date). | Stage 2.4: if demo mode can't show a convincing panel without a computer, stop. Each stage adding outbound connections (6, 9, 14): privacy policy not updated = don't submit. | The panel stays bundled (D1), demo mode covers every widget, and Custom HTML only runs user-typed HTML in a sandbox. If needed, ship Custom HTML Android-only. |
+| R1 | **App Review** rejects the panel (2.5.2 downloaded code, 4.2 minimum functionality without a Mac, privacy answers out of date). | Stage 2.4: if demo mode can't show a convincing panel without a computer, stop. Each stage adding outbound connections (4.5 speed test/public IP, 6, 7 media servers, 9, 15): privacy policy not updated = don't submit. | The panel stays bundled (D1), demo mode covers every widget, and Custom HTML only runs user-typed HTML in a sandbox. If needed, ship Custom HTML Android-only. |
 | R2 | **Windows can't be verified from this Mac.** | Stage 1.2: the first Windows CI run. If `systeminformation` or the host fails on `windows-latest`, fix it before Stage 2. Stage 12 start: no Windows machine available = the stage is marked "built, unverified" and doesn't ship. | CI covers unit tests and provider smoke. Native audio/device work waits for a Windows box. |
 | R3 | **Node/Electron lacks a native API** (media sessions, mouse injection, Core Audio). | Research steps at the start of Stages 7, 11 and 12. If a helper needs new signing or notarization, the step says stop. | A small per-OS sidecar helper, spawned and talked to over stdio JSON. |
 | R4 | **React Native WebView bridge throughput** (charts at 2 s × many widgets). | Stage 4.2: if the Panel screen drops frames on a mid-range phone with the System template. | Batch `data` events into one message per tick, and send deltas instead of full arrays. |
 | R5 | **Undocumented quota endpoints** (Claude usage, Codex app-server) change or rate-limit. | Stage 9.3: a non-2xx or schema mismatch in the live check. | Show "quota unavailable" honestly. Never invent numbers. Back off at most every 3 minutes and honor 429 `Retry-After`. |
 | R6 | **Clean-room contamination.** Someone opens PhoneBox source "just to check". | Every PR touching `panel/` or `desktop/src`: the reviewer asks whether `docs/CLEANROOM.md` was updated this stage. | If source was viewed, note it in `CLEANROOM.md`, and have the affected component rewritten by a session that didn't see it. |
 | R7 | **Auto-push publishes every edit** to the public repo. | Any time you're about to write a token, key, Home Assistant URL with a token, or a personal path into the tree. | Secrets go in the host's user-data dir or an env var, never in the repo. Fixtures use made-up data. |
-| R8 | **Scope.** This is many months of work, and the plan will drift. | At each stage boundary, re-read this file. If a stage took more than twice its step count in sessions, re-plan the next one before starting it. | Cut from Stage 14 first, then Stage 12. Stages 1–10 are the product. |
+| R8 | **Scope.** This is many months of work, and the plan will drift. | At each stage boundary, re-read this file. If a stage took more than twice its step count in sessions, re-plan the next one before starting it. | Cut from Stage 15 first, then 14.3, then Stage 12. Stages 1–10 are the product. |
+| R9 | **Printer and cloud protocols with no clean source.** Several brands (and Bambu's cloud login) are known only through community reverse-engineering, often published as code. | Step 14.0: any brand whose `docs/printers.md` row says "no clean source". | Skip that brand, or have the owner capture the printer's traffic themselves so we write from observed behavior. Never port someone's client code. |
+| R10 | **Hardware we don't have** (printers, Plex/Jellyfin, Steam on Windows). | Every Stage 7, 14 and 15 step: no device = verified on fixtures only. | Label those integrations "untested on hardware" in the editor, as DeskHub does, until the owner or a user confirms them. |
 
 ---
 
