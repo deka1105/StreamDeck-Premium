@@ -108,19 +108,6 @@ test("Smart Stack swaps widgets by its dots; marquee scrolls long text", async (
   await expect(page.locator(".marquee-track.on")).toHaveCount(1);
 });
 
-test("editor: pick a preset and night schedule; saved config is sanitised", async ({ page }) => {
-  await page.goto(`${host.base}/editor/`);
-  await page.locator("#settingsToggle").click();
-  await page.locator('.preset[data-preset="ember"]').click();
-  await page.locator("#navStyle").selectOption("side-right");
-  await page.locator("#nightMode").selectOption("schedule");
-  await page.locator("#save").click();
-  await expect.poll(async () => (await (await fetch(`${host.base}/api/editor/state`)).json()).config.default.look.preset).toBe("ember");
-  const cfg = (await (await fetch(`${host.base}/api/editor/state`)).json()).config.default;
-  expect(cfg.display.nav).toBe("side-right");
-  expect(cfg.display.night.mode).toBe("schedule");
-});
-
 test.describe("visual", () => {
   for (const [id, name] of [["one", "midnight-bar"], ["two", "paper-tile-override"], ["three", "glass-wallpaper"]]) {
     test(`snapshot: ${name}`, async ({ page }) => {
@@ -135,4 +122,18 @@ test.describe("visual", () => {
     await page.evaluate(() => document.body.dispatchEvent(new CustomEvent("deskassist-night", { detail: { on: true } })));
     await expect(page).toHaveScreenshot("night.png", { mask: [page.locator(".night-clock")] });
   });
+});
+
+// Last: it saves a new look over the config the tests above rely on.
+test("editor: pick a preset and night schedule; saved config is sanitised", async ({ page }) => {
+  await page.goto(`${host.base}/editor/`);
+  await page.locator("#settingsToggle").click();
+  await page.locator('.preset[data-preset="ember"]').click();
+  await page.locator("#navStyle").selectOption("side-right");
+  await page.locator("#nightMode").selectOption("schedule");
+  await page.locator("#save").click();
+  await expect.poll(async () => (await (await fetch(`${host.base}/api/editor/state`)).json()).config.default.look.preset).toBe("ember");
+  const cfg = (await (await fetch(`${host.base}/api/editor/state`)).json()).config.default;
+  expect(cfg.display.nav).toBe("side-right");
+  expect(cfg.display.night.mode).toBe("schedule");
 });
