@@ -78,7 +78,7 @@ test("install adds hooks + bridge with a backup; remove restores exactly", () =>
   mkdirSync(claudeDir);
   const before = { model: "opus", statusLine: { type: "command", command: "echo mine", padding: 1 }, hooks: { SessionEnd: [{ hooks: [{ type: "command", command: "save.sh" }] }] } };
   writeFileSync(join(claudeDir, "settings.json"), JSON.stringify(before));
-  const a = createAgents({ dir: join(d, "data"), claudeDir });
+  const a = createAgents({ log: () => {}, dir: join(d, "data"), claudeDir });
   assert.equal(a.install().installed, true);
   const s = JSON.parse(readFileSync(join(claudeDir, "settings.json"), "utf8"));
   assert.ok(existsSync(join(claudeDir, "settings.json.deskassist.bak")));
@@ -100,7 +100,7 @@ test("the status-line bridge saves limits and still prints the old status line",
   const claudeDir = join(d, "claude");
   mkdirSync(claudeDir);
   writeFileSync(join(claudeDir, "settings.json"), JSON.stringify({ statusLine: { type: "command", command: "cat > /dev/null; echo OLD-LINE" } }));
-  const a = createAgents({ dir: join(d, "data"), claudeDir });
+  const a = createAgents({ log: () => {}, dir: join(d, "data"), claudeDir });
   a.install();
   const input = JSON.stringify({ model: { display_name: "Opus" }, rate_limits: { five_hour: { used_percentage: 50, resets_at: 1 } } });
   const out = execFileSync(process.execPath, [join(d, "data", "hooks", "deskassist-hook-statusline.cjs")], { input, encoding: "utf8" });
@@ -113,7 +113,7 @@ test("permission: token checked, off by default, phone answer wins, timeout → 
   mkdirSync(join(d, "claude"));
   let settings = { agents: { phonePrompts: false, timeoutSec: 10 } };
   const events = [];
-  const a = createAgents({ dir: join(d, "data"), claudeDir: join(d, "claude"), getSettings: () => settings, publish: (e, v) => events.push([e, v]) });
+  const a = createAgents({ log: () => {}, dir: join(d, "data"), claudeDir: join(d, "claude"), getSettings: () => settings, publish: (e, v) => events.push([e, v]) });
   a.install();
   const token = JSON.parse(readFileSync(join(d, "data", "hooks", "hook-config.json"), "utf8")).token;
   assert.equal((await a.permission({ token: "nope" })).status, 401);
@@ -136,7 +136,7 @@ test("permission: token checked, off by default, phone answer wins, timeout → 
 
 test("waiting alerts: Notification sets, prompt submit clears, Stop alerts after the delay", async () => {
   const d = tmp();
-  const a = createAgents({ dir: join(d, "data"), claudeDir: join(d, "claude"), getSettings: () => ({ agents: { alerts: true, idleAlertSec: 0 } }) });
+  const a = createAgents({ log: () => {}, dir: join(d, "data"), claudeDir: join(d, "claude"), getSettings: () => ({ agents: { alerts: true, idleAlertSec: 0 } }) });
   mkdirSync(join(d, "claude"));
   a.install();
   const token = JSON.parse(readFileSync(join(d, "data", "hooks", "hook-config.json"), "utf8")).token;
@@ -162,7 +162,7 @@ test("the permission hook script prints a decision only when the panel gives one
     req.on("end", () => res.end(JSON.stringify({ decision: answer, saw: JSON.parse(b) })));
   });
   await new Promise((r) => srv.listen(0, "127.0.0.1", r));
-  const a = createAgents({ dir: join(d, "data"), claudeDir: join(d, "claude"), port: srv.address().port });
+  const a = createAgents({ log: () => {}, dir: join(d, "data"), claudeDir: join(d, "claude"), port: srv.address().port });
   a.install();
   const runHook = () => new Promise((res) => {
     const { execFile } = require_();

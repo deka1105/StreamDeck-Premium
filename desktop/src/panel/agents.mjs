@@ -111,7 +111,7 @@ export function withoutOurs(settings) {
   return s;
 }
 
-export function createAgents({ dir, claudeDir, port = 8789, publish = () => {}, getSettings = () => ({}), idleSeconds = async () => 0, now = Date.now } = {}) {
+export function createAgents({ dir, claudeDir, port = 8789, publish = () => {}, getSettings = () => ({}), idleSeconds = async () => 0, now = Date.now, log = console.log } = {}) {
   const hooksDir = join(dir, "hooks");
   const limitsFile = join(dir, "claude-limits.json");
   const cfgFile = join(hooksDir, "hook-config.json");
@@ -209,7 +209,7 @@ export function createAgents({ dir, claudeDir, port = 8789, publish = () => {}, 
     answer(id, decision) {
       const p = pending.get(id);
       if (!p || !["allow", "deny"].includes(decision)) return { ok: false, error: "That request has already been answered or timed out." };
-      console.log(`${decision === "allow" ? "✓" : "✗"} ${decision} ${p.info.tool} in ${p.info.project} (from the panel)`);
+      log(`${decision === "allow" ? "✓" : "✗"} ${decision} ${p.info.tool} in ${p.info.project} (from the panel)`);
       p.resolve(decision);
       return { ok: true };
     },
