@@ -89,3 +89,15 @@ select, input:not([type=checkbox]):not([type=radio]), textarea { width: 100%; }
 #flash[data-bad="1"] { border-color: var(--danger); }
 #flash[hidden] { display: none; }
 .hint { color: var(--ink-faint); font-size: 12px; margin-top: 10px; }
+#settingsView { overflow-y: auto; max-height: calc(100vh - 110px); padding-right: 6px; }
+#settingsView[hidden] { display: none; }
+.set-section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 16px 14px; margin-bottom: 14px; }
+.set-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.set-row { display: flex; align-items: center; gap: 10px; background: var(--field); border-radius: 10px; padding: 8px 10px; }
+.set-row .grow { flex: 1; min-width: 0; }
+.set-row .small { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.set-row input[type=color] { width: 30px; height: 30px; padding: 0; border: 0; background: none; }
+.cal-status { font-size: 12px; max-width: 240px; }
+.geo-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.row input { flex: 1; min-width: 120px; width: auto; }
+body[data-view="settings"] aside.right { opacity: 0.4; pointer-events: none; }

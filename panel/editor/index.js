@@ -4,6 +4,7 @@
 // Live preview shows the working copy in the real panel renderer with live data.
 
 import { COLS, ROWS, clampBox, overlaps } from "../src/grid.js";
+import { renderSettings } from "./settings.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const h = (tag, attrs = {}, ...kids) => {
@@ -34,6 +35,7 @@ const state = {
   selected: null,
   preview: false,
   search: "",
+  view: "layout", // or "settings"
 };
 
 const byType = () => new Map(state.catalog.widgets.map((w) => [w.type, w]));
@@ -334,6 +336,17 @@ function exportPage(p) {
 function renderCenter() {
   const canvas = $("#canvas");
   const frame = $("#previewFrame");
+  const settings = $("#settingsView");
+  const inSettings = state.view === "settings";
+  settings.hidden = !inSettings;
+  document.body.dataset.view = state.view;
+  $("#settingsToggle").setAttribute("aria-pressed", inSettings ? "true" : "false");
+  if (inSettings) {
+    canvas.hidden = true;
+    frame.hidden = true;
+    renderSettings(settings, { state, h, change, api, flash });
+    return;
+  }
   canvas.hidden = state.preview;
   frame.hidden = !state.preview;
   if (state.preview) {
@@ -587,7 +600,8 @@ window.addEventListener("message", (e) => {
 function boot() {
   $("#save").addEventListener("click", save);
   $("#revert").addEventListener("click", () => confirm("Discard unsaved changes?") && load());
-  $("#previewToggle").addEventListener("click", () => change(() => (state.preview = !state.preview)));
+  $("#previewToggle").addEventListener("click", () => change(() => ((state.preview = !state.preview), (state.view = "layout"))));
+  $("#settingsToggle").addEventListener("click", () => change(() => (state.view = state.view === "settings" ? "layout" : "settings")));
   $("#target").addEventListener("change", (e) =>
     change(() => {
       state.target = e.target.value;

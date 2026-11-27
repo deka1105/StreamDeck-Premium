@@ -69,6 +69,7 @@ export async function buildPanel() {
   <select id="target" aria-label="Device"></select>
   <span id="rev"></span>
   <span class="spacer"></span>
+  <button id="settingsToggle" aria-pressed="false">Settings</button>
   <button id="previewToggle" aria-pressed="false">Live preview</button>
   <button id="revert" disabled>Revert</button>
   <button id="save" class="primary" disabled>Save</button>
@@ -78,6 +79,7 @@ export async function buildPanel() {
   <section id="center">
     <div id="canvas"></div>
     <iframe id="previewFrame" title="Live preview" hidden></iframe>
+    <div id="settingsView" hidden></div>
     <p class="hint">Drag a widget to move it, drag its corner to resize. Delete removes the selected widget. ⌘/Ctrl-S saves.</p>
   </section>
   <aside class="right"><h2>Add a widget</h2><div id="palette"></div><h2 style="margin-top:20px">Selected widget</h2><div id="inspector"></div></aside>
