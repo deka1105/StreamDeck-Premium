@@ -124,7 +124,7 @@ test("netq: a sample reports quality from fake probes; speed tests are rate limi
     if (url.includes("__down")) return { body: (async function* () { yield new Uint8Array(1000); })() };
     return { ok: true, json: async () => ({ clientIp: "203.0.113.9" }) };
   };
-  const n = createNetq({ dir: mkdtempSync(join(tmpdir(), "netq-")), now: () => t, ping: async () => pings.shift() ?? 10, fetchImpl: fakeFetch, getSettings: () => ({ showIp: true }) });
+  const n = createNetq({ dir: mkdtempSync(join(tmpdir(), "netq-")), now: () => t, ping: async () => (pings.length ? pings.shift() : 10), fetchImpl: fakeFetch, getSettings: () => ({ showIp: true }) });
   await n.sample();
   await n.sample();
   const s = await n.sample();
