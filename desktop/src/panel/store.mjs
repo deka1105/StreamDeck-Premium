@@ -52,7 +52,7 @@ export function createPanelStore({ dir, catalog = loadCatalog(), onChange = () =
     layoutFor(client) {
       const own = config.devices[client];
       const l = own && own.pages.length ? own : config.default;
-      return { rev, pages: structuredClone(l.pages), home: l.home, settings: { ...config.settings }, own: !!(own && own.pages.length) };
+      return { rev, pages: structuredClone(l.pages), home: l.home, look: structuredClone(l.look ?? {}), display: structuredClone(l.display ?? {}), settings: { ...config.settings }, own: !!(own && own.pages.length) };
     },
     /** Replace the whole config (editor Save / import). Returns the sanitized result. */
     save(raw) {

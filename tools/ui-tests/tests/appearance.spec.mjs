@@ -114,7 +114,7 @@ test("editor: pick a preset and night schedule; saved config is sanitised", asyn
   await page.locator('.preset[data-preset="ember"]').click();
   await page.locator("#navStyle").selectOption("side-right");
   await page.locator("#nightMode").selectOption("schedule");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.locator("#save").click();
   await expect.poll(async () => (await (await fetch(`${host.base}/api/editor/state`)).json()).config.default.look.preset).toBe("ember");
   const cfg = (await (await fetch(`${host.base}/api/editor/state`)).json()).config.default;
   expect(cfg.display.nav).toBe("side-right");
