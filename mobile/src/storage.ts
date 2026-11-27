@@ -107,10 +107,12 @@ export async function removePairing(state: PairingsState, kid: string): Promise<
     pairings,
     activeKid: state.activeKid === kid ? pairings[0]?.kid ?? null : state.activeKid,
   };
-  try {
-    await SecureStore.deleteItemAsync(ctrKey(kid));
-  } catch {
-    // counter may never have been written
+  for (const key of [ctrKey(kid), evCtrKey(kid)]) {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch {
+      // counter may never have been written
+    }
   }
   await persist(next);
   return next;
@@ -126,8 +128,17 @@ export async function setActivePairing(state: PairingsState, kid: string): Promi
 
 /** Atomic-enough monotonic counter for GCM message ordering, per pairing. */
 export async function nextCounter(kid: string): Promise<number> {
-  const cur = parseInt((await SecureStore.getItemAsync(ctrKey(kid))) ?? "0", 10) || 0;
+  return bump(ctrKey(kid));
+}
+
+/** The event channel's counter (independent of nextCounter). */
+export async function nextEvCounter(kid: string): Promise<number> {
+  return bump(evCtrKey(kid));
+}
+
+async function bump(key: string): Promise<number> {
+  const cur = parseInt((await SecureStore.getItemAsync(key)) ?? "0", 10) || 0;
   const next = cur + 1;
-  await SecureStore.setItemAsync(ctrKey(kid), String(next));
+  await SecureStore.setItemAsync(key, String(next));
   return next;
 }

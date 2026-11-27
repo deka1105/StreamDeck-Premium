@@ -3,7 +3,7 @@
 // monotonic counter stays strictly increasing.
 
 import { seal, unseal, b64ToBytes, bytesToB64, genEphemeral, deriveDeviceKey, confirmTag } from "./crypto";
-import { nextCounter, type Pairing } from "./storage";
+import { nextCounter, nextEvCounter, type Pairing } from "./storage";
 import type { ButtonAction } from "./buttons";
 
 export type DeckAction = ButtonAction;
