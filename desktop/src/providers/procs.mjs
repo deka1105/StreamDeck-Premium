@@ -20,14 +20,27 @@ const me = () => {
   }
 };
 
+/**
+ * The program's name only. Some platforms report "name" as the whole command
+ * line ("sleep 300", "/usr/bin/python3 script.py --token=…"); arguments can hold
+ * secrets and must never reach the phone, and they'd split one app into many.
+ */
+export function procName(p) {
+  let n = String(p?.name ?? "");
+  if (p?.command && n === p.command && /\s/.test(n)) n = n.split(/\s+/)[0];
+  if (/[\\/]/.test(n)) n = n.split(/[\\/]/).filter(Boolean).pop() ?? n;
+  return n.slice(0, 80);
+}
+
 /** Group raw processes by name and keep the heaviest. Pure (unit-tested). */
 export function summarize(list = [], { limit = 25, user = me(), platform = process.platform } = {}) {
   const prot = new Set(PROTECTED[platform] ?? []);
   const groups = new Map();
   for (const p of list) {
-    if (!p?.name) continue;
-    const key = p.name;
-    const g = groups.get(key) ?? { name: p.name, pids: [], cpu: 0, mem: 0, own: true, protected: prot.has(p.name.toLowerCase()) };
+    const name = procName(p);
+    if (!name) continue;
+    const key = name;
+    const g = groups.get(key) ?? { name, pids: [], cpu: 0, mem: 0, own: true, protected: prot.has(name.toLowerCase()) };
     g.pids.push(p.pid);
     g.cpu += Number(p.cpu) || 0;
     g.mem += (Number(p.memRss) || 0) * 1024; // KB → bytes

@@ -62,6 +62,20 @@ test("procs: grouped by name, ownership tracked, protected flagged", () => {
   assert.equal(out.find((g) => g.name === "Tool").own, false);
 });
 
+test("procs: names never carry command-line arguments", () => {
+  const { list } = summarize(
+    [
+      { pid: 1, name: "sleep 300", command: "sleep 300", cpu: 0, memRss: 1, user: "me" },
+      { pid: 2, name: "/usr/bin/python3 tool.py --token=SECRET", command: "/usr/bin/python3 tool.py --token=SECRET", cpu: 0, memRss: 1, user: "me" },
+      { pid: 3, name: "Google Chrome Helper", command: "/Applications/Google Chrome.app/…/Google Chrome Helper --type=renderer", cpu: 0, memRss: 1, user: "me" },
+    ],
+    { user: "me", platform: "darwin" },
+  );
+  const names = list.map((g) => g.name).sort();
+  assert.deepEqual(names, ["Google Chrome Helper", "python3", "sleep"]);
+  assert.ok(!JSON.stringify(list).includes("SECRET"));
+});
+
 test("procs: Windows DOMAIN\\user ownership matches", () => {
   const { list } = summarize([{ pid: 9, name: "app.exe", cpu: 1, memRss: 1, user: "DESKTOP-1\\Me" }], { user: "me", platform: "win32" });
   assert.equal(list[0].own, true);
