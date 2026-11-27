@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, delimiter } from "node:path";
 import { userVolumes } from "./disks.mjs";
 import { normalizeControllers } from "./gpu.mjs";
 import { summarize, killDecision, PROTECTED } from "./procs.mjs";
@@ -157,7 +157,9 @@ test("netq: a sample reports quality from fake probes; speed tests are rate limi
 test("env: the system tool directories are on PATH", () => {
   const env = { PATH: "/usr/bin" };
   ensureSystemPath(env, "darwin");
-  for (const d of ["/usr/sbin", "/sbin", "/bin"]) assert.ok(env.PATH.split(":").includes(d));
+  for (const d of ["/usr/sbin", "/sbin", "/bin"]) assert.ok(env.PATH.split(delimiter).includes(d));
+  const win = { PATH: "C:\\Windows" };
+  assert.equal(ensureSystemPath(win, "win32"), "C:\\Windows"); // Windows PATH is left alone
 });
 
 test("live: every provider samples on this OS without throwing", { timeout: 60_000 }, async () => {
