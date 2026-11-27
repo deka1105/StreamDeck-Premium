@@ -714,3 +714,10 @@ body[data-nav^="side"] .dot { width: calc(var(--side-w, 96px) - 8px); text-align
 
 /* font families get a body hook (look.js sets --font) */
 body[data-font="mono"] .w-title { letter-spacing: 0; }
+.w-stack { padding: 0 !important; }
+.stack-view { position: absolute; inset: 0 0 14px 0; }
+.stack-view > .w-body { padding: var(--pad); }
+.stack-dots { position: absolute; left: 0; right: 0; bottom: 3px; display: flex; justify-content: center; gap: 2px; }
+.stack-dots i { width: 14px; height: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.stack-dots i::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--ink-faint); }
+.stack-dots i[aria-current]::after { background: var(--accent); }

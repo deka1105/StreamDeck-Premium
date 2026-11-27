@@ -19,6 +19,7 @@ import { weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews
 import { nowplaying, volume, radio, lyrics, mediaserver } from "./media.js";
 import { pushvalue, notifications, bigbutton, shortcutgrid, command, ruleswidget, customhtml } from "./automation.js";
 import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./ai.js";
+import { stack } from "./stack.js";
 
 export const WIDGETS = [
   // time
@@ -36,7 +37,7 @@ export const WIDGETS = [
   // ai & code
   sessions, aiquota, tokenuse, agentalerts, contributions, prs,
   // layout
-  customhtml,
+  customhtml, stack,
 ];
 
 export const REGISTRY = Object.fromEntries(WIDGETS.map((w) => [w.type, w]));

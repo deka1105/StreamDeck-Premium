@@ -1877,6 +1877,42 @@
           "maxLength": 20000
         }
       ]
+    },
+    {
+      "type": "stack",
+      "name": "Smart Stack",
+      "category": "layout",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "types",
+          "type": "text",
+          "label": "Widgets, in order (comma-separated types)",
+          "default": "nowplaying, nextup, weather, agentalerts",
+          "maxLength": 300
+        },
+        {
+          "key": "seconds",
+          "type": "number",
+          "label": "Rotate every (s, 0 = only by swipe)",
+          "default": 12,
+          "min": 0,
+          "max": 600
+        },
+        {
+          "key": "smart",
+          "type": "bool",
+          "label": "Jump to what matters now",
+          "default": true
+        }
+      ]
     }
   ]
 }

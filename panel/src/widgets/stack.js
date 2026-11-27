@@ -2,7 +2,7 @@
 // tap on the dots; "smart" jumps to the one that matters now (something
 // waiting for you, music playing, an event starting soon).
 
-import { REGISTRY } from "./index.js";
+import { REGISTRY, withDefaults } from "./index.js";
 
 const DEFAULT = "nowplaying, nextup, weather, agentalerts";
 const parse = (s) => String(s ?? "").split(",").map((x) => x.trim()).filter((t) => t && t !== "stack");
@@ -35,7 +35,7 @@ export const stack = {
     ],
   },
   needs(options) {
-    const kinds = parse(options.types).flatMap((t) => REGISTRY[t]?.needs?.({}) ?? []);
+    const kinds = parse(options.types).flatMap((t) => (REGISTRY[t]?.needs ? REGISTRY[t].needs(withDefaults(REGISTRY[t], {})) : []));
     return [...new Set([...kinds, ...(options.smart ? ["alerts"] : [])])];
   },
   mount(el, ctx) {
