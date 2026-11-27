@@ -373,7 +373,10 @@ html, body {
 .net-stats .k { color: var(--ink-faint); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
 .net-stats .v { font-weight: 650; font-variant-numeric: tabular-nums; font-size: clamp(11px, 5cqh, 16px); white-space: nowrap; }
 .net-foot { display: flex; align-items: center; gap: 10px; font-size: 11px; }
+.net-up, .net-speed { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .net-speed { flex: 1; text-align: right; }
+.net-test { flex: none; }
+@container (max-width: 420px) { .net-speed { display: none; } .net-up { flex: 1; } }
 .net-test { appearance: none; border: 1px solid var(--line); background: var(--field); color: var(--accent-soft); font: inherit; font-weight: 650; padding: 4px 10px; border-radius: 8px; }
 @container (max-height: 120px) { .w-internet .net-chart, .w-internet .net-foot { display: none; } }
 @container (max-width: 260px) { .net-stats > div:nth-child(n+4) { display: none; } .net-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
