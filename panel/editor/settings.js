@@ -4,6 +4,7 @@
 // never part of the config or read back.
 
 import { renderAutomation } from "./automation.js";
+import { renderAi } from "./ai.js";
 
 const rid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -215,4 +216,5 @@ export function renderSettings(root, { state, h, change, api, flash }) {
   );
 
   renderAutomation(root, { state, h, change, api, flash });
+  renderAi(root, { state, h, change, api, flash });
 }

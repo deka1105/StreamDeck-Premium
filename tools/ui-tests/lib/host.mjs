@@ -11,15 +11,18 @@ import { fileURLToPath } from "node:url";
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const HOST = join(repo, "desktop", "src", "host.mjs");
 
-export async function startHost({ port = 18888, localPort = 18889, config } = {}) {
+export async function startHost({ port = 18888, localPort = 18889, config, claudeDir } = {}) {
   const cwd = mkdtempSync(join(tmpdir(), "deskassist-ui-"));
+  // Never the real ~/.claude or ~/.codex: tests get empty (or given) folders.
+  claudeDir ??= join(cwd, "claude-home");
+  mkdirSync(claudeDir, { recursive: true });
   if (config) {
     mkdirSync(join(cwd, ".data"), { recursive: true });
     writeFileSync(join(cwd, ".data", "panel.json"), JSON.stringify(config));
   }
   const child = spawn(process.execPath, [HOST], {
     cwd,
-    env: { ...process.env, DECK_PORT: String(port), DECK_LOCAL_PORT: String(localPort), DECK_DRY_RUN: "1" },
+    env: { ...process.env, DECK_PORT: String(port), DECK_LOCAL_PORT: String(localPort), DECK_DRY_RUN: "1", CLAUDE_CONFIG_DIR: claudeDir, CODEX_HOME: join(cwd, "codex-home") },
     stdio: ["ignore", "pipe", "pipe"],
   });
   let log = "";
@@ -43,6 +46,7 @@ export async function startHost({ port = 18888, localPort = 18889, config } = {}
   return {
     base,
     cwd,
+    claudeDir,
     log: () => log,
     stop: () =>
       new Promise((resolve) => {
