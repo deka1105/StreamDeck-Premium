@@ -11,12 +11,21 @@ export default {
       { key: "hour12", type: "bool", label: "12-hour clock", default: false },
       { key: "seconds", type: "bool", label: "Show seconds", default: false },
       { key: "date", type: "bool", label: "Show the date", default: true },
+      { key: "status", type: "choice", label: "Status line", default: "none", choices: [{ value: "none", label: "None" }, { value: "system", label: "CPU and memory" }] },
     ],
   },
-  needs: () => [],
+  needs: (o) => (o.status === "system" ? ["system"] : []),
   mount(el, ctx) {
     el.classList.add("w-clock");
-    el.innerHTML = `<div class="clock-time"></div><div class="clock-date"></div>`;
+    el.innerHTML = `<div class="clock-time"></div><div class="clock-date"></div><div class="clock-status muted" hidden></div>`;
+    if (ctx.options.status === "system") {
+      const line = el.querySelector(".clock-status");
+      line.hidden = false;
+      ctx.subscribe("system", (s) => {
+        const mem = s?.mem?.total ? Math.round((100 * s.mem.used) / s.mem.total) : null;
+        line.textContent = `CPU ${Number.isFinite(s?.cpu) ? Math.round(s.cpu) : "—"}% · Memory ${mem ?? "—"}%`;
+      });
+    }
     const timeEl = el.querySelector(".clock-time");
     const dateEl = el.querySelector(".clock-date");
     const render = () => {
