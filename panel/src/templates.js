@@ -99,6 +99,90 @@ export const TEMPLATES = [
     page: { name: "Deck", widgets: [{ type: "deck", x: 0, y: 0, w: 12, h: 6 }] },
   },
   {
+    id: "daily",
+    name: "Daily",
+    description: "Checklist, time progress, a timer, a counter and a stopwatch.",
+    page: {
+      name: "Daily",
+      widgets: [
+        { type: "checklist", x: 0, y: 0, w: 4, h: 4 },
+        { type: "progress", x: 4, y: 0, w: 4, h: 3 },
+        { type: "timer", x: 8, y: 0, w: 4, h: 4 },
+        { type: "counter", x: 4, y: 3, w: 4, h: 3 },
+        { type: "stopwatch", x: 0, y: 4, w: 4, h: 2 },
+        { type: "clock", x: 8, y: 4, w: 4, h: 2 },
+      ],
+    },
+  },
+  {
+    id: "focus",
+    name: "Focus",
+    description: "Pomodoro, a note and your focus history.",
+    page: {
+      name: "Focus",
+      widgets: [
+        { type: "pomodoro", x: 0, y: 0, w: 6, h: 4 },
+        { type: "note", x: 6, y: 0, w: 6, h: 4, options: { title: "Working on" } },
+        { type: "focushistory", x: 0, y: 4, w: 8, h: 2 },
+        { type: "clock", x: 8, y: 4, w: 4, h: 2, options: { date: false } },
+      ],
+    },
+  },
+  {
+    id: "calm",
+    name: "Calm",
+    description: "A breathing guide, a quote and a quiet clock.",
+    page: {
+      name: "Calm",
+      widgets: [
+        { type: "breathe", x: 0, y: 0, w: 6, h: 6, options: { pattern: "relax" } },
+        { type: "analog", x: 6, y: 0, w: 6, h: 4 },
+        { type: "quote", x: 6, y: 4, w: 6, h: 2 },
+      ],
+    },
+  },
+  {
+    id: "timer",
+    name: "Timer",
+    description: "A big timer with presets.",
+    page: {
+      name: "Timer",
+      widgets: [
+        { type: "timer", x: 0, y: 0, w: 8, h: 6 },
+        { type: "stopwatch", x: 8, y: 0, w: 4, h: 3 },
+        { type: "clock", x: 8, y: 3, w: 4, h: 3 },
+      ],
+    },
+  },
+  {
+    id: "world",
+    name: "World",
+    description: "World clocks, an analog clock and this month.",
+    page: {
+      name: "World",
+      widgets: [
+        { type: "worldclocks", x: 0, y: 0, w: 5, h: 4 },
+        { type: "analog", x: 5, y: 0, w: 3, h: 4, options: { zone: "UTC", label: true } },
+        { type: "calendar", x: 8, y: 0, w: 4, h: 6 },
+        { type: "countdown", x: 0, y: 4, w: 8, h: 2 },
+      ],
+    },
+  },
+  {
+    id: "nightstand",
+    name: "Nightstand",
+    description: "A word clock, the phone's battery and the time of day.",
+    page: {
+      name: "Nightstand",
+      widgets: [
+        { type: "wordclock", x: 0, y: 0, w: 6, h: 6 },
+        { type: "battery", x: 6, y: 0, w: 3, h: 3 },
+        { type: "progress", x: 9, y: 0, w: 3, h: 3 },
+        { type: "quote", x: 6, y: 3, w: 6, h: 3 },
+      ],
+    },
+  },
+  {
     id: "clock",
     name: "Clock",
     description: "A big clock with seconds.",
