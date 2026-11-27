@@ -56,8 +56,9 @@ to a public repo** within seconds, so never write a secret into this tree.
 - [ ] Stage 11 — Control Deck, cross-platform part
 - [ ] Stage 12 — Control Deck, Windows-native part
 - [ ] Stage 13 — Android-only features
-- [ ] Stage 14 — Integration long tail
-- [ ] Stage 15 — Languages, release
+- [ ] Stage 14 — 3D printers (DeskHub)
+- [ ] Stage 15 — Games and integration long tail
+- [ ] Stage 16 — Languages, release
 
 ---
 
@@ -74,6 +75,8 @@ to a public repo** within seconds, so never write a secret into this tree.
 | D7 | **Shortcut and command widgets send IDs, not commands**, for anything that runs a program the host has configured. The existing app/URL/keys tile actions keep their current typed, validated form. | **Sending commands from the phone:** a paired phone or a leaked key would become remote code execution. |
 | D8 | **Host tests use `node --test`** (no new dependency). The panel and editor get Playwright in Stage 3. | **Vitest/Jest:** an extra toolchain for a codebase that's mostly plain ESM. |
 | D9 | **Host system data comes from the `systeminformation` npm package** (MIT, macOS + Windows + Linux). Anything it lacks gets a small per-OS helper (Stages 7, 11, 12). | **Writing every probe by hand:** months of OS work before the first chart. |
+| D10 | **Integration secrets** (GitHub token, Steam Web API key, printer access codes, Plex/Jellyfin keys, iCloud app password, Home Assistant token) live in `desktop/src/secrets.mjs`. It uses Electron `safeStorage` (Keychain on macOS, DPAPI on Windows) when running under Electron, and a 0600 file in the user-data dir when the host runs as plain Node (dev/CI). `config.json` holds only a reference. Secrets never go to the phone. | **Plain `config.json`:** both references keep secrets out of the config file. **The `keytar` native module:** archived upstream, and a native build per OS. |
+| D11 | **Printers and other LAN devices are polled by the host, never by the phone.** The phone sees normalized state (`{name, model, online, state, pct, remainingMin, layer, temps, speed, error, slots[]}`). | **Phone talks to devices directly:** iOS Local Network prompts, credentials on the phone, and protocols that allow only one client at a time. |
 
 ---
 
