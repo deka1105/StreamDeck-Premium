@@ -52,6 +52,18 @@ test("resolveLayout portrait uses explicit boxes and packs the rest", () => {
   assert.deepEqual(boxes[2], { x: 0, y: 5, w: 3, h: 2 });
 });
 
+test("resolveLayout portrait rounds widths to full / half / third", () => {
+  const { boxes } = resolveLayout(
+    [
+      { x: 0, y: 0, w: 4, h: 2 },
+      { x: 4, y: 0, w: 8, h: 2 },
+      { x: 0, y: 2, w: 1, h: 1 },
+    ],
+    "portrait",
+  );
+  assert.deepEqual(boxes.map((b) => b.w), [3, 6, 2]);
+});
+
 test("resolveLayout portrait overflows below the grid instead of overlapping", () => {
   const widgets = Array.from({ length: 4 }, (_, i) => ({ x: i * 3, y: 0, w: 6, h: 6 }));
   const { rows, boxes } = resolveLayout(widgets, "portrait");

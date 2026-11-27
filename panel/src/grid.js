@@ -82,7 +82,10 @@ export function resolveLayout(widgets, orientation = "landscape") {
   // Pack loose widgets around the fixed ones.
   const taken = [...fixed];
   for (const { w, i } of loose) {
-    const bw = Math.max(1, Math.min(pCols, int(w.w, 1)));
+    // Landscape widths don't fit a 6-wide portrait grid well: wide widgets go
+    // full width, medium ones half width, small ones a third.
+    const lw = int(w.w, 1);
+    const bw = lw >= 5 ? pCols : lw >= 3 ? Math.ceil(pCols / 2) : Math.min(pCols, 2);
     const bh = Math.max(1, Math.min(pRows, int(w.h, 1)));
     let placed = null;
     for (let y = 0; !placed && y + bh <= pRows; y++) {
