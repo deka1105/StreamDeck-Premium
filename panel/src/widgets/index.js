@@ -6,8 +6,14 @@
 import clock from "./clock.js";
 import metric from "./metric.js";
 import deck from "./deck.js";
+import gauge from "./gauge.js";
+import chart from "./chart.js";
+import gpu from "./gpu.js";
+import storage from "./storage.js";
+import { topprocs, processes } from "./procs.js";
+import internet from "./internet.js";
 
-export const WIDGETS = [clock, metric, deck];
+export const WIDGETS = [clock, metric, gauge, chart, gpu, storage, topprocs, processes, internet, deck];
 
 export const REGISTRY = Object.fromEntries(WIDGETS.map((w) => [w.type, w]));
 
