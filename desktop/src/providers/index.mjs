@@ -11,6 +11,7 @@ import { createWebProviders } from "./web.mjs";
 import { createMedia } from "./media.mjs";
 import { createMediaServers, createRadio } from "./mediaExtras.mjs";
 import { hostStatus } from "../executor.mjs";
+import { createPcPower } from "./pcpower.mjs";
 
 /**
  * Providers for a host. `dir` persists netq usage; `getSettings` reads panel
@@ -30,6 +31,7 @@ export function createProviders({ dir, getSettings = () => ({}), getWidgets = ()
     media: createMedia({ getVolume: hostStatus }),
     mediaServer: createMediaServers({ getSettings, secrets }),
     radio: createRadio({ dryRun }),
+    pcpower: createPcPower(),
   };
 }
 
