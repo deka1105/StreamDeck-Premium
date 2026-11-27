@@ -11,6 +11,7 @@
     "smoke": "SMOKE=1 electron .",
     "host": "node src/host.mjs",
     "host:dry": "DECK_DRY_RUN=1 node src/host.mjs",
+    "test": "node --test \"src/**/*.test.mjs\"",
     "test:client": "node src/test-client.mjs",
     "gen:icon": "node scripts/gen-icon.mjs",
     "pack": "npm run gen:icon && electron-builder --dir",
