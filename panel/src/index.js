@@ -2,6 +2,10 @@
 // the current page, and handles navigation — swipe, page dots, the overview,
 // keyboard arrows, and returning home when idle.
 
+import { createLook } from "./look.js";
+import { createDisplay } from "./display.js";
+
+const DEFAULT_DISPLAY = { nav: "dots", badges: true, oledShift: false, dimAfterMin: 0, dimLevel: 0.5, followPcSleep: false, night: { mode: "off", from: "22:30", to: "07:00", style: "clock", brightness: 0.25 } };
 import { createPromptCard } from "./widgets/ai.js";
 import { createBridge } from "./bridge.js";
 import { createStore } from "./store.js";
@@ -33,6 +37,8 @@ function boot() {
   window.addEventListener("error", (e) => debug(`error: ${e.message} @ ${e.filename}:${e.lineno}`));
   window.addEventListener("unhandledrejection", (e) => debug(`unhandled: ${e.reason?.message ?? e.reason}`));
   const env = { store, bridge, goto: (id) => gotoId(id) };
+  const look = createLook();
+  const displayCtl = createDisplay({ store, onNeedsChange: () => bridge.setNeeds(pageNeeds()) });
   document.body.dataset.bridge = bridge.kind;
   if (bridge.demo) {
     bannerEl.hidden = false;
@@ -58,7 +64,7 @@ function boot() {
   const hasCalendar = (p) => p.widgets.some((w) => CAL_TYPES.has(w.type));
   // The current page's data, plus calendar data if any page shows a calendar
   // (its dot marks "still an event today" even while you're elsewhere).
-  const pageNeeds = () => [...new Set([...(current?.needs ?? []), ...(pages().some(hasCalendar) ? ["calendar"] : []), "alerts"])];
+  const pageNeeds = () => [...new Set([...(current?.needs ?? []), ...(pages().some(hasCalendar) ? ["calendar"] : []), "alerts", ...displayCtl.needs()])];
 
   // ---- rendering -----------------------------------------------------------
 
@@ -70,6 +76,10 @@ function boot() {
       const b = document.createElement("button");
       b.className = "dot";
       b.setAttribute("aria-label", p.name);
+      const nm = document.createElement("span");
+      nm.className = "dot-name";
+      nm.textContent = p.name;
+      b.appendChild(nm);
       if (i === index) b.setAttribute("aria-current", "page");
       if (hasCalendar(p)) {
         const now = Date.now();
@@ -94,6 +104,8 @@ function boot() {
     holder.className = "page";
     if (direction) holder.style.transform = `translateX(${direction > 0 ? 100 : -100}%)`;
     pagesEl.appendChild(holder);
+    look.apply(layout?.look, page?.look);
+    displayCtl.apply(layout?.display ?? DEFAULT_DISPLAY);
     if (page) {
       current = { ...mountPage(holder, page, env, orientation()), holder, pageId: page.id };
     } else {
@@ -373,6 +385,7 @@ function boot() {
     },
     go,
     gotoId,
+    display: displayCtl,
     openOverview,
   };
 }

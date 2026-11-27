@@ -204,6 +204,8 @@ export const title = {
       { key: "text", type: "text", label: "Text", default: "Focus" },
       { key: "align", type: "choice", label: "Align", default: "center", choices: [{ value: "left", label: "Left" }, { value: "center", label: "Centre" }] },
       { key: "card", type: "bool", label: "Show as a card", default: false },
+      { key: "marquee", type: "bool", label: "Scroll long text (marquee)", default: false },
+      { key: "speed", type: "number", label: "Scroll speed (characters per second)", default: 6, min: 1, max: 30 },
     ],
   },
   needs: () => [],
@@ -211,7 +213,23 @@ export const title = {
     el.classList.add("w-titletext");
     el.dataset.align = ctx.options.align;
     el.closest(".w")?.classList.toggle("bare", !ctx.options.card);
-    el.textContent = ctx.options.text;
+    if (!ctx.options.marquee) return void (el.textContent = ctx.options.text);
+    // Two copies scroll as one seamless loop; only when the text doesn't fit.
+    el.classList.add("marquee");
+    const track = document.createElement("div");
+    track.className = "marquee-track";
+    const a = document.createElement("span");
+    a.textContent = ctx.options.text;
+    track.append(a);
+    el.append(track);
+    requestAnimationFrame(() => {
+      if (a.offsetWidth <= el.clientWidth) return el.classList.remove("marquee");
+      const b = a.cloneNode(true);
+      b.setAttribute("aria-hidden", "true");
+      track.append(b);
+      track.style.animationDuration = `${Math.max(4, ctx.options.text.length / ctx.options.speed)}s`;
+      track.classList.add("on");
+    });
   },
 };
 

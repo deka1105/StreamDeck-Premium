@@ -661,3 +661,57 @@ html, body {
 .prompt-detail { margin: 8px 0 12px; padding: 8px; background: #04070d; border-radius: 8px; font: 12px/1.4 var(--mono); white-space: pre-wrap; word-break: break-all; max-height: 30vh; overflow: auto; text-align: left; }
 .prompt-left { font-size: 11px; margin-top: 8px; }
 .prompt-allow, .prompt-deny { min-width: 120px; min-height: 44px; }
+
+/* --- Stage 10: appearance & display --- */
+.w { box-shadow: var(--tile-shadow, none); border: var(--tile-border, 1px solid var(--line)); }
+#pages { transform: translate(var(--shift-x, 0), var(--shift-y, 0)); }
+.page-grid { zoom: var(--scale, 1); width: calc(100% / var(--scale, 1)); height: calc(100% / var(--scale, 1)); }
+body[data-theme="light"] { --line: rgba(15, 23, 42, 0.1); --field: #e2e8f0; color-scheme: light; }
+body[data-theme="light"] .tbtn:not(.primary) { color: var(--ink); }
+body[data-theme="oled"] { --line: rgba(255, 255, 255, 0.12); }
+#wall { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+#wall[hidden] { display: none; }
+.wall-img { position: absolute; inset: 0; background: center / cover no-repeat; }
+.wall-dim { position: absolute; inset: 0; background: #000; }
+body[data-wall="1"] { background: transparent; }
+body[data-wall="1"] html { background: var(--bg); }
+body[data-wall="1"] .w { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+
+/* navigation styles */
+.dot-name { display: none; }
+body[data-badges="0"] .dot[data-badge="1"]::before { display: none; }
+body[data-nav="none"] #dots { display: none; }
+body[data-nav="none"] { --nav-h: 0px; }
+body[data-nav="bar"] { --nav-h: 38px; }
+body[data-nav="bar"] #dots { left: 0; right: 0; transform: none; justify-content: center; gap: 6px; padding: 0 10px; height: 34px; overflow-x: auto; }
+body[data-nav="bar"] .dot, body[data-nav^="side"] .dot { padding: 6px 12px; border-radius: 99px; color: var(--ink-dim); font: 600 12px var(--font); white-space: nowrap; }
+body[data-nav="bar"] .dot::after, body[data-nav^="side"] .dot::after { display: none; }
+body[data-nav="bar"] .dot-name, body[data-nav^="side"] .dot-name { display: inline; }
+body[data-nav="bar"] .dot[aria-current="page"], body[data-nav^="side"] .dot[aria-current="page"] { background: var(--accent-faint); color: var(--accent); }
+body[data-nav^="side"] { --nav-h: 0px; }
+body[data-nav^="side"] #dots { flex-direction: column; top: 50%; bottom: auto; left: auto; height: auto; max-height: 90vh; overflow-y: auto; transform: translateY(-50%); gap: 4px; }
+body[data-nav="side-left"] #dots { left: max(4px, env(safe-area-inset-left)); }
+body[data-nav="side-right"] #dots { right: max(4px, env(safe-area-inset-right)); }
+body[data-nav="side-left"] .page { padding-left: calc(max(var(--page-pad), env(safe-area-inset-left)) + var(--side-w, 96px)); }
+body[data-nav="side-right"] .page { padding-right: calc(max(var(--page-pad), env(safe-area-inset-right)) + var(--side-w, 96px)); }
+body[data-nav^="side"] .dot { width: calc(var(--side-w, 96px) - 8px); text-align: left; overflow: hidden; text-overflow: ellipsis; }
+
+/* night screen, black screen, dimming */
+#night { position: fixed; inset: 0; z-index: 60; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+#night[hidden] { display: none; }
+#night[data-style="black"] .night-clock { display: none; }
+.night-clock { text-align: center; color: #fff; opacity: var(--night-b, 0.25); transform: translate(calc(var(--shift-x, 0px) * 6), calc(var(--shift-y, 0px) * 6)); transition: transform 2s; }
+.night-time { font-size: min(28vw, 50vh); font-weight: 200; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.night-date { font-size: min(4vw, 7vh); margin-top: 1vh; color: #9aa4b2; }
+#dim { position: fixed; inset: 0; z-index: 55; background: #000; pointer-events: none; transition: opacity 1.5s; }
+#dim[hidden] { display: none; }
+
+/* marquee */
+.w-titletext.marquee { overflow: hidden; justify-content: flex-start !important; }
+.marquee-track { display: flex; white-space: nowrap; gap: 3em; width: max-content; }
+.marquee-track.on { animation: marquee linear infinite; }
+.marquee-track span { padding-right: 3em; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* font families get a body hook (look.js sets --font) */
+body[data-font="mono"] .w-title { letter-spacing: 0; }

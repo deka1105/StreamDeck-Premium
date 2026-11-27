@@ -1,5 +1,6 @@
 // Panel app: mounts widgets for a page and feeds them data from the bridge.
 
+import { applyWidgetLook } from "./look.js";
 import { REGISTRY, withDefaults } from "./widgets/index.js";
 import { resolveLayout } from "./grid.js";
 
@@ -100,6 +101,7 @@ export function mountPage(root, page, env, orientation) {
     cell.dataset.id = w.id ?? "";
     cell.style.gridColumn = `${b.x + 1} / span ${b.w}`;
     cell.style.gridRow = `${b.y + 1} / span ${b.h}`;
+    applyWidgetLook(cell, w.look);
     grid.appendChild(cell);
     const m = mountWidget(cell, w, { ...env, pageId: page.id });
     return { ...m, cell };
