@@ -66,8 +66,13 @@ export const notifications = {
 // --------------------------------------------------- shortcuts by id ----
 
 let shortcutCache = null;
+let shortcutAt = 0;
 function loadShortcuts(ctx) {
-  shortcutCache ??= ctx.request("shortcuts.list").then((r) => r?.shortcuts ?? [], () => ((shortcutCache = null), []));
+  // Short-lived cache: several widgets ask at once, but edits in the editor show up soon.
+  if (!shortcutCache || Date.now() - shortcutAt > 30_000) {
+    shortcutAt = Date.now();
+    shortcutCache = ctx.request("shortcuts.list").then((r) => r?.shortcuts ?? [], () => ((shortcutCache = null), []));
+  }
   return shortcutCache;
 }
 
@@ -210,7 +215,8 @@ export const customhtml = {
         const send = () => {
           lastSent.set(m.id, Date.now());
           pending.delete(m.id);
-          ctx.request("shortcut.run", value === undefined ? { id: m.id } : { id: m.id, value: String(value) }).catch(() => {});
+          // The computer accepts plain numbers with up to 12 decimals; round float noise away.
+          ctx.request("shortcut.run", value === undefined ? { id: m.id } : { id: m.id, value: String(Number(value.toFixed(6))) }).catch(() => {});
         };
         const wait = 300 - (Date.now() - (lastSent.get(m.id) ?? 0));
         clearTimeout(pending.get(m.id));
