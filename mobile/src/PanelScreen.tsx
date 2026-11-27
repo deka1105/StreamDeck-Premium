@@ -22,7 +22,7 @@ import { color } from "./theme";
 /** Methods forwarded to the computer. Anything else is refused before it leaves the phone. */
 // procs.kill and netq.speedtest are also checked by the computer itself (the
 // widget's own options must allow them).
-const ALLOWED = new Set(["panel.hello", "panel.needs", "panel.snapshot", "panel.layout", "panel.history", "procs.kill", "netq.speedtest"]);
+const ALLOWED = new Set(["panel.hello", "panel.needs", "panel.snapshot", "panel.layout", "panel.history", "procs.kill", "netq.speedtest", "state.get", "state.set"]);
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
