@@ -151,7 +151,16 @@ export function occurrences(ev, from, to, max = 500) {
     return true;
   };
   const at = (y, m, d) => new Date(y, m, d, ...tod).getTime();
-  for (let i = 0; i < max && emitted < count; i++) {
+  // Open-ended rules (no COUNT) can start years ago: jump to just before the
+  // window instead of walking every occurrence since the first one.
+  let first = 0;
+  if (count === Infinity && from > start) {
+    const span = { DAILY: 86400_000, WEEKLY: 7 * 86400_000, MONTHLY: 28 * 86400_000, YEARLY: 365 * 86400_000 }[freq];
+    if (span) first = Math.max(0, Math.floor((from - start) / (span * interval)) - 2);
+    if (freq === "MONTHLY") first = Math.max(0, Math.floor(((new Date(from).getFullYear() - s0.getFullYear()) * 12 + new Date(from).getMonth() - s0.getMonth()) / interval) - 1);
+    if (freq === "YEARLY") first = Math.max(0, Math.floor((new Date(from).getFullYear() - s0.getFullYear()) / interval) - 1);
+  }
+  for (let i = first; i < first + max && emitted < count; i++) {
     const step = i * interval;
     let cands = [];
     if (freq === "DAILY") cands = [at(s0.getFullYear(), s0.getMonth(), s0.getDate() + step)];
@@ -181,8 +190,8 @@ export function occurrences(ev, from, to, max = 500) {
       const y = s0.getFullYear() + step;
       if (new Date(y, s0.getMonth(), s0.getDate()).getMonth() === s0.getMonth()) cands = [at(y, s0.getMonth(), s0.getDate())];
     } else break;
-    if (!cands.length && cands[0] === undefined && freq !== "YEARLY") continue;
-    if (cands.some((t) => t > until) && cands.every((t) => t > until)) break;
+    if (!cands.length) continue; // e.g. the 31st in a short month
+    if (cands.every((t) => t > until)) break;
     if (cands.length && cands[0] >= to) break;
     for (const t of cands) consider(t);
   }
