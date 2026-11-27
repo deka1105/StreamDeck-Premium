@@ -49,7 +49,8 @@ function makeContext({ store, bridge, options, onCleanup, widgetId, pageId }) {
   };
 }
 
-export function mountWidget(host, instance, { store, bridge }) {
+export function mountWidget(host, instance, env) {
+  const { store, bridge } = env;
   const def = REGISTRY[instance.type];
   const cleanups = [];
   const body = document.createElement("div");
