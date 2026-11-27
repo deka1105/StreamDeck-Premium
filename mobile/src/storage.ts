@@ -30,6 +30,9 @@ const LEGACY_CTR_KEY = "spd.ctr";
 
 // kid is hex (or the demo sentinel "__demo__") — all valid SecureStore chars.
 const ctrKey = (kid: string) => `spd.ctr.${kid}`;
+// The panel's event long-poll runs on its own channel with its own counter, so
+// a held request never blocks a button press (see desktop/src/host.mjs).
+const evCtrKey = (kid: string) => `spd.evctr.${kid}`;
 
 function coercePairing(input: unknown): Pairing | null {
   if (!input || typeof input !== "object") return null;
@@ -92,6 +95,7 @@ export async function addPairing(state: PairingsState, p: Pairing): Promise<Pair
     activeKid: p.kid,
   };
   await SecureStore.setItemAsync(ctrKey(p.kid), "0");
+  await SecureStore.setItemAsync(evCtrKey(p.kid), "0");
   await persist(next);
   return next;
 }
