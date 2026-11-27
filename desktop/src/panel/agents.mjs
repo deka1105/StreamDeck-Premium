@@ -124,7 +124,7 @@ export function createAgents({ dir, claudeDir, port = 8789, publish = () => {}, 
   const nodeCmd = (script) => {
     const exe = JSON.stringify(process.execPath);
     const file = JSON.stringify(join(hooksDir, script));
-    return process.versions.electron ? `ELECTRON_RUN_AS_NODE=1 ${exe} ${file} # ${MARK}` : `${exe} ${file} # ${MARK}`;
+    return process.versions.electron ? `ELECTRON_RUN_AS_NODE=1 ${exe} ${file}` : `${exe} ${file}`;
   };
 
   const publishAlerts = () => publish("data", { kind: "alerts", value: { alerts: [...alerts.values()], prompts: [...pending.values()].map((p) => p.info), at: now() } });
@@ -134,7 +134,7 @@ export function createAgents({ dir, claudeDir, port = 8789, publish = () => {}, 
     token ??= crypto.randomBytes(18).toString("base64url");
     const old = existsSync(cfgFile) ? readJson(cfgFile) : {};
     writeFileSync(cfgFile, JSON.stringify({ port, token, timeoutSec: getSettings().agents?.timeoutSec ?? 60, limitsFile, previousStatusLine: previousStatusLine ?? old.previousStatusLine ?? null }), { mode: 0o600 });
-    for (const [name, body] of [["permission-hook.cjs", PERMISSION_HOOK], ["event-hook.cjs", EVENT_HOOK], ["statusline-bridge.cjs", STATUSLINE_BRIDGE]]) {
+    for (const [name, body] of [["deskassist-hook-permission.cjs", PERMISSION_HOOK], ["deskassist-hook-event.cjs", EVENT_HOOK], ["deskassist-hook-statusline.cjs", STATUSLINE_BRIDGE]]) {
       writeFileSync(join(hooksDir, name), body);
       try {
         chmodSync(join(hooksDir, name), 0o700);
@@ -164,9 +164,9 @@ export function createAgents({ dir, claudeDir, port = 8789, publish = () => {}, 
       const timeoutSec = (getSettings().agents?.timeoutSec ?? 60) + 5;
       s.hooks ??= {};
       const add = (ev, group) => (s.hooks[ev] ??= []).push(group);
-      add("PermissionRequest", { matcher: "*", hooks: [{ type: "command", command: nodeCmd("permission-hook.cjs"), timeout: timeoutSec }] });
-      for (const ev of ["Notification", "Stop", "UserPromptSubmit", "PostToolUse"]) add(ev, { ...(ev === "Notification" || ev === "PostToolUse" ? { matcher: "*" } : {}), hooks: [{ type: "command", command: nodeCmd("event-hook.cjs"), timeout: 5 }] });
-      s.statusLine = { type: "command", command: nodeCmd("statusline-bridge.cjs"), ...(prevStatus?.padding !== undefined ? { padding: prevStatus.padding } : {}) };
+      add("PermissionRequest", { matcher: "*", hooks: [{ type: "command", command: nodeCmd("deskassist-hook-permission.cjs"), timeout: timeoutSec }] });
+      for (const ev of ["Notification", "Stop", "UserPromptSubmit", "PostToolUse"]) add(ev, { ...(ev === "Notification" || ev === "PostToolUse" ? { matcher: "*" } : {}), hooks: [{ type: "command", command: nodeCmd("deskassist-hook-event.cjs"), timeout: 5 }] });
+      s.statusLine = { type: "command", command: nodeCmd("deskassist-hook-statusline.cjs"), ...(prevStatus?.padding !== undefined ? { padding: prevStatus.padding } : {}) };
       writeJson(file, s);
       return this.status();
     },

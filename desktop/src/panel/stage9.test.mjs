@@ -103,7 +103,7 @@ test("the status-line bridge saves limits and still prints the old status line",
   const a = createAgents({ dir: join(d, "data"), claudeDir });
   a.install();
   const input = JSON.stringify({ model: { display_name: "Opus" }, rate_limits: { five_hour: { used_percentage: 50, resets_at: 1 } } });
-  const out = execFileSync(process.execPath, [join(d, "data", "hooks", "statusline-bridge.cjs")], { input, encoding: "utf8" });
+  const out = execFileSync(process.execPath, [join(d, "data", "hooks", "deskassist-hook-statusline.cjs")], { input, encoding: "utf8" });
   assert.equal(out.trim(), "OLD-LINE");
   assert.equal(JSON.parse(readFileSync(a.limitsFile, "utf8")).rate_limits.five_hour.used_percentage, 50);
 });
@@ -166,7 +166,7 @@ test("the permission hook script prints a decision only when the panel gives one
   a.install();
   const runHook = () => new Promise((res) => {
     const { execFile } = require_();
-    const c = execFile(process.execPath, [join(d, "data", "hooks", "permission-hook.cjs")], (_e, out) => res(out));
+    const c = execFile(process.execPath, [join(d, "data", "hooks", "deskassist-hook-permission.cjs")], (_e, out) => res(out));
     c.stdin.end(JSON.stringify({ session_id: "s", cwd: "/a/proj", tool_name: "Bash", tool_input: { command: "ls" } }));
   });
   assert.deepEqual(JSON.parse(await runHook()), { hookSpecificOutput: { hookEventName: "PermissionRequest", decision: { behavior: "allow" } } });
