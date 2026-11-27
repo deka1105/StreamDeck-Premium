@@ -92,6 +92,11 @@ test("editor settings: import feeds, add a calendar, pick a location", async ({ 
   await expect(page.locator(".set-row", { hasText: "Work" }).locator(".cal-status")).toContainText("✓ 2 events", { timeout: 15_000 });
 });
 
+// "Today" and the dot's badge depend on the browser's calendar day: show the
+// page in a zone where it is about midday, so "in an hour" never crosses midnight.
+const offset = 12 - new Date().getUTCHours(); // hours to add to UTC
+test.use({ timezoneId: offset === 0 ? "Etc/UTC" : `Etc/GMT${offset > 0 ? "-" : "+"}${Math.abs(offset)}` });
+
 test("panel: headlines, agenda, next up, weather and the moon from the host", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
