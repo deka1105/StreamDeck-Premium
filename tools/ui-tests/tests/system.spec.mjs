@@ -89,7 +89,9 @@ test("ending a process: refused unless the widget allows it, then works", async 
 test("process sheet: shows why ending is off, and offers it when allowed", async ({ page }) => {
   await page.setViewportSize({ width: 1170, height: 540 });
   await page.goto(`${host.base}/panel/`);
+  await expect(page.locator("#dots .dot")).toHaveCount(2); // layout loaded
   await page.evaluate(() => window.__panel.gotoId("procs"));
+  await expect(page.locator('body[data-page="procs"]')).toHaveCount(1);
   const locked = page.locator('.w[data-id="locked"]');
   await expect(locked.locator(".proc-row").first()).toBeVisible({ timeout: 15_000 });
   await locked.locator(".proc-row").first().click();
