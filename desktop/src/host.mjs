@@ -393,6 +393,12 @@ async function main() {
     : undefined;
   const host = createHost({ dir, dryRun, port, allowShell });
   await host.listen();
+  const localPort = process.env.DECK_LOCAL_PORT ? Number(process.env.DECK_LOCAL_PORT) : 8789;
+  const local = createLocalServer({ port: localPort, panelApi: host.panelApi });
+  await local.listen().then(
+    () => console.log(`Browser panel (this computer only): http://127.0.0.1:${localPort}/panel/`),
+    (err) => console.warn(`Browser panel unavailable: ${err.message}`),
+  );
 
   const { payload } = host.startPairing();
   const qr = await qrcode.toString(JSON.stringify(payload), { type: "terminal", small: true });
