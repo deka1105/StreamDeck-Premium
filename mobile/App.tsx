@@ -49,6 +49,8 @@ import { NamePrompt } from "./src/NamePrompt";
 import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
 import { SnippetLibrary } from "./src/SnippetLibrary";
+import { PanelScreen } from "./src/PanelScreen";
+import { useDevLink } from "./src/devLink";
 import {
   loadSnippets,
   newSnippetId,
@@ -90,6 +92,25 @@ export default function App() {
   const [hosts, setHosts] = useState<PairingsState | "loading">("loading");
   // True while "Pair another computer" is open on top of an existing pairing.
   const [addingHost, setAddingHost] = useState(false);
+  // Development deep links (src/devLink.ts; no-op in release builds).
+  const [devView, setDevView] = useState<{ view: "deck" | "panel"; n: number } | null>(null);
+  const hostsRef = useRef(hosts);
+  hostsRef.current = hosts;
+  const onDevLink = useCallback(async (link: DevLink) => {
+    const info = link.pair as any;
+    if (info?.proto === "spd2" && info.pid && info.hpk && info.host) {
+      try {
+        const p = await pair(info.host, info.port, info.pid, info.hpk, DEVICE_NAME);
+        const cur = hostsRef.current;
+        setHosts(await addPairing(cur === "loading" ? { pairings: [], activeKid: null } : cur, p));
+        setAddingHost(false);
+      } catch (e) {
+        console.warn("[dev link] pairing failed", e);
+      }
+    }
+    if (link.view) setDevView((d) => ({ view: link.view!, n: (d?.n ?? 0) + 1 }));
+  }, []);
+  useDevLink(onDevLink);
 
   useEffect(() => {
     // loadPairings never rejects, but belt-and-braces: the UI shows a spinner
@@ -120,6 +141,8 @@ export default function App() {
     <View style={styles.root}>
       {active && !addingHost ? (
         <DeckScreen
+          key={`${active.kid}:${devView?.n ?? 0}`}
+          initialView={devView?.view}
           pairing={active}
           hosts={hosts.pairings}
           activeKid={hosts.activeKid}
@@ -369,6 +392,7 @@ function DeckScreen({
   onSwitchHost,
   onRemoveHost,
   onAddHost,
+  initialView,
 }: {
   pairing: Pairing;
   hosts: Pairing[];
@@ -376,6 +400,7 @@ function DeckScreen({
   onSwitchHost: (kid: string) => void;
   onRemoveHost: (kid: string) => void;
   onAddHost: () => void;
+  initialView?: "deck" | "panel";
 }) {
   const [state, setState] = useState<ProfilesState | null>(null);
   const [namePrompt, setNamePrompt] = useState<null | "add">(null);
@@ -1037,7 +1062,11 @@ function DeckScreen({
         </PressableScale>
       )}
 
-      {view === "apps" ? (
+      {view === "panel" ? (
+        <Reveal style={{ flex: 1 }}>
+          <PanelScreen pairing={pairing} />
+        </Reveal>
+      ) : view === "apps" ? (
         <Reveal style={{ flex: 1 }}>
         <RunningApps
           data={runningApps}
