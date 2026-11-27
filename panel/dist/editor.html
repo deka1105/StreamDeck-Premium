@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskAssist — layout editor</title>
+<style>:root {
+  --bg: #070b14;
+  --surface: #0e1626;
+  --field: #16233a;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --ink: #e8eef9;
+  --ink-dim: #8a99b2;
+  --ink-faint: #6b7a94;
+  --accent: #38bdf8;
+  --accent-faint: rgba(56, 189, 248, 0.16);
+  --danger: #fb7185;
+  --success: #34d399;
+  color-scheme: dark;
+  font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); height: 100vh; display: flex; flex-direction: column; }
+header {
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 700; }
+header .spacer { flex: 1; }
+#rev { color: var(--ink-dim); font-size: 12px; }
+main { flex: 1; display: grid; grid-template-columns: 260px 1fr 300px; min-height: 0; }
+aside { padding: 14px; overflow-y: auto; border-right: 1px solid var(--line); }
+aside.right { border-right: 0; border-left: 1px solid var(--line); }
+h2 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin: 0 0 10px; }
+h3 { font-size: 13px; margin: 18px 0 8px; }
+h4 { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 6px; }
+.muted { color: var(--ink-faint); }
+button, select, input, textarea {
+  font: inherit; color: var(--ink); background: var(--field);
+  border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 10px;
+}
+button { cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: default; }
+button.primary { background: var(--accent); color: #04121c; border-color: var(--accent); font-weight: 700; }
+button.danger { color: var(--danger); }
+button[aria-pressed="true"] { background: var(--accent-faint); border-color: var(--accent); }
+label { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; color: var(--ink-dim); font-size: 12px; }
+label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-size: 13px; }
+label.mini { margin: 0; }
+label.mini input { width: 58px; }
+select, input:not([type=checkbox]):not([type=radio]), textarea { width: 100%; }
+.row { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.boxrow { flex-wrap: nowrap; }
+.page-list { list-style: none; padding: 0; margin: 0 0 8px; }
+.page-list li { display: flex; align-items: center; gap: 4px; padding: 3px; border-radius: 8px; }
+.page-list li.active { background: var(--accent-faint); }
+.page-name { flex: 1; text-align: left; background: transparent; border: 0; padding: 6px 8px; }
+.icon { padding: 2px 8px; background: transparent; border-color: transparent; color: var(--ink-dim); }
+.tag { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--accent-faint); color: var(--accent); }
+.tag.dim { background: var(--field); color: var(--ink-faint); }
+#center { padding: 18px; display: flex; flex-direction: column; min-width: 0; }
+#canvas, #previewFrame {
+  width: 100%; aspect-ratio: 780 / 360; max-height: calc(100vh - 120px);
+  border: 1px solid var(--line-strong); border-radius: 18px; background: #04070d;
+}
+#canvas { padding: 10px; }
+#previewFrame[hidden], #canvas[hidden] { display: none; }
+.canvas-grid {
+  position: relative; display: grid; height: 100%;
+  grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(6, 1fr); gap: 6px;
+}
+.cell { border: 1px dashed rgba(255, 255, 255, 0.05); border-radius: 6px; }
+.cell { grid-column: auto; }
+.wbox {
+  position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: 12px; padding: 8px; cursor: grab; display: flex; flex-direction: column; justify-content: space-between;
+  touch-action: none; user-select: none; overflow: hidden;
+}
+.wbox.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-faint); }
+.wbox.dragging { cursor: grabbing; opacity: 0.9; }
+.wbox.blocked { border-color: var(--danger); }
+.wname { font-weight: 650; font-size: 12px; }
+.wsize { color: var(--ink-faint); font-size: 11px; }
+.resize { position: absolute; right: 2px; bottom: 2px; width: 14px; height: 14px; cursor: nwse-resize;
+  border-right: 2px solid var(--ink-faint); border-bottom: 2px solid var(--ink-faint); border-radius: 0 0 6px 0; }
+.canvas-empty { height: 100%; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); }
+.palette-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.pitem { font-size: 12px; padding: 5px 9px; }
+#flash {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 9;
+  background: var(--surface); border: 1px solid var(--success); color: var(--ink);
+  padding: 8px 14px; border-radius: 10px; max-width: 80vw;
+}
+#flash[data-bad="1"] { border-color: var(--danger); }
+#flash[hidden] { display: none; }
+.hint { color: var(--ink-faint); font-size: 12px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DeskAssist layout</h1>
+  <select id="target" aria-label="Device"></select>
+  <span id="rev"></span>
+  <span class="spacer"></span>
+  <button id="previewToggle" aria-pressed="false">Live preview</button>
+  <button id="revert" disabled>Revert</button>
+  <button id="save" class="primary" disabled>Save</button>
+</header>
+<main>
+  <aside><h2>Pages</h2><div id="pages"></div><div id="pageSettings"></div></aside>
+  <section id="center">
+    <div id="canvas"></div>
+    <iframe id="previewFrame" title="Live preview" hidden></iframe>
+    <p class="hint">Drag a widget to move it, drag its corner to resize. Delete removes the selected widget. ⌘/Ctrl-S saves.</p>
+  </section>
+  <aside class="right"><h2>Add a widget</h2><div id="palette"></div><h2 style="margin-top:20px">Selected widget</h2><div id="inspector"></div></aside>
+</main>
+<div id="flash" hidden></div>
+<script>(()=>{var L=(e,t)=>Number.isFinite(Number(e))?Math.round(Number(e)):t;function E(e,t=12,n=6,{min:s={w:1,h:1},max:o={w:t,h:n}}={}){let d=Math.max(1,Math.min(L(s.w,1),t)),a=Math.max(1,Math.min(L(s.h,1),n)),r=Math.max(d,Math.min(L(o.w,t),t)),l=Math.max(a,Math.min(L(o.h,n),n)),p=Math.max(d,Math.min(r,L(e==null?void 0:e.w,d))),m=Math.max(a,Math.min(l,L(e==null?void 0:e.h,a))),v=Math.max(0,Math.min(t-p,L(e==null?void 0:e.x,0))),x=Math.max(0,Math.min(n-m,L(e==null?void 0:e.y,0)));return{x:v,y:x,w:p,h:m}}function N(e,t){return e.x<t.x+t.w&&t.x<e.x+e.w&&e.y<t.y+t.h&&t.y<e.y+e.h}var u=(e,t=document)=>t.querySelector(e),c=(e,t={},...n)=>{let s=document.createElement(e);for(let[o,d]of Object.entries(t))d==null||d===!1||(o==="class"?s.className=d:o==="text"?s.textContent=d:o.startsWith("on")?s.addEventListener(o.slice(2),d):o==="dataset"?Object.assign(s.dataset,d):s.setAttribute(o,d===!0?"":d));for(let o of n.flat())o!=null&&o!==!1&&s.append(o);return s},O=e=>`${e}${Math.random().toString(36).slice(2,8)}`,C=e=>JSON.parse(JSON.stringify(e)),i={rev:0,config:null,saved:"",catalog:{widgets:[],categories:[]},templates:[],clients:[],target:"default",pageId:null,selected:null,preview:!1,search:""},R=()=>new Map(i.catalog.widgets.map(e=>[e.type,e])),T=()=>JSON.stringify(i.config)!==i.saved;function h(){var e;return i.target==="default"?i.config.default:(e=i.config.devices[i.target])!=null?e:null}function f(){var t,n;let e=h();return(n=(t=e==null?void 0:e.pages.find(s=>s.id===i.pageId))!=null?t:e==null?void 0:e.pages[0])!=null?n:null}function Q(){var e,t;return(t=(e=f())==null?void 0:e.widgets.find(n=>n.id===i.selected))!=null?t:null}async function F(e,t){let n=await fetch(e,t?{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(t)}:{}),s=await n.json().catch(()=>({}));if(!n.ok||s.ok===!1){let o=new Error(s.error||`HTTP ${n.status}`);throw o.status=n.status,o}return s}async function I(){var t,n,s,o,d,a;let e=await F("/api/editor/state");i.rev=e.rev,i.config=e.config,i.saved=JSON.stringify(e.config),i.catalog=e.catalog,i.templates=(n=(t=e.templates)==null?void 0:t.templates)!=null?n:[],i.clients=(s=e.clients)!=null?s:[],h()||(i.target="default"),i.pageId=(a=(d=(o=h())==null?void 0:o.pages[0])==null?void 0:d.id)!=null?a:null,i.selected=null,$()}async function H(){var e,t,n;try{let s=await F("/api/editor/config",{config:i.config,baseRev:i.rev});i.rev=s.rev,i.config=s.config,i.saved=JSON.stringify(s.config),f()||(i.pageId=(n=(t=(e=h())==null?void 0:e.pages[0])==null?void 0:t.id)!=null?n:null),b(`Saved \xB7 revision ${s.rev}. Phones update within a few seconds.`)}catch(s){b(s.message,!0)}$()}var J;function b(e,t=!1){let n=u("#flash");n.textContent=e,n.dataset.bad=t?"1":"0",n.hidden=!1,clearTimeout(J),J=setTimeout(()=>n.hidden=!0,t?8e3:4e3)}function g(e){e(),$()}function j(e){var s,o;let t=h();if(!t)return;let n=e?{...C(e),id:O("p"),widgets:((s=e.widgets)!=null?s:[]).map(d=>{var a;return{...C(d),id:O("w"),options:{...(a=d.options)!=null?a:{}}}})}:{id:O("p"),name:`Page ${t.pages.length+1}`,hidden:!1,staySec:null,widgets:[]};n.name=n.name||`Page ${t.pages.length+1}`,n.hidden=!!n.hidden,n.staySec=(o=n.staySec)!=null?o:null,t.pages.push(n),t.home||(t.home=n.id),i.pageId=n.id,i.selected=null}function U(e,t){let n=h(),s=n.pages.findIndex(d=>d.id===e),o=s+t;s<0||o<0||o>=n.pages.length||([n.pages[s],n.pages[o]]=[n.pages[o],n.pages[s]])}function V(e){var n,s,o,d,a,r;let t=h();t.pages=t.pages.filter(l=>l.id!==e),t.home===e&&(t.home=(d=(o=(n=t.pages.find(l=>!l.hidden))==null?void 0:n.id)!=null?o:(s=t.pages[0])==null?void 0:s.id)!=null?d:null),i.pageId=(r=(a=t.pages[0])==null?void 0:a.id)!=null?r:null,i.selected=null}function D(e,t,n,s){for(let o=0;o+n<=6;o++)for(let d=0;d+t<=12;d++){let a={x:d,y:o,w:t,h:n};if(!e.widgets.some(r=>r.id!==s&&N(r,a)))return a}return null}function _(e,t){var l,p,m,v,x,M;let n=f(),s=R().get(e);if(!n||!s)return;let o=E({x:0,y:0,...s.size},12,6),d=t?E({...t,w:o.w,h:o.h}):null;if(d&&n.widgets.some(k=>N(k,d))&&(d=null),d=(x=d!=null?d:D(n,o.w,o.h))!=null?x:D(n,(p=(l=s.min)==null?void 0:l.w)!=null?p:1,(v=(m=s.min)==null?void 0:m.h)!=null?v:1),!d)return b("No room on this page \u2014 make space or add a page.",!0);let a={};for(let k of(M=s.options)!=null?M:[])a[k.key]=k.default;let r={id:O("w"),type:e,...d,options:a};n.widgets.push(r),i.selected=r.id}function q(e,t){var o;let n=(o=R().get(e.type))!=null?o:{},s=E(t,12,6,{min:n.min,max:n.max});return f().widgets.some(d=>d.id!==e.id&&N(d,s))?!1:(Object.assign(e,s),!0)}function $(){i.config&&(W(),Z(),ne(),X(),Y(),P())}function W(){let e=u("#target");e.innerHTML="",e.append(c("option",{value:"default",text:"Every device (default pages)"}));let t=new Map(i.clients.map(n=>[n.id,n.name]));for(let n of Object.keys(i.config.devices))t.has(n)||t.set(n,i.config.devices[n].name||n);for(let[n,s]of t)e.append(c("option",{value:n,text:`${s}${i.config.devices[n]?"":" (uses default)"}`}));e.value=i.target,u("#rev").textContent=`rev ${i.rev}${T()?" \xB7 unsaved changes":""}`,u("#save").disabled=!T(),u("#revert").disabled=!T(),u("#previewToggle").setAttribute("aria-pressed",i.preview?"true":"false")}function Z(){var d;let e=u("#pages");e.innerHTML="";let t=h();if(!t){e.append(c("p",{class:"muted",text:"This device shows the default pages."}),c("button",{class:"btn",id:"ownPages",text:"Give it its own pages",onclick:()=>g(()=>{var a,r,l,p;i.config.devices[i.target]={...C(i.config.default),name:(r=(a=i.clients.find(m=>m.id===i.target))==null?void 0:a.name)!=null?r:""},i.pageId=(p=(l=h().pages[0])==null?void 0:l.id)!=null?p:null})})),u("#pageSettings").innerHTML="";return}let n=c("ol",{class:"page-list"});for(let a of t.pages)n.append(c("li",{class:a.id===((d=f())==null?void 0:d.id)?"active":"",dataset:{id:a.id}},c("button",{class:"page-name",text:a.name,onclick:()=>g(()=>(i.pageId=a.id,i.selected=null))}),a.id===t.home?c("span",{class:"tag",title:"Home page",text:"home"}):null,a.hidden?c("span",{class:"tag dim",text:"hidden"}):null,c("button",{class:"icon",title:"Move up","aria-label":`Move ${a.name} up`,text:"\u2191",onclick:()=>g(()=>U(a.id,-1))}),c("button",{class:"icon",title:"Move down","aria-label":`Move ${a.name} down`,text:"\u2193",onclick:()=>g(()=>U(a.id,1))})));let s=c("select",{id:"template","aria-label":"New page from template"},c("option",{value:"",text:"New page from template\u2026"}),i.templates.map(a=>{var r;return c("option",{value:a.id,text:`${a.name} \u2014 ${(r=a.description)!=null?r:""}`})}));s.addEventListener("change",()=>{let a=i.templates.find(r=>r.id===s.value);a&&g(()=>j(a.page))});let o=c("input",{type:"file",accept:"application/json,.json",hidden:!0,id:"importFile"});o.addEventListener("change",async()=>{var r,l;let a=(r=o.files)==null?void 0:r[0];if(o.value="",!!a)try{let p=JSON.parse(await a.text());if((p==null?void 0:p.kind)!=="deskassist.page"||!p.page)throw new Error("That file isn't a DeskAssist page export.");g(()=>j(p.page)),b(`Imported \u201C${(l=p.page.name)!=null?l:"page"}\u201D. Save to keep it.`)}catch(p){b(p.message,!0)}}),e.append(n,c("div",{class:"row"},c("button",{class:"btn",id:"addPage",text:"+ Blank page",onclick:()=>g(()=>j())}),c("button",{class:"btn",text:"Import\u2026",onclick:()=>o.click()})),s,o),ee()}function ee(){let e=u("#pageSettings");e.innerHTML="";let t=f(),n=h();if(!t)return;let s=c("input",{id:"pageName",value:t.name,maxlength:40,"aria-label":"Page name"});s.addEventListener("input",()=>{t.name=s.value,W();let a=u(`.page-list li[data-id="${t.id}"] .page-name`);a&&(a.textContent=s.value),P()});let o=c("select",{id:"pageStay","aria-label":"Return home"},c("option",{value:"default",text:"Return home after the panel default"}),c("option",{value:"never",text:"Never return home from this page"}),c("option",{value:"custom",text:"Return home after\u2026"}));o.value=t.staySec===null?"default":t.staySec===0?"never":"custom";let d=c("input",{type:"number",min:5,max:86400,value:t.staySec||600,id:"staySec",hidden:o.value!=="custom","aria-label":"Seconds"});o.addEventListener("change",()=>g(()=>t.staySec=o.value==="default"?null:o.value==="never"?0:Math.max(5,Number(d.value)||600))),d.addEventListener("change",()=>g(()=>t.staySec=Math.max(5,Number(d.value)||600))),e.append(c("h3",{text:"Page"}),c("label",{},"Name",s),c("label",{class:"check"},c("input",{type:"checkbox",id:"pageHidden",checked:t.hidden,onchange:a=>g(()=>t.hidden=a.target.checked)}),"Hidden"),c("label",{class:"check"},c("input",{type:"radio",name:"home",id:"pageHome",checked:n.home===t.id,onchange:()=>g(()=>n.home=t.id)}),"Home page"),o,d,c("div",{class:"row"},c("button",{class:"btn",id:"exportPage",text:"Export\u2026",onclick:()=>te(t)}),c("button",{class:"btn danger",id:"deletePage",text:"Delete page",onclick:()=>confirm(`Delete \u201C${t.name}\u201D?`)&&g(()=>V(t.id))})),c("h3",{text:"Panel"}),(()=>{let a=c("input",{type:"number",id:"idleSec",min:0,max:14400,value:i.config.settings.idleSec,"aria-label":"Idle seconds"});return a.addEventListener("change",()=>g(()=>i.config.settings.idleSec=Math.max(0,Number(a.value)||0))),c("label",{},"Return to home after this many idle seconds (0 = never)",a)})())}function te(e){let t=new Blob([JSON.stringify({kind:"deskassist.page",version:1,page:e},null,2)],{type:"application/json"}),n=c("a",{href:URL.createObjectURL(t),download:`${(e.name||"page").replace(/[^\w-]+/g,"-")}.deskassist-page.json`});document.body.append(n),n.click(),setTimeout(()=>(URL.revokeObjectURL(n.href),n.remove()),1e3)}function ne(){let e=u("#canvas"),t=u("#previewFrame");if(e.hidden=i.preview,t.hidden=!i.preview,i.preview){t.src||(t.src="/panel/?preview=1&device=preview");return}ae()}function ae(){var o,d;let e=u("#canvas");e.innerHTML="";let t=f();if(!t){e.append(c("div",{class:"canvas-empty",text:h()?"No pages. Add one on the left.":""}));return}let n=c("div",{class:"canvas-grid",id:"grid"});for(let a=0;a<6;a++)for(let r=0;r<12;r++){let l=c("div",{class:"cell",dataset:{x:r,y:a}});l.style.gridColumn=String(r+1),l.style.gridRow=String(a+1),n.append(l)}let s=R();for(let a of t.widgets){let r=s.get(a.type),l=c("div",{class:`wbox${a.id===i.selected?" selected":""}`,dataset:{id:a.id,type:a.type},tabindex:0,role:"button","aria-label":`${(o=r==null?void 0:r.name)!=null?o:a.type} widget`},c("span",{class:"wname",text:(d=r==null?void 0:r.name)!=null?d:`${a.type} (unknown)`}),c("span",{class:"wsize",text:`${a.w}\xD7${a.h}`}),c("span",{class:"resize",title:"Drag to resize",dataset:{resize:"1"}}));l.style.gridColumn=`${a.x+1} / span ${a.w}`,l.style.gridRow=`${a.y+1} / span ${a.h}`,l.addEventListener("pointerdown",p=>ie(p,a,l,p.target.dataset.resize?"resize":"move")),n.append(l)}n.addEventListener("dragover",a=>a.preventDefault()),n.addEventListener("drop",a=>{a.preventDefault();let r=a.dataTransfer.getData("text/x-widget");r&&g(()=>_(r,se(a)))}),e.append(n)}function se(e){let t=u("#grid").getBoundingClientRect();return{x:Math.max(0,Math.min(11,Math.floor((e.clientX-t.left)/t.width*12))),y:Math.max(0,Math.min(5,Math.floor((e.clientY-t.top)/t.height*6)))}}function ie(e,t,n,s){e.preventDefault(),i.selected=t.id;let d=u("#grid").getBoundingClientRect(),a=d.width/12,r=d.height/6,l={x:e.clientX,y:e.clientY,box:{x:t.x,y:t.y,w:t.w,h:t.h}},p=!1;n.setPointerCapture(e.pointerId),document.querySelectorAll(".wbox.selected").forEach(x=>x.classList.remove("selected")),n.classList.add("selected","dragging");let m=x=>{var A;let M=Math.round((x.clientX-l.x)/a),k=Math.round((x.clientY-l.y)/r);(M||k)&&(p=!0);let K=s==="move"?{...l.box,x:l.box.x+M,y:l.box.y+k}:{...l.box,w:l.box.w+M,h:l.box.h+k},z=(A=R().get(t.type))!=null?A:{},S=E(K,12,6,{min:z.min,max:z.max}),G=f().widgets.some(B=>B.id!==t.id&&N(B,S));n.style.gridColumn=`${S.x+1} / span ${S.w}`,n.style.gridRow=`${S.y+1} / span ${S.h}`,n.classList.toggle("blocked",G),n.querySelector(".wsize").textContent=`${S.w}\xD7${S.h}`,n._box=S},v=()=>{n.removeEventListener("pointermove",m),n.removeEventListener("pointerup",v),n.removeEventListener("pointercancel",v),p&&n._box&&!q(t,n._box)&&b("Widgets can't overlap \u2014 moved back.",!0),$()};n.addEventListener("pointermove",m),n.addEventListener("pointerup",v),n.addEventListener("pointercancel",v),Y()}function X(){var d;let e=u("#palette");e.innerHTML="";let t=i.search.trim().toLowerCase(),n=c("input",{type:"search",id:"paletteSearch",placeholder:"Search widgets",value:i.search,"aria-label":"Search widgets"});n.addEventListener("input",()=>{i.search=n.value,X(),u("#paletteSearch").focus();let a=u("#paletteSearch");a.setSelectionRange(a.value.length,a.value.length)}),e.append(n);let s=(d=i.catalog.categories)!=null?d:[],o=new Map(s.map(a=>[a.id,{name:a.name,items:[]}]));for(let a of i.catalog.widgets)t&&!`${a.name} ${a.type} ${a.category}`.toLowerCase().includes(t)||(o.has(a.category)||o.set(a.category,{name:a.category,items:[]}),o.get(a.category).items.push(a));for(let[,a]of o)a.items.length&&e.append(c("h4",{text:a.name}),c("div",{class:"palette-items"},a.items.map(r=>c("button",{class:"pitem",draggable:"true",dataset:{type:r.type},text:r.name,title:`Add ${r.name} (${r.size.w}\xD7${r.size.h})`,disabled:!f(),onclick:()=>g(()=>_(r.type)),ondragstart:l=>l.dataTransfer.setData("text/x-widget",r.type)}))))}function oe(e,t,n){var o,d,a,r;let s=`opt-${e.key}`;switch(e.type){case"bool":return c("label",{class:"check"},c("input",{type:"checkbox",id:s,checked:!!t,onchange:l=>n(l.target.checked)}),e.label);case"number":{let l=c("input",{type:"number",id:s,value:(o=t!=null?t:e.default)!=null?o:0,min:e.min,max:e.max,step:(d=e.step)!=null?d:1});return l.addEventListener("change",()=>n(Number(l.value))),c("label",{},e.label,l)}case"choice":{let l=c("select",{id:s},((a=e.choices)!=null?a:[]).map(p=>{var m;return c("option",{value:p.value,text:(m=p.label)!=null?m:p.value})}));return l.value=t!=null?t:e.default,l.addEventListener("change",()=>n(l.value)),c("label",{},e.label,l)}case"textarea":case"list":{let l=c("textarea",{id:s,rows:4});return l.value=e.type==="list"?(t!=null?t:[]).join(`
+`):t!=null?t:"",l.addEventListener("change",()=>n(e.type==="list"?l.value.split(`
+`).map(p=>p.trim()).filter(Boolean):l.value)),c("label",{},e.label,l)}case"text":{let l=c("input",{id:s,value:t!=null?t:"",maxlength:(r=e.maxLength)!=null?r:200});return l.addEventListener("input",()=>n(l.value,!0)),c("label",{},e.label,l)}default:return null}}function Y(){var o,d,a;let e=u("#inspector");e.innerHTML="";let t=Q();if(!t){e.append(c("p",{class:"muted",text:"Select a widget to change it, or pick one above to add it."}));return}let n=R().get(t.type);e.append(c("h3",{text:(o=n==null?void 0:n.name)!=null?o:t.type}));let s=(r,l)=>{let p=c("input",{type:"number",id:`box-${r}`,value:t[r],min:r==="w"||r==="h"?1:0,max:l});return p.addEventListener("change",()=>{q(t,{...t,[r]:Number(p.value)})||b("That would overlap another widget.",!0),$()}),c("label",{class:"mini"},r.toUpperCase(),p)};e.append(c("div",{class:"row boxrow"},s("x",11),s("y",5),s("w",12),s("h",6)));for(let r of(d=n==null?void 0:n.options)!=null?d:[]){let l=oe(r,(a=t.options)==null?void 0:a[r.key],(p,m)=>{var v;t.options={...(v=t.options)!=null?v:{},[r.key]:p},m?(W(),P()):$()});l&&e.append(l)}e.append(c("div",{class:"row"},c("button",{class:"btn",text:"Duplicate",onclick:()=>g(()=>{let r=D(f(),t.w,t.h);if(!r)return b("No room for a copy on this page.",!0);let l={...C(t),id:O("w"),...r};f().widgets.push(l),i.selected=l.id})}),c("button",{class:"btn danger",id:"deleteWidget",text:"Remove",onclick:()=>g(()=>{f().widgets=f().widgets.filter(r=>r.id!==t.id),i.selected=null})})))}function ce(){var t;let e=(t=h())!=null?t:i.config.default;return{rev:0,pages:e.pages,home:e.home,settings:i.config.settings}}function P(){var t;let e=u("#previewFrame");!i.preview||!e.contentWindow||e.contentWindow.postMessage({type:"deskassist-preview",layout:C(ce()),pageId:(t=f())==null?void 0:t.id},location.origin)}window.addEventListener("message",e=>{var t;e.origin===location.origin&&((t=e.data)==null?void 0:t.type)==="deskassist-preview-ready"&&P()});function re(){u("#save").addEventListener("click",H),u("#revert").addEventListener("click",()=>confirm("Discard unsaved changes?")&&I()),u("#previewToggle").addEventListener("click",()=>g(()=>i.preview=!i.preview)),u("#target").addEventListener("change",e=>g(()=>{var t,n,s;i.target=e.target.value,i.pageId=(s=(n=(t=h())==null?void 0:t.pages[0])==null?void 0:n.id)!=null?s:null,i.selected=null})),window.addEventListener("keydown",e=>{var t;(e.key==="Delete"||e.key==="Backspace")&&i.selected&&!/INPUT|TEXTAREA|SELECT/.test((t=document.activeElement)==null?void 0:t.tagName)&&g(()=>{f().widgets=f().widgets.filter(n=>n.id!==i.selected),i.selected=null}),(e.metaKey||e.ctrlKey)&&e.key==="s"&&(e.preventDefault(),T()&&H())}),window.addEventListener("beforeunload",e=>{T()&&e.preventDefault()}),I().catch(e=>b(`Couldn't load the layout: ${e.message}`,!0)),window.__editor={state:i,save:H,load:I}}re();})();
+</script>
+</body>
+</html>
