@@ -36,6 +36,9 @@ import { createShortcutRunner, createCommandRunner, publicShortcut } from "./pan
 import { createWebhooks, keyMatches, readBody as readHookBody } from "./panel/webhooks.mjs";
 import { createRules } from "./panel/rules.mjs";
 import { idleSeconds } from "./providers/idle.mjs";
+import { createAi } from "./providers/ai.mjs";
+import { createGithub } from "./providers/github.mjs";
+import { createAgents } from "./panel/agents.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -152,7 +155,7 @@ function saveApps(dir, apps) {
 
 // --- host --------------------------------------------------------------------
 
-export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell, providers, secretCrypto = null } = {}) {
+export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = process.env.CLAUDE_CONFIG_DIR || join(os.homedir(), ".claude"), codexDir, name = os.hostname(), dryRun = false, allowShell, providers, secretCrypto = null } = {}) {
   mkdirSync(dir, { recursive: true });
   // Panel plumbing: an event queue, an on-demand sampler feeding it, and the
   // method table both the phone (RPC) and browser panels (loopback) call.
@@ -169,7 +172,14 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   const findWidget = (client, pageId, widgetId) =>
     panelStore.layoutFor(client).pages.find((p) => p.id === pageId)?.widgets.find((w) => w.id === widgetId) ?? null;
   const pushes = createPushes({ dir, publish: bus.publish });
-  const provs = { ...(providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun })), ...pushes.providers() };
+  const agents = createAgents({ dir, claudeDir, port: localPort, publish: bus.publish, getSettings: () => panelStore.config().settings, idleSeconds });
+  const provs = {
+    ...(providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun })),
+    ...pushes.providers(),
+    ai: createAi({ claudeDir, ...(codexDir ? { codexDir } : {}), limitsFile: agents.limitsFile }),
+    alerts: agents.provider(),
+    github: createGithub({ secrets, getWidgets: widgetsOfType }),
+  };
   const runner = createShortcutRunner({ getShortcuts: () => panelStore.config().shortcuts, execute, dryRun });
   const commands = createCommandRunner({ getCommands: () => panelStore.config().commands });
   const webhooks = createWebhooks({ pushes, publish: bus.publish, runner });
@@ -323,6 +333,21 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         const w = findWidget(ctx.client, pageId, widgetId);
         if (!w || w.type !== "command") return { ok: false, error: "No such widget." };
         return commands.output(String(w.options?.command ?? ""));
+      },
+      // Claude Code permission prompts and waiting alerts (Stage 9).
+      "agent.answer": ({ id, decision } = {}) => agents.answer(String(id ?? ""), decision),
+      "agent.dismiss": ({ session } = {}) => agents.dismiss(session),
+      // Focus only a session the ai provider currently lists — never an arbitrary pid.
+      "agent.focus": async ({ id } = {}) => {
+        const s = (await provs.ai.sample()).sessions.find((x) => x.id === id && x.pid);
+        return s ? agents.focus(s.pid) : { ok: false, error: "That session has ended." };
+      },
+      "github.open": async ({ url } = {}) => {
+        const gh = await provs.github.sample();
+        const known = [...(gh?.prs ?? []), ...(gh?.reviews?.items ?? [])].some((p) => p.url === url);
+        if (!known) return { ok: false, error: "Unknown link." };
+        await execute({ type: "url", target: url }, { dryRun });
+        return { ok: true };
       },
       "rules.pause": ({ minutes } = {}) => rules.pause(Math.max(0, Math.min(24 * 60, Number(minutes) || 0))),
       "rules.state": () => ({ pausedUntil: rules.pausedUntil(), active: rules.active() }),
@@ -571,6 +596,7 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     webhooks,
     rules,
     runner,
+    agents,
     listen: () =>
       new Promise((r) => {
         sampler.start();
@@ -590,6 +616,37 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         bus.close(); // release held long-polls so close() can finish
         server.close(r);
       }),
+  };
+}
+
+/** Loopback routes for Claude Code hooks and the editor's AI section. */
+export function agentRoutes(host) {
+  const body = async (req, readJson) => (await readJson(req, 64_000).catch(() => null)) ?? {};
+  return {
+    "POST /api/agent/permission": async (req, res, { send, readJson }) => {
+      const r = await host.agents.permission(await body(req, readJson));
+      send(res, r.status, r.json);
+    },
+    "POST /api/agent/event": async (req, res, { send, readJson }) => {
+      const r = host.agents.event(await body(req, readJson));
+      send(res, r.status, r.json);
+    },
+    "GET /api/editor/agents": (_req, res, { send }) => send(res, 200, { ok: true, ...host.agents.status() }),
+    "POST /api/editor/agents/install": (_req, res, { send }) => {
+      try {
+        send(res, 200, { ok: true, ...host.agents.install() });
+      } catch (err) {
+        send(res, 400, { ok: false, error: err.message });
+      }
+    },
+    "POST /api/editor/agents/remove": (_req, res, { send }) => send(res, 200, { ok: true, ...host.agents.remove() }),
+    "POST /api/editor/github-token": async (req, res, { send, readJson }) => {
+      const b = await body(req, readJson);
+      if (typeof b.token !== "string") return send(res, 400, { ok: false, error: "token required" });
+      if (b.token.trim()) host.secrets.set("github:token", b.token.trim());
+      else host.secrets.set("github:token", null);
+      send(res, 200, { ok: true });
+    },
   };
 }
 
@@ -617,13 +674,13 @@ async function main() {
   const allowShell = process.env.DECK_ALLOW_SHELL
     ? ["1", "true", "yes"].includes(process.env.DECK_ALLOW_SHELL.toLowerCase())
     : undefined;
-  const host = createHost({ dir, dryRun, port, allowShell });
-  await host.listen();
   const localPort = process.env.DECK_LOCAL_PORT ? Number(process.env.DECK_LOCAL_PORT) : 8789;
+  const host = createHost({ dir, dryRun, port, localPort, allowShell });
+  await host.listen();
   const local = createLocalServer({
     port: localPort,
     panelApi: host.panelApi,
-    routes: { ...createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers, rules: host.rules, runner: host.runner }), ...webhookRoutes(host) },
+    routes: { ...createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers, rules: host.rules, runner: host.runner }), ...webhookRoutes(host), ...agentRoutes(host) },
   });
   await local.listen().then(
     () => console.log(`Browser panel (this computer only): http://127.0.0.1:${localPort}/panel/  ·  editor: http://127.0.0.1:${localPort}/editor/`),

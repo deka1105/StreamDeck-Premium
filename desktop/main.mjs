@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readdirSync } from "node:fs";
 import qrcode from "qrcode";
-import { createHost, webhookRoutes } from "./src/host.mjs";
+import { createHost, webhookRoutes, agentRoutes } from "./src/host.mjs";
 import { createLocalServer } from "./src/local.mjs";
 import { createEditorRoutes } from "./src/panel/editorRoutes.mjs";
 
@@ -178,7 +178,7 @@ app.whenReady().then(async () => {
 
   const dir = join(app.getPath("userData"), "data");
   // Integration secrets are encrypted with the OS keychain via safeStorage.
-  host = createHost({ dir, dryRun, port: HOST_PORT, secretCrypto: safeStorage });
+  host = createHost({ dir, dryRun, port: HOST_PORT, localPort: LOCAL_PORT, secretCrypto: safeStorage });
   host.server.on("error", (err) => {
     const msg =
       err.code === "EADDRINUSE"
@@ -195,7 +195,7 @@ app.whenReady().then(async () => {
   const local = createLocalServer({
     port: LOCAL_PORT,
     panelApi: host.panelApi,
-    routes: { ...createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers, rules: host.rules, runner: host.runner }), ...webhookRoutes(host) },
+    routes: { ...createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers, rules: host.rules, runner: host.runner }), ...webhookRoutes(host), ...agentRoutes(host) },
   });
   await local.listen().then(
     () => console.log(`browser panel on http://127.0.0.1:${LOCAL_PORT}/panel/`),

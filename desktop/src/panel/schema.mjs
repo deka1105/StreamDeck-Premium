@@ -223,6 +223,13 @@ export function sanitizeConfig(raw, catalog) {
       feeds: cleanFeeds(raw?.settings?.feeds),
       mediaServers: cleanMediaServers(raw?.settings?.mediaServers),
       webhooks: { lan: raw?.settings?.webhooks?.lan === true },
+      agents: {
+        phonePrompts: raw?.settings?.agents?.phonePrompts === true,
+        onlyWhenAway: raw?.settings?.agents?.onlyWhenAway === true,
+        timeoutSec: Math.max(10, Math.min(600, int(raw?.settings?.agents?.timeoutSec, 60))),
+        alerts: raw?.settings?.agents?.alerts !== false,
+        idleAlertSec: Math.max(0, Math.min(3600, int(raw?.settings?.agents?.idleAlertSec, 30))),
+      },
       pageSwitch: {
         minGapSec: Math.max(0, Math.min(600, int(raw?.settings?.pageSwitch?.minGapSec, 20))),
         waitAfterTouchSec: Math.max(0, Math.min(120, int(raw?.settings?.pageSwitch?.waitAfterTouchSec, 8))),
