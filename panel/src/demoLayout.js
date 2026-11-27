@@ -66,6 +66,17 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "ai",
+      name: "AI",
+      widgets: [
+        { id: "ss", type: "sessions", x: 0, y: 0, w: 6, h: 3 },
+        { id: "aq", type: "aiquota", x: 6, y: 0, w: 3, h: 3, options: { agent: "claude" } },
+        { id: "tk", type: "tokens", x: 9, y: 0, w: 3, h: 3 },
+        { id: "cg", type: "contributions", x: 0, y: 3, w: 7, h: 3 },
+        { id: "pr", type: "prs", x: 7, y: 3, w: 5, h: 3 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [

@@ -18,6 +18,7 @@ import { note, checklist, counter, breathe, quote, title, battery, computers } f
 import { weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image, agendaWidget, nextup } from "./web.js";
 import { nowplaying, volume, radio, lyrics, mediaserver } from "./media.js";
 import { pushvalue, notifications, bigbutton, shortcutgrid, command, ruleswidget, customhtml } from "./automation.js";
+import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./ai.js";
 
 export const WIDGETS = [
   // time
@@ -32,6 +33,8 @@ export const WIDGETS = [
   note, checklist, counter, breathe, quote, title, battery, computers,
   // controls & automation
   deck, bigbutton, shortcutgrid, pushvalue, notifications, command, ruleswidget,
+  // ai & code
+  sessions, aiquota, tokenuse, agentalerts, contributions, prs,
   // layout
   customhtml,
 ];

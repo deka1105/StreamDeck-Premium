@@ -623,3 +623,41 @@ html, body {
 .toast.out { opacity: 0; transform: translateX(20px); }
 .toast span { font-size: 13px; color: var(--ink-mid); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } }
+
+/* --- Stage 9: AI & code --- */
+.sess-row, .pr-row { appearance: none; background: none; border: 0; color: inherit; font: inherit; text-align: left; display: flex; align-items: center; gap: 8px; padding: 6px 2px; border-bottom: 1px solid var(--line); cursor: pointer; width: 100%; font-size: clamp(11px, 4.5cqmin, 14px); }
+.sess-row .grow, .pr-row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sess-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-dim); flex: none; }
+.sess-row[data-state="working"] .sess-dot { background: var(--success); animation: pulse 1.4s ease-in-out infinite; }
+.sess-row[data-state="permission"] .sess-dot, .sess-row[data-state="question"] .sess-dot { background: var(--warn); }
+.sess-row[data-state="input"] .sess-dot, .sess-row[data-state="finished"] .sess-dot { background: var(--accent); }
+.sess-state { font-size: 11px; color: var(--ink-mid); white-space: nowrap; }
+.sess-row[data-state="permission"] .sess-state { color: var(--warn); font-weight: 700; }
+.sess-tok { font-size: 10px; min-width: 38px; text-align: right; }
+@keyframes pulse { 50% { opacity: 0.35; } }
+.w-quota { gap: 8px; }
+.quota-row .minibar i { background: var(--success); }
+.quota-row[data-level="warn"] .minibar i { background: var(--warn); }
+.quota-row[data-level="error"] .minibar i { background: var(--danger); }
+.quota-sub { font-size: 10px; margin-top: 2px; }
+.tok-big { font-weight: 800; font-size: clamp(20px, 22cqh, 56px); line-height: 1.1; }
+.tok-bars { flex: 1; display: flex; align-items: flex-end; gap: 4px; min-height: 20px; margin-top: 6px; }
+.tok-bars i { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; opacity: 0.8; }
+.tok-bars i:last-child { opacity: 1; }
+.w-alerts[data-on="1"] { box-shadow: inset 0 0 0 2px var(--warn); }
+.alerts-clear { color: var(--success); }
+.contrib-grid { flex: 1; display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; min-height: 0; }
+.contrib-grid i { border-radius: 2px; background: rgba(255, 255, 255, 0.06); }
+.contrib-grid i[data-l="1"] { background: color-mix(in srgb, var(--success) 30%, transparent); }
+.contrib-grid i[data-l="2"] { background: color-mix(in srgb, var(--success) 55%, transparent); }
+.contrib-grid i[data-l="3"] { background: color-mix(in srgb, var(--success) 80%, transparent); }
+.contrib-grid i[data-l="4"] { background: var(--success); }
+.contrib-kinds { font-size: 10px; margin-top: 4px; }
+.pr-badge { color: var(--warn); }
+#prompts { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(0, 0, 0, 0.55); }
+#prompts[hidden] { display: none; }
+.prompt-card { background: var(--surface); border: 1px solid var(--warn); border-radius: 18px; padding: 14px 18px; width: min(520px, 90vw); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6); text-align: center; }
+.prompt-tool { font-weight: 800; font-size: 18px; margin-top: 4px; }
+.prompt-detail { margin: 8px 0 12px; padding: 8px; background: #04070d; border-radius: 8px; font: 12px/1.4 var(--mono); white-space: pre-wrap; word-break: break-all; max-height: 30vh; overflow: auto; text-align: left; }
+.prompt-left { font-size: 11px; margin-top: 8px; }
+.prompt-allow, .prompt-deny { min-width: 120px; min-height: 44px; }

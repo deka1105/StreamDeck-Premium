@@ -2,6 +2,7 @@
 // the current page, and handles navigation — swipe, page dots, the overview,
 // keyboard arrows, and returning home when idle.
 
+import { createPromptCard } from "./widgets/ai.js";
 import { createBridge } from "./bridge.js";
 import { createStore } from "./store.js";
 import { mountPage } from "./app.js";
@@ -57,7 +58,7 @@ function boot() {
   const hasCalendar = (p) => p.widgets.some((w) => CAL_TYPES.has(w.type));
   // The current page's data, plus calendar data if any page shows a calendar
   // (its dot marks "still an event today" even while you're elsewhere).
-  const pageNeeds = () => [...new Set([...(current?.needs ?? []), ...(pages().some(hasCalendar) ? ["calendar"] : [])])];
+  const pageNeeds = () => [...new Set([...(current?.needs ?? []), ...(pages().some(hasCalendar) ? ["calendar"] : []), "alerts"])];
 
   // ---- rendering -----------------------------------------------------------
 
@@ -175,6 +176,7 @@ function boot() {
     alarms.watch(layout);
   }
 
+  const prompts = createPromptCard(document.getElementById("prompts"), bridge);
   const switcher = createSwitcher({
     gotoId: (id) => gotoId(id),
     currentPageId: () => pages()[index]?.id ?? null,
@@ -210,6 +212,10 @@ function boot() {
     } else if (e.type === "refresh") {
       if (e.data?.reload) location.reload();
       else loadLayout();
+    } else if (e.type === "prompt" && e.data?.id) {
+      prompts.show(e.data);
+    } else if (e.type === "prompt_done" && e.data?.id) {
+      prompts.done(e.data.id);
     } else if (e.type === "night") {
       document.body.dispatchEvent(new CustomEvent("deskassist-night", { detail: e.data }));
     }
@@ -219,6 +225,7 @@ function boot() {
     if (e.type === "data" && e.data?.kind) {
       store.set(e.data.kind, e.data.value);
       if (e.data.kind === "calendar") renderDots();
+      if (e.data.kind === "alerts") prompts.sync(e.data.value?.prompts);
     }
     else if (e.type === "state" && e.data?.key) store.set(`state:${e.data.key}`, e.data.value);
     else if (e.type === "layout" && e.data?.rev !== layout?.rev) loadLayout();

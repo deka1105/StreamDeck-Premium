@@ -104,6 +104,36 @@ export function demoGenerators() {
     }),
     radio: () => ({ playing: null, player: "mpv", at: Date.now() }),
     pushes: () => ({ values: { temperature: { value: "21.5", unit: "°C", title: "Living room", at: Date.now() - 120_000 }, build: { value: "passed", sub: "main · 3m 12s", level: "ok", progress: 1, at: Date.now() - 600_000 } }, at: Date.now() }),
+    ai: () => {
+      const now = Date.now();
+      const days = Array.from({ length: 7 }, (_, i) => ({ day: new Date(now - (6 - i) * 864e5).toLocaleDateString("en-CA"), tokens: [3.1e6, 5.4e6, 0.8e6, 7.2e6, 4.4e6, 6.1e6, 2.9e6][i] }));
+      return {
+        sessions: [
+          { agent: "claude", id: "d1", project: "deskassist", status: "working", model: "claude-opus-5-5", updatedAt: now - 20_000, tokens: { input: 1.8e6, output: 42e3 } },
+          { agent: "claude", id: "d2", project: "website", status: "idle", model: "claude-sonnet-5-5", updatedAt: now - 400_000, tokens: { input: 310e3, output: 9e3 } },
+          { agent: "codex", id: "d3", project: "api-server", status: "working", model: "gpt-codex", updatedAt: now - 5_000, tokens: { input: 520e3, output: 15e3 } },
+        ],
+        claude: { installed: true, usage: { today: 2.9e6, lastHour: 640e3, days, models: { "claude-opus-5-5": 2.2e6, "claude-sonnet-5-5": 0.7e6 } }, limits: { five: { used: 38 + ((now / 60000) % 10), resetsAt: now + 2.3 * 3600e3 }, week: { used: 61, resetsAt: now + 3.4 * 864e5 }, fiveFullAt: now + 4.1 * 3600e3, weekFullAt: null, at: now } },
+        codex: { installed: true, usage: { today: 0.5e6, lastHour: 120e3, days, models: { "gpt-codex": 0.5e6 } }, limits: { five: { used: 12, resetsAt: now + 4 * 3600e3 }, week: { used: 30, resetsAt: now + 5 * 864e5 }, at: now } },
+        recent: "claude",
+        at: now,
+      };
+    },
+    alerts: () => ({ alerts: [{ session: "d2", project: "website", kind: "input", message: "Claude is waiting for your input", at: Date.now() - 90_000 }], prompts: [], at: Date.now() }),
+    github: () => {
+      const now = Date.now();
+      let seed = 7;
+      const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+      const days = Array.from({ length: 371 }, (_, i) => ({ date: new Date(now - (370 - i) * 864e5).toISOString().slice(0, 10), count: rnd() < 0.25 ? 0 : Math.floor(rnd() * 12) }));
+      return {
+        login: "you", total: days.reduce((a, d) => a + d.count, 0), streak: 9, days,
+        kinds: { commits: 812, prs: 64, issues: 21, reviews: 88 },
+        repos: [{ repo: "you/deskassist", commits: 412 }],
+        prs: [{ number: 128, title: "Panel: night screen", url: "https://github.com/you/deskassist/pull/128", repo: "you/deskassist", draft: false, checks: "passing" }, { number: 131, title: "Rules: away trigger", url: "https://github.com/you/deskassist/pull/131", repo: "you/deskassist", draft: false, checks: "running" }],
+        reviews: { count: 1, items: [{ number: 77, title: "Fix calendar time zones", url: "https://github.com/team/app/pull/77", repo: "team/app", author: "sam" }] },
+        at: now,
+      };
+    },
     notifications: () => ({ items: [{ id: "1", title: "Deploy", text: "Production is live", level: "ok", at: Date.now() - 300_000 }, { id: "2", title: "Doorbell", text: "Someone is at the door", level: "info", at: Date.now() - 3600_000 }], at: Date.now() }),
     netq: () => {
       const v = Math.random() < 0.03 ? -1 : Math.round(ping() * 10) / 10;
@@ -188,6 +218,10 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "shortcut.run": () => ({ ok: true, simulated: true }),
     "command.output": () => ({ ok: true, output: "Filesystem      Size  Used Avail Use%\n/dev/disk1s1   932G  612G  320G  66%\n", at: Date.now() }),
     "rules.state": () => ({ pausedUntil: 0, active: ["music"] }),
+    "agent.answer": () => ({ ok: true }),
+    "agent.dismiss": () => ({ ok: true }),
+    "agent.focus": () => ({ ok: true, app: "Terminal" }),
+    "github.open": () => ({ ok: true }),
     "rules.pause": () => ({ pausedUntil: 0 }),
     "media.control": () => ({ ok: true, simulated: true }),
     "media.art": () => ({ src: null }),
