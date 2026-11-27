@@ -13,6 +13,8 @@
 //            setNeeds(kinds), kind ("native" | "http" | "offline").
 // Emitted:   "event" {type, data}, "status" {online}, "resync".
 
+import { createDemoBridge } from "./demo.js";
+
 const REQUEST_TIMEOUT_MS = 30_000;
 const NEEDS_KEEPALIVE_MS = 15_000;
 
@@ -161,7 +163,12 @@ function offlineBridge() {
 }
 
 export function createBridge() {
+  // The phone app sets this before the page loads when its session is the demo.
+  const boot = typeof window !== "undefined" ? window.__deskassistBoot ?? {} : {};
+  const forceDemo = boot.demo === true || (typeof location !== "undefined" && /[?&]demo=1\b/.test(location.search));
+  if (forceDemo) return createDemoBridge();
   if (typeof window !== "undefined" && window.ReactNativeWebView) return nativeBridge();
   if (typeof location !== "undefined" && /^https?:$/.test(location.protocol)) return httpBridge();
-  return offlineBridge();
+  // Opened as a file with no computer: show the demo rather than empty tiles.
+  return createDemoBridge();
 }
