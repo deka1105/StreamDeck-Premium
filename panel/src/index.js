@@ -101,7 +101,24 @@ function boot() {
 
   // ---- layout + data ---------------------------------------------------------
 
+  // Editor live preview: the layout comes from the editor window (unsaved
+  // edits), not from the saved config; data still comes from the computer.
+  const preview = /[?&]preview=1\b/.test(location.search);
+  if (preview) {
+    document.body.dataset.preview = "1";
+    window.addEventListener("message", (e) => {
+      if (e.origin !== location.origin || e.data?.type !== "deskassist-preview") return;
+      const keepId = layout ? pages()[index]?.id : null;
+      layout = e.data.layout;
+      const want = e.data.pageId ?? keepId;
+      index = want ? indexAfterReload(layout, want) : homeIndex(layout);
+      render(0);
+    });
+    window.parent?.postMessage({ type: "deskassist-preview-ready" }, location.origin);
+  }
+
   async function loadLayout() {
+    if (preview) return;
     try {
       const next = await bridge.request("panel.layout");
       const keepId = layout ? pages()[index]?.id : null;
