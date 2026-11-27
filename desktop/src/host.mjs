@@ -21,6 +21,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import qrcode from "qrcode";
 import { execute, validateAction, frontmostApp, runningApps, hostStatus } from "./executor.mjs";
+import { createEventBus } from "./events.mjs";
+import { createSampler } from "./sampler.mjs";
+import { createPanelApi } from "./panelApi.mjs";
+import { PROVIDERS } from "./providers/index.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;

@@ -16,13 +16,14 @@ test("a first wait is fresh and returns immediately", async () => {
 
 test("wait returns buffered events, then long-polls for new ones", async () => {
   const bus = createEventBus();
-  const { boot } = await bus.wait({});
+  const first = await bus.wait({}); // fresh, seq 0
+  assert.equal(first.seq, 0);
+  const boot = first.boot;
   bus.publish("data", { n: 1 });
-  const r1 = await bus.wait({ after: 0 + 0 || 0, boot, client: "a" }); // after=0 → fresh
-  assert.equal(r1.fresh, true);
-  const r2 = await bus.wait({ after: 0.5, boot, client: "a", timeoutMs: 0 }).catch(() => null);
-  assert.ok(r2);
-  // Proper sequence: from seq 1, wait for seq 2.
+  const r1 = await bus.wait({ after: 0, boot, client: "a" }); // a seen-nothing client still gets seq 1
+  assert.equal(r1.fresh, undefined);
+  assert.deepEqual(r1.events.map((e) => e.data.n), [1]);
+  // From seq 1, long-poll for seq 2.
   const pending = bus.wait({ after: 1, boot, client: "a", timeoutMs: 5000 });
   assert.equal(bus.waiting(), 1);
   bus.publish("data", { n: 2 });
