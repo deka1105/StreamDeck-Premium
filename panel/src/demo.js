@@ -28,8 +28,50 @@ function walker(start, lo, hi, stepSize) {
 export function demoGenerators() {
   const cpu = walker(23, 4, 92, 9);
   const mem = walker(11.4, 7, 15, 0.3);
+  const gpuU = walker(31, 2, 97, 10);
+  const gpuT = walker(58, 40, 82, 2);
+  const rx = walker(2.4e6, 2e4, 9e7, 3e6);
+  const tx = walker(4e5, 1e4, 2e7, 4e5);
+  const ping = walker(14, 8, 60, 3);
+  const procCpu = { Safari: walker(18, 1, 60, 6), "Visual Studio Code": walker(12, 1, 50, 5), Spotify: walker(4, 0, 15, 2), Finder: walker(1, 0, 6, 1), Slack: walker(3, 0, 20, 2), Terminal: walker(2, 0, 10, 1.5), Mail: walker(1, 0, 5, 1) };
+  const procMem = { Safari: 2.1e9, "Visual Studio Code": 1.6e9, Spotify: 4.2e8, Finder: 1.1e8, Slack: 7.4e8, Terminal: 9e7, Mail: 2.3e8 };
+  const hist = [];
+  let today = 1.8e9;
   return {
-    system: () => ({ cpu: Math.round(cpu() * 10) / 10, cores: 10, mem: { used: Math.round(mem() * 2 ** 30), total: 16 * 2 ** 30 }, at: Date.now() }),
+    system: () => ({ cpu: Math.round(cpu() * 10) / 10, cores: 10, perCore: [], mem: { used: Math.round(mem() * 2 ** 30), total: 16 * 2 ** 30 }, swap: { used: 6e8, total: 2 * 2 ** 30 }, tempC: 54, uptime: 3 * 86400 + 4 * 3600, at: Date.now() }),
+    gpu: () => {
+      const g = { name: "Demo GPU", vendor: "Demo", util: Math.round(gpuU()), temp: Math.round(gpuT()), memUsed: 3.1 * 2 ** 30, memTotal: 8 * 2 ** 30 };
+      return { gpus: [g], primary: g, at: Date.now() };
+    },
+    disks: () => ({ volumes: [{ name: "Macintosh HD", mount: "/", used: 612e9, size: 994e9 }, { name: "Backup", mount: "/Volumes/Backup", used: 1.4e12, size: 2e12 }], io: null, at: Date.now() }),
+    net: () => ({ iface: "en0", rx: Math.round(rx()), tx: Math.round(tx()), pingMs: Math.round(ping() * 10) / 10, at: Date.now() }),
+    procs: () => ({
+      list: Object.keys(procCpu).map((name, i) => ({ name, pids: [1000 + i], cpu: Math.round(procCpu[name]() * 10) / 10, mem: procMem[name], own: true, protected: false, count: name === "Safari" ? 6 : 1 })),
+      total: 412,
+      at: Date.now(),
+    }),
+    netq: () => {
+      const v = Math.random() < 0.03 ? -1 : Math.round(ping() * 10) / 10;
+      hist.push(v);
+      if (hist.length > 60) hist.shift();
+      today += 3e5 + Math.random() * 2e6;
+      const ok = hist.filter((x) => x >= 0);
+      return {
+        online: true,
+        latencyMs: ok.length ? ok.slice(-5).sort((a, b) => a - b)[Math.min(2, ok.slice(-5).length - 1)] : null,
+        jitterMs: 1.8,
+        lossPct: Math.round((1000 * (hist.length - ok.length)) / Math.max(1, hist.length)) / 10,
+        hist: [...hist],
+        upSince: Date.now() - 2 * 86400_000 - 3 * 3600_000,
+        lastDrop: { at: Date.now() - 2 * 86400_000 - 3 * 3600_000, seconds: 42 },
+        today,
+        month: 41e9 + today,
+        speed: { at: Date.now() - 40 * 60_000, downMbps: 412.6, upMbps: 38.2, pingMs: 13 },
+        testing: false,
+        ip: null,
+        at: Date.now(),
+      };
+    },
   };
 }
 
@@ -69,6 +111,13 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     // Taps on controls "succeed" without doing anything.
     "action.run": () => ({ ok: true, simulated: true }),
     "deck.tiles": () => ({ name: "Default", tiles: DEMO_TILES }),
+    "panel.history": ({ kind } = {}) => {
+      if (!gens[kind]) return { kind, samples: [] };
+      const now = Date.now();
+      return { kind, samples: Array.from({ length: 90 }, (_, i) => ({ at: now - (90 - i) * 2000, value: gens[kind]() })) };
+    },
+    "procs.kill": () => ({ ok: false, reason: "Demo — nothing is actually ended." }),
+    "netq.speedtest": () => ({ ok: false, error: "Demo — no speed test is run." }),
     "deck.press": () => ({ ok: true, simulated: true }),
   };
 
