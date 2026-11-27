@@ -4,7 +4,7 @@
 // Live preview shows the working copy in the real panel renderer with live data.
 
 import { COLS, ROWS, clampBox, overlaps } from "../src/grid.js";
-import { renderSettings } from "./settings.js";
+import { renderSettings, renderLook } from "./settings.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const h = (tag, attrs = {}, ...kids) => {
@@ -345,6 +345,7 @@ function renderCenter() {
     canvas.hidden = true;
     frame.hidden = true;
     renderSettings(settings, { state, h, change, api, flash });
+    renderLook(settings, { state, h, change, flash, layout: layout() ?? state.config.default });
     return;
   }
   canvas.hidden = state.preview;
