@@ -32,3 +32,16 @@ test("agenda groups by day, skips finished events, caps the count", () => {
   assert.deepEqual(g.map((x) => x.events.map((e) => e.title)), [["lunch", "all day"], ["tomorrow"]]);
   assert.equal(groupByDay(events, 1, now).flatMap((x) => x.events).length, 1);
 });
+
+import { livePosition, currentLine } from "../src/widgets/media.js";
+
+test("media: live position advances only while playing; lyric line lookup", () => {
+  assert.equal(livePosition({ state: "playing", position: 10, duration: 100, at: 1000 }, 4000), 13);
+  assert.equal(livePosition({ state: "paused", position: 10, duration: 100, at: 1000 }, 4000), 10);
+  assert.equal(livePosition({ state: "playing", position: 99, duration: 100, at: 0 }, 9000), 100);
+  assert.equal(livePosition({}, 1), null);
+  const lines = [{ t: 1 }, { t: 5 }, { t: 9 }];
+  assert.equal(currentLine(lines, 0), -1);
+  assert.equal(currentLine(lines, 5), 1);
+  assert.equal(currentLine(lines, 100), 2);
+});

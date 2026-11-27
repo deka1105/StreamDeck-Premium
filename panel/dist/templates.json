@@ -805,6 +805,44 @@
       }
     },
     {
+      "id": "music",
+      "name": "Music",
+      "description": "A big now-playing card, lyrics and the volume.",
+      "page": {
+        "name": "Music",
+        "widgets": [
+          {
+            "type": "nowplaying",
+            "x": 0,
+            "y": 0,
+            "w": 7,
+            "h": 4
+          },
+          {
+            "type": "lyrics",
+            "x": 7,
+            "y": 0,
+            "w": 5,
+            "h": 6
+          },
+          {
+            "type": "volume",
+            "x": 0,
+            "y": 4,
+            "w": 7,
+            "h": 1
+          },
+          {
+            "type": "radio",
+            "x": 0,
+            "y": 5,
+            "w": 7,
+            "h": 1
+          }
+        ]
+      }
+    },
+    {
       "id": "clock",
       "name": "Clock",
       "description": "A big clock with seconds.",

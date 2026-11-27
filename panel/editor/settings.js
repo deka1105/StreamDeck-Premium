@@ -163,6 +163,46 @@ export function renderSettings(root, { state, h, change, api, flash }) {
     ),
   );
 
+  // ------------------------------------------------------ media servers ----
+  s.mediaServers ??= [];
+  const msList = h("div", { class: "set-list" });
+  for (const m of s.mediaServers) {
+    msList.append(
+      h(
+        "div",
+        { class: "set-row" },
+        h("div", { class: "grow" }, h("b", { text: `${m.name} (${m.type === "plex" ? "Plex" : "Jellyfin"})` }), h("div", { class: "muted small", text: m.url })),
+        h("button", { class: "btn danger", text: "Remove", onclick: () => change(() => (s.mediaServers = s.mediaServers.filter((x) => x.id !== m.id))) }),
+      ),
+    );
+  }
+  const msType = h("select", { id: "msType" }, h("option", { value: "jellyfin", text: "Jellyfin" }), h("option", { value: "plex", text: "Plex" }));
+  const msUrl = h("input", { id: "msUrl", placeholder: "Server address, e.g. http://192.168.1.20:8096" });
+  const msToken = h("input", { id: "msToken", type: "password", placeholder: "API key (Jellyfin) or X-Plex-Token (Plex)", autocomplete: "new-password" });
+  root.append(
+    section(
+      "Media servers",
+      msList,
+      h("div", { class: "row" }, msType, msUrl, msToken, h("button", {
+        class: "btn",
+        id: "addMediaServer",
+        text: "Add",
+        onclick: async () => {
+          if (!/^https?:\/\//i.test(msUrl.value.trim())) return flash("Enter the server's http(s) address.", true);
+          if (s.mediaServers.length >= 4) return flash("Up to 4 servers.", true);
+          const id = rid("m");
+          if (msToken.value) {
+            const r = await api("/api/editor/secret", { name: `media:${id}`, value: msToken.value }).catch((e) => ({ ok: false, error: e.message }));
+            if (!r.ok) return flash(r.error ?? "Couldn't save the token.", true);
+            msToken.value = "";
+          }
+          change(() => s.mediaServers.push({ id, type: msType.value, name: msType.value === "plex" ? "Plex" : "Jellyfin", url: msUrl.value.trim() }));
+        },
+      })),
+      h("p", { class: "hint", text: "The token stays on this computer (encrypted by the system keychain) and is only sent to that server." }),
+    ),
+  );
+
   // ---------------------------------------------------------- internet ----
   root.append(
     section(

@@ -1167,6 +1167,117 @@
       ]
     },
     {
+      "type": "nowplaying",
+      "name": "Now playing",
+      "category": "media",
+      "size": {
+        "w": 6,
+        "h": 3
+      },
+      "min": {
+        "w": 3,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "volume",
+          "type": "bool",
+          "label": "Show the volume slider",
+          "default": true
+        },
+        {
+          "key": "server",
+          "type": "bool",
+          "label": "Show the media server when the computer is idle",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "volume",
+      "name": "Volume",
+      "category": "media",
+      "size": {
+        "w": 4,
+        "h": 1
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "radio",
+      "name": "Radio",
+      "category": "media",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "stations",
+          "type": "list",
+          "label": "Stations, one per line: Name | https://stream-address",
+          "default": []
+        }
+      ]
+    },
+    {
+      "type": "lyrics",
+      "name": "Synced lyrics",
+      "category": "media",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "lookup",
+          "type": "bool",
+          "label": "Look up lyrics on LRCLIB (sends the song title, artist, album and length)",
+          "default": false
+        },
+        {
+          "key": "offset",
+          "type": "number",
+          "label": "Timing offset in ms (positive = earlier)",
+          "default": 0,
+          "min": -5000,
+          "max": 5000
+        },
+        {
+          "key": "plain",
+          "type": "bool",
+          "label": "Show plain lyrics when there are no timed ones",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "mediaserver",
+      "name": "Media server",
+      "category": "media",
+      "size": {
+        "w": 6,
+        "h": 3
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": []
+    },
+    {
       "type": "note",
       "name": "Note",
       "category": "personal",
