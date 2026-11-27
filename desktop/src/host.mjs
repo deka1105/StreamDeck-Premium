@@ -24,7 +24,7 @@ import { execute, validateAction, frontmostApp, runningApps, hostStatus } from "
 import { createEventBus } from "./events.mjs";
 import { createSampler } from "./sampler.mjs";
 import { createPanelApi } from "./panelApi.mjs";
-import { PROVIDERS } from "./providers/index.mjs";
+import { createProviders } from "./providers/index.mjs";
 import { createLocalServer } from "./local.mjs";
 import { createPanelStore } from "./panel/store.mjs";
 import { createEditorRoutes } from "./panel/editorRoutes.mjs";
@@ -144,19 +144,42 @@ function saveApps(dir, apps) {
 
 // --- host --------------------------------------------------------------------
 
-export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell, providers = PROVIDERS } = {}) {
+export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell, providers } = {}) {
   mkdirSync(dir, { recursive: true });
   // Panel plumbing: an event queue, an on-demand sampler feeding it, and the
   // method table both the phone (RPC) and browser panels (loopback) call.
   const bus = createEventBus();
-  const sampler = createSampler({ providers, publish: bus.publish });
   const panelStore = createPanelStore({ dir, onChange: (rev) => bus.publish("layout", { rev }) });
+  const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings });
+  const sampler = createSampler({ providers: provs, publish: bus.publish });
+  /** Does this client's layout contain a widget of `type` (id `widgetId`) with option `key` on? */
+  const widgetAllows = (client, widgetId, type, key) =>
+    panelStore.layoutFor(client).pages.some((p) => p.widgets.some((w) => w.id === widgetId && w.type === type && w.options?.[key] === true));
   const panelApi = createPanelApi({
     bus,
     sampler,
     hostName: name,
     extra: {
       "panel.layout": (_params, ctx) => panelStore.layoutFor(ctx.client),
+      "panel.history": ({ kind } = {}) => ({ kind, samples: sampler.history(kind) }),
+      // Ending a process is allowed only from a processes widget whose
+      // "allow ending processes" option is on, in this client's own layout —
+      // checked here, so a phone can't just claim permission (PLAN 4.3).
+      "procs.kill": async ({ name: procName, pid, all, widgetId } = {}, ctx) => {
+        if (!provs.procs?.kill) return { ok: false, reason: "Not available." };
+        if (!widgetAllows(ctx.client, widgetId, "processes", "allowKill")) {
+          return { ok: false, reason: "Ending processes is turned off for this widget. Turn it on in the layout editor." };
+        }
+        const r = await provs.procs.kill({ name: String(procName ?? ""), pid: Number(pid), all: all === true });
+        console.log(`${r.ok ? "■" : "⛔"} end ${all ? "all" : `pid ${pid}`} of "${procName}" from ${ctx.client}: ${r.ok ? `ended ${r.ended}` : r.reason}`);
+        return r;
+      },
+      "netq.speedtest": async () => {
+        if (!provs.netq?.speedtest) return { ok: false, error: "Not available." };
+        const r = await provs.netq.speedtest();
+        if (r.ok) bus.publish("data", { kind: "netq", value: await provs.netq.sample() });
+        return r;
+      },
     },
   });
   let devices = loadDevices(dir);
@@ -382,11 +405,13 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     listen: () =>
       new Promise((r) => {
         sampler.start();
+        provs.netq?.startUsage?.();
         server.listen(port, r);
       }),
     stop: () =>
       new Promise((r) => {
         sampler.stop();
+        provs.netq?.stopUsage?.();
         bus.close(); // release held long-polls so close() can finish
         server.close(r);
       }),
