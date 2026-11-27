@@ -23,6 +23,13 @@ const dryRun = ["1", "true", "yes"].includes((process.env.DECK_DRY_RUN ?? "").to
 
 app.setName("streamPhoneDeck");
 
+// Test/dev overrides, so a second copy can run beside an installed one:
+//   DECK_USER_DATA  separate data dir (also a separate single-instance lock)
+//   DECK_PORT / DECK_LOCAL_PORT  other ports than 8788 / 8789
+if (process.env.DECK_USER_DATA) app.setPath("userData", process.env.DECK_USER_DATA);
+const HOST_PORT = process.env.DECK_PORT ? Number(process.env.DECK_PORT) : undefined;
+const LOCAL_PORT = process.env.DECK_LOCAL_PORT ? Number(process.env.DECK_LOCAL_PORT) : 8789;
+
 // Only one host may bind the port; a second launch just re-opens the pair window.
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -119,8 +126,8 @@ function buildTrayMenu() {
     { label: `Host: ${host.name} · port ${host.port}`, enabled: false },
     { type: "separator" },
     { label: "Pair a phone…", click: createPairWindow },
-    { label: "Edit panel layout…", click: () => shell.openExternal("http://127.0.0.1:8789/editor/") },
-    { label: "Open panel in browser", click: () => shell.openExternal("http://127.0.0.1:8789/panel/?device=monitor") },
+    { label: "Edit panel layout…", click: () => shell.openExternal(`http://127.0.0.1:${LOCAL_PORT}/editor/`) },
+    { label: "Open panel in browser", click: () => shell.openExternal(`http://127.0.0.1:${LOCAL_PORT}/panel/?device=monitor`) },
     { label: "Paired devices", submenu: deviceItems },
     { label: "Allowed apps…", click: createAppsWindow },
     { type: "separator" },
@@ -170,7 +177,7 @@ app.whenReady().then(async () => {
   app.dock?.hide?.(); // menu-bar utility, no dock icon
 
   const dir = join(app.getPath("userData"), "data");
-  host = createHost({ dir, dryRun });
+  host = createHost({ dir, dryRun, port: HOST_PORT });
   host.server.on("error", (err) => {
     const msg =
       err.code === "EADDRINUSE"
@@ -185,12 +192,12 @@ app.whenReady().then(async () => {
   // Loopback-only browser panel + (later) layout editor. A failure here must not
   // take down pairing, so it only logs.
   const local = createLocalServer({
-    port: 8789,
+    port: LOCAL_PORT,
     panelApi: host.panelApi,
     routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices }),
   });
   await local.listen().then(
-    () => console.log("browser panel on http://127.0.0.1:8789/panel/"),
+    () => console.log(`browser panel on http://127.0.0.1:${LOCAL_PORT}/panel/`),
     (err) => console.warn(`browser panel unavailable: ${err.message}`),
   );
 
