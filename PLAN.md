@@ -378,7 +378,63 @@ The editor builds its option forms from these entries.
   - Verify: fixture `.vdf`/`.acf` files and a fake process list in `node --test`.
 - The rest, each its own step (research its public API → provider with fixture tests → widget → template if any): Spotify (PKCE queue/playlists), Plex playlists/queue control, RTSP camera via ffmpeg, photo frame (folder / Immich), Discord, CodexBar, other AI CLIs (OpenCode, Cursor, Antigravity, Grok, Pi, WorkBuddy, Copilot CLI), dictation, app console, device batteries. Order them by what the owner actually uses (ask at stage start).
 
-## Stage 16 — Languages and release
+## Stage 16 — Desk edges on the computer (Stash)
+**Visible at the end:** move the pointer to the left edge of the Mac's screen and a volume slider appears. Sweep it and the volume follows. Drop the pointer into the bottom-left corner and a dial for brightness/dark mode/output device appears. A hidden dock of 8 apps slides out beside the macOS Dock; pull up on it for a launcher of more apps. Switch to another app and its profile swaps the controls. The same works on Windows at the screen edges and beside the taskbar.
+
+- **16.0 Research, then stop for owner review (one session, no code).**
+  - macOS: Electron transparent always-on-top windows on every display, click-through with `setIgnoreMouseEvents(true, {forward:true})` for hover detection, fullscreen spaces and auto-hiding Dock behaviour.
+  - The native helper's APIs: brightness (public `IODisplay` vs private DisplayServices, and what Apple-silicon built-in displays need), keyboard backlight, `NSHapticFeedbackManager` for trackpad haptics, reading the Dock's frame via Accessibility, and the dark-mode toggle via System Events.
+  - Windows: monitor brightness via WMI (laptops) and DDC/CI (externals, shared with Stage 12), taskbar position via `SHAppBarMessage`, and the light/dark registry key.
+  - Write it up in `docs/desk-edges.md` and **stop for the owner** if anything needs a private API or changes notarization (R12).
+- **16.1 Edge zones + overlay shell.**
+  - Per display, thin invisible hover strips on the left and right edges and the four corners, with a configurable reveal delay.
+  - An optional **pressure** mode: the pointer must keep pushing into the edge for N ms. This cuts accidental reveals.
+  - Hidden in fullscreen apps unless allowed.
+  - A per-display calibration store, a display picker, and graceful fallback when a calibrated display is unplugged.
+  - Verify: a unit test of the hit-zone maths on fake display layouts (two monitors, mixed scale, Dock left/bottom/right). Live: on the Mac with an external display, each zone reveals only its own control.
+- **16.2 Edge sliders.** Left and right edges are configured independently: volume, brightness or appearance (dark/light). There's an accent colour and a minimal style. Values are read back so the slider matches changes made elsewhere. Verify: drag the slider, then `osascript -e "output volume of (get volume settings)"` matches within 2 %. On Windows, the CI unit test covers the volume mapping.
+- **16.3 Corner dials.**
+  - Quarter-circle dials from each corner: volume, brightness, appearance, keyboard backlight, audio output device, a **timer** (0–60 min, live countdown, finish animation and sound) and **music** (spinning album art from the Stage 7 media provider, pull it out for previous / play-pause / next).
+  - **Detachable:** pull a dial out into a floating full-circle control you can place anywhere, and snap it back into a corner. Two floating styles.
+  - Haptic ticks on a trackpad (macOS helper) and optional sounds.
+  - Verify: Playwright for the dial geometry and value maths (the dial UI is web code). Live: the timer finishes with sound, and the detached dial survives a host restart in the same place.
+- **16.4 Hidden dock + launcher.**
+  - A side tray of up to 8 apps beside the system Dock (beside the taskbar on Windows), aligned using the helper's Dock/taskbar position, with recalibrate from the tray menu.
+  - Pull up for a slotted **launcher** of more apps. Launching reuses the existing `app` action.
+  - An optional "expanding apps" layout.
+  - Verify: Dock on the left, bottom and right (`defaults write com.apple.dock orientation …; killall Dock`): the tray stays aligned each time.
+- **16.5 Profiles per frontmost app.** The dock, sliders and dials swap per frontmost app, reusing the foreground provider and the profile/trigger model the phone deck already has (Auto mode). Verify: unit test of profile resolution, then live: switch Safari → Finder and the dial set changes within 1.5 s.
+- **16.6 Shared glass material + settings.**
+  - One material for the dock, dials and sliders, with our own controls: frost, refraction, transparency, tint and highlights.
+  - Everything is editable in the loopback editor under a new "Desk edges" section.
+  - The phone shows "shelf" widgets the user picks on the computer: this is the existing Stage 3 editor flow, so no new work.
+  - Verify: change tint in the editor and the dock restyles without a restart.
+- Phone side (already covered elsewhere): "throw" an app from the phone to open it on the computer is the existing `app` action plus a flick gesture on a tile (Stage 2.3). Timer, Spotify/now playing, Claude Code and Codex widgets are Stages 5, 7 and 9.
+- Fence: never steal clicks outside the revealed control. Overlays must never cover a fullscreen app unless the user allowed it. Our own visuals (clean-room rule 3).
+
+## Stage 17 — Creative app controls (Stash)
+**Visible at the end:** open Photoshop and the phone's panel switches to a Photoshop page. Nine tool keys (the user picks which), a brush-size precision slider, and a colour control appear. The colour control shows up when Photoshop's colour picker is open. Dragging the slider changes the brush size live. The same pattern works for Illustrator, After Effects, Premiere Pro and Blender.
+
+- **17.0 Research, then ask (one session).**
+  - Ask the owner which of the five apps they have. Every app without a copy ships "untested", per R10.
+  - From **Adobe's and Blender's own docs**, record per app in `docs/creative-apps.md`:
+    - the tool shortcuts;
+    - the scripting route for reading/setting brush size (Photoshop), stroke weight (Illustrator), the selected single-value property (After Effects), and the current tool;
+    - how to detect a colour picker being open, which may need the Accessibility window list;
+    - Premiere's tools;
+    - Blender's Python API for mode, transform, rotation X/Y/Z, camera focal length, light power / sun strength, sculpt brush size and strength, frame selected, camera view, X-ray and shading.
+  - Fence: if a control has no documented route, leave it out rather than guess.
+- **17.1 Context switch.** When one of these apps is frontmost, the phone auto-switches to its page, reusing Auto mode and the rules engine. Users pick 9 tools for the Adobe apps. Verify: unit test plus a live check with whichever app the owner has.
+- **17.2 Tool keys.** Shortcuts per app as host-side shortcut IDs (D7), with labels and icons of our own design. Verify: tap each key and the app's active tool changes (live) or the right keystroke is logged (dry run).
+- **17.3 Precision and colour controls (D13).**
+  - Value sliders send a number to a host shortcut with a range (Stage 8.1 numbers), which runs our script against the app.
+  - Values are read back so the slider starts at the real value.
+  - Colour control: foreground / fill / text colour for Photoshop, Illustrator and After Effects.
+  - Verify: a fixture test of script generation and value clamping. Live: brush size 1 → 200 tracks the slider at ≤ 4 updates/s.
+- **17.4 Blender add-on.** A small add-on of ours, installed from the editor, listens on loopback only. It accepts only the fixed operations above, with values clamped. Verify: Python unit test of the operation whitelist, then a live check in Blender.
+- Fence: no app is controlled by synthetic mouse moves. Scripts are generated from fixed templates with validated numbers only, never from phone-supplied text. "Adobe", app names and Blender are used only to describe compatibility; no logos.
+
+## Stage 18 — Languages and release
 - i18n: our own `t()` with key-based dictionaries for the panel, editor and app. Start with English, then add locales in batches. RTL support (Arabic) needs a layout check.
 - Release: app version 1.2.0 with a demo-mode walkthrough of the new panel in the review notes and an updated privacy policy. Desktop host installers for macOS (notarized) and Windows. Merge `panel-parity` → `main` **only after** 1.1.0's review is resolved.
 
@@ -395,7 +451,7 @@ The editor builds its option forms from these entries.
 | R5 | **Undocumented quota endpoints** (Claude usage, Codex app-server) change or rate-limit. | Stage 9.3: a non-2xx or schema mismatch in the live check. | Show "quota unavailable" honestly. Never invent numbers. Back off at most every 3 minutes and honor 429 `Retry-After`. |
 | R6 | **Clean-room contamination.** Someone opens PhoneBox source "just to check". | Every PR touching `panel/` or `desktop/src`: the reviewer asks whether `docs/CLEANROOM.md` was updated this stage. | If source was viewed, note it in `CLEANROOM.md`, and have the affected component rewritten by a session that didn't see it. |
 | R7 | **Auto-push publishes every edit** to the public repo. | Any time you're about to write a token, key, Home Assistant URL with a token, or a personal path into the tree. | Secrets go in the host's user-data dir or an env var, never in the repo. Fixtures use made-up data. |
-| R8 | **Scope.** This is many months of work, and the plan will drift. | At each stage boundary, re-read this file. If a stage took more than twice its step count in sessions, re-plan the next one before starting it. | Cut from Stage 15 first, then 14.3, then Stage 12. Stages 1–10 are the product. |
+| R8 | **Scope.** This is many months of work, and the plan will drift. | At each stage boundary, re-read this file. If a stage took more than twice its step count in sessions, re-plan the next one before starting it. | Cut from Stage 15 first, then 17, then 14.3, then Stage 12. Stages 1–10 (plus 16 if the owner ranks it up) are the product. |
 | R9 | **Printer and cloud protocols with no clean source.** Several brands (and Bambu's cloud login) are known only through community reverse-engineering, often published as code. | Step 14.0: any brand whose `docs/printers.md` row says "no clean source". | Skip that brand, or have the owner capture the printer's traffic themselves so we write from observed behavior. Never port someone's client code. |
 | R10 | **Hardware we don't have** (printers, Plex/Jellyfin, Steam on Windows). | Every Stage 7, 14 and 15 step: no device = verified on fixtures only. | Label those integrations "untested on hardware" in the editor, as DeskHub does, until the owner or a user confirms them. |
 
