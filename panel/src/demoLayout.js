@@ -17,6 +17,19 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "system",
+      name: "System",
+      widgets: [
+        { id: "c1", type: "chart", x: 0, y: 0, w: 6, h: 2, options: { source: "cpu", window: "180" } },
+        { id: "c2", type: "chart", x: 6, y: 0, w: 6, h: 2, options: { source: "netDown", source2: "netUp", window: "180" } },
+        { id: "g1", type: "gauge", x: 0, y: 2, w: 2, h: 2, options: { source: "mem" } },
+        { id: "g2", type: "gauge", x: 2, y: 2, w: 2, h: 2, options: { source: "gpu" } },
+        { id: "tp", type: "topprocs", x: 4, y: 2, w: 4, h: 4, options: { sort: "cpu", count: 6 } },
+        { id: "st", type: "storage", x: 8, y: 2, w: 4, h: 4 },
+        { id: "in", type: "internet", x: 0, y: 4, w: 4, h: 2 },
+      ],
+    },
+    {
       id: "deck",
       name: "Deck",
       widgets: [{ id: "deck", type: "deck", x: 0, y: 0, w: 12, h: 6, options: {} }],
