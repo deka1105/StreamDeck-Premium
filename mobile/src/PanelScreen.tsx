@@ -132,8 +132,23 @@ export function PanelScreen({
     [pairing, send],
   );
 
-  // Stop the loop when the screen goes away or the pairing changes.
-  useEffect(() => () => void generation.current++, [pairing]);
+  // The event loop runs while the page is ready. Starting it from an effect
+  // (not only from the page's "ready" message) means it also restarts after
+  // the effect re-runs — a pairing change, or a hot reload in development —
+  // instead of silently stopping while the page stays on screen.
+  const pageReady = useRef(false);
+  const startLoop = useCallback(() => {
+    const gen = ++generation.current;
+    // The demo page runs its own simulated computer; there's nothing to poll.
+    if (!demo) runEvents(gen);
+  }, [demo, runEvents]);
+  useEffect(() => {
+    if (pageReady.current) {
+      startLoop();
+      send({ t: "resync" });
+    }
+    return () => void generation.current++; // stops the current loop
+  }, [startLoop, send]);
 
   // Battery changes are pushed to the Phone battery widget.
   // Guarded: the panel must keep working even in a build without the module.
@@ -174,9 +189,8 @@ export function PanelScreen({
         return;
       }
       if (msg?.t === "ready") {
-        const gen = ++generation.current;
-        // The demo page runs its own simulated computer; there's nothing to poll.
-        if (!demo) runEvents(gen);
+        pageReady.current = true;
+        startLoop();
         return;
       }
       if (msg?.t === "req" && typeof msg.id === "number") {
@@ -231,7 +245,7 @@ export function PanelScreen({
         );
       }
     },
-    [pairing, runEvents, send],
+    [pairing, startLoop, send],
   );
 
   return (
