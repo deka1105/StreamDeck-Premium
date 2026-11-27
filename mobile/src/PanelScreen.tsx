@@ -17,6 +17,7 @@ import { panelCall, panelWait } from "./host";
 import { isDemo } from "./demo";
 import type { Pairing } from "./storage";
 import type { DeckButton } from "./buttons";
+import { devPanelClicks } from "./devLink";
 import { color } from "./theme";
 
 /** Methods forwarded to the computer. Anything else is refused before it leaves the phone. */
@@ -149,6 +150,15 @@ export function PanelScreen({
     }
     return () => void generation.current++; // stops the current loop
   }, [startLoop, send]);
+
+  // Development only: let a deep link click something in the page, so a
+  // headless simulator can be driven from scripts (see devLink.ts).
+  useEffect(() => {
+    if (!__DEV__) return;
+    return devPanelClicks.on((selector) =>
+      web.current?.injectJavaScript(`(function(){var el=document.querySelector(${JSON.stringify(selector)});if(el){el.click();}})();true;`),
+    );
+  }, []);
 
   // Battery changes are pushed to the Phone battery widget.
   // Guarded: the panel must keep working even in a build without the module.

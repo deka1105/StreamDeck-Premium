@@ -9,7 +9,19 @@
 import { useEffect } from "react";
 import { Linking } from "react-native";
 
-export type DevLink = { pair?: unknown; demo?: boolean; view?: "deck" | "panel" };
+export type DevLink = { pair?: unknown; demo?: boolean; view?: "deck" | "panel"; click?: string };
+
+/** Dev-only: the Panel screen listens here to click an element in its page. */
+const clickListeners = new Set<(selector: string) => void>();
+export const devPanelClicks = {
+  on(fn: (selector: string) => void) {
+    clickListeners.add(fn);
+    return () => void clickListeners.delete(fn);
+  },
+  emit(selector: string) {
+    if (__DEV__) clickListeners.forEach((fn) => fn(selector));
+  },
+};
 
 export function parseDevLink(url: string | null): DevLink | null {
   if (!url) return null;
@@ -31,6 +43,8 @@ export function parseDevLink(url: string | null): DevLink | null {
     }
   }
   if (q.get("demo") === "1") out.demo = true;
+  const click = q.get("click");
+  if (click && click.length < 200) out.click = click;
   const view = q.get("view");
   if (view === "panel" || view === "deck") out.view = view;
   return out;

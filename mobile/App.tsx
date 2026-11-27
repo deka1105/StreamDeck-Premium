@@ -50,7 +50,7 @@ import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
 import { SnippetLibrary } from "./src/SnippetLibrary";
 import { PanelScreen } from "./src/PanelScreen";
-import { useDevLink, type DevLink } from "./src/devLink";
+import { useDevLink, devPanelClicks, type DevLink } from "./src/devLink";
 import {
   loadSnippets,
   newSnippetId,
@@ -114,6 +114,7 @@ export default function App() {
       setAddingHost(false);
     }
     if (link.view) setDevView((d) => ({ view: link.view!, n: (d?.n ?? 0) + 1 }));
+    if (link.click) devPanelClicks.emit(link.click);
   }, []);
   useDevLink(onDevLink);
 
