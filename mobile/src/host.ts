@@ -31,6 +31,14 @@ export function status(p: Pairing) {
   return isDemo(p) ? demoStatus() : rpc.status(p);
 }
 
+export function panelCall<T = unknown>(p: Pairing, method: string, params: Record<string, unknown> = {}): Promise<T> {
+  return isDemo(p) ? Promise.reject(new Error("demo")) : rpc.panelCall<T>(p, method, params);
+}
+
+export function panelWait(p: Pairing, params: { after: number; boot: string | null; timeoutMs?: number }) {
+  return isDemo(p) ? Promise.reject(new Error("demo")) : rpc.panelWait(p, params);
+}
+
 // Pairing itself is never simulated — a demo session is created locally, not
 // negotiated — so `pair` passes straight through.
 export const pair = rpc.pair;

@@ -107,3 +107,47 @@ export type HostStatus = {
 export function status(p: Pairing) {
   return sendCmd<HostStatus>(p, { cmd: "status" });
 }
+
+// --- panel ------------------------------------------------------------------
+
+type PanelReply<T> = { ok: boolean; result?: T; error?: string };
+
+/** A panel API call (panel.hello, panel.needs, panel.snapshot, …) on the command channel. */
+export async function panelCall<T = unknown>(p: Pairing, method: string, params: Record<string, unknown> = {}): Promise<T> {
+  const r = await sendCmd<PanelReply<T>>(p, { cmd: "panel", method, params });
+  if (!r.ok) throw new Error(r.error === "unknown cmd" ? "Update DeskAssist on your computer to use the panel." : r.error ?? "panel request failed");
+  return r.result as T;
+}
+
+export type PanelEvents = {
+  boot: string;
+  seq: number;
+  fresh?: boolean;
+  events: { seq: number; type: string; data: unknown; at: number }[];
+};
+
+// The event channel: one long-poll at a time, never queued behind (or ahead
+// of) command sends — it has its own counter, so ordering only matters within
+// this chain.
+let evQueue: Promise<unknown> = Promise.resolve();
+
+/** Long-poll for panel events on the event channel (held up to ~25 s by the host). */
+export function panelWait(p: Pairing, params: { after: number; boot: string | null; timeoutMs?: number }): Promise<PanelEvents> {
+  const run = evQueue.then(async () => {
+    const key = b64ToBytes(p.key);
+    const ctr = await nextEvCounter(p.kid);
+    const timeoutMs = params.timeoutMs ?? 25_000;
+    const envelope = { kid: p.kid, ...seal(key, { ctr, ch: "ev", cmd: "panel", method: "events.wait", params: { ...params, timeoutMs } }) };
+    const res = await postJson(`http://${p.host}:${p.port}/rpc`, envelope, timeoutMs + 8000);
+    if (res.status !== 200) {
+      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(err.error ?? `HTTP ${res.status}`);
+    }
+    const body = await res.json();
+    const reply = unseal<PanelReply<PanelEvents>>(key, body.n, body.ct);
+    if (!reply.ok || !reply.result) throw new Error(reply.error ?? "events failed");
+    return reply.result;
+  });
+  evQueue = run.then(() => undefined, () => undefined);
+  return run;
+}
