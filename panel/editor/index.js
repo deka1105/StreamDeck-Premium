@@ -279,8 +279,13 @@ function renderPageSettings() {
   name.addEventListener("input", () => {
     p.name = name.value;
     renderHeader();
-    const li = $(`.page-list li[data-id="${p.id}"] .page-name`);
-    if (li) li.textContent = name.value;
+    const li = $(`.page-list li[data-id="${p.id}"]`);
+    if (li) {
+      li.querySelector(".page-name").textContent = name.value;
+      const [up, down] = li.querySelectorAll(".icon");
+      up?.setAttribute("aria-label", `Move ${name.value} up`);
+      down?.setAttribute("aria-label", `Move ${name.value} down`);
+    }
     postPreview();
   });
   const stay = h(
