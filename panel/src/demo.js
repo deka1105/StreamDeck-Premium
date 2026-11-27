@@ -50,6 +50,48 @@ export function demoGenerators() {
       total: 412,
       at: Date.now(),
     }),
+    weather: () => {
+      const now = Date.now();
+      const t0 = new Date(new Date().toDateString()).getTime();
+      return {
+        place: "Demo City",
+        units: { temp: "°C", wind: "km/h" },
+        current: { temp: 18, feels: 17, humidity: 55, code: 2, isDay: true, wind: 12 },
+        hourly: Array.from({ length: 24 }, (_, i) => ({ t: now + i * 3600_000, temp: 18 - Math.round(4 * Math.sin(i / 4)), code: [1, 2, 3, 61][i % 4], pop: (i * 7) % 60 })),
+        daily: Array.from({ length: 7 }, (_, i) => ({ date: new Date(t0 + i * 86400_000).toLocaleDateString("en-CA"), code: [0, 2, 61, 3, 1, 80, 0][i], max: 19 + (i % 3), min: 9 + (i % 2), sunrise: t0 + i * 86400_000 + 7 * 3600_000, sunset: t0 + i * 86400_000 + 17.2 * 3600_000, uv: 3, daylight: 36000 })),
+        air: { eaqi: 24, usaqi: 41, pm25: 7, pm10: 12, o3: 58, no2: 11 },
+        stale: false,
+        at: now,
+      };
+    },
+    markets: () => ({
+      rates: { USD: { date: new Date().toLocaleDateString("en-CA"), rates: { EUR: 0.9127, GBP: 0.7621, JPY: 159.54, CHF: 0.8811 } } },
+      crypto: { vs: "usd", prices: { bitcoin: { usd: 59836, usd_24h_change: -1.36 }, ethereum: { usd: 1669.3, usd_24h_change: 2.02 } } },
+      stale: false,
+      at: Date.now(),
+    }),
+    hn: () => ({
+      stories: ["Show HN: A desk panel for your old phone", "The quiet return of plain HTML", "Why I keep a paper notebook", "A tiny database in 400 lines", "How tides really work", "Lessons from ten years of side projects", "Interactive guide to color spaces", "The history of the spreadsheet"].map((title, i) => ({ id: i, title, score: 300 - i * 31, comments: 120 - i * 11 })),
+      stale: false,
+      at: Date.now(),
+    }),
+    feeds: () => ({
+      items: [["Demo News", "City council approves new bike lanes"], ["Tech Daily", "New laptop chips promise all-day battery"], ["Demo News", "Weekend weather: sunny and mild"], ["Science Now", "Telescope spots a distant galaxy cluster"], ["Tech Daily", "Open-source editor reaches version 2.0"]].map(([feed, title], i) => ({ feed, title, link: `https://example.com/${i}`, category: feed === "Tech Daily" ? "Tech" : "News", at: Date.now() - i * 2400_000 })),
+      categories: ["News", "Tech"],
+      stale: false,
+      at: Date.now(),
+    }),
+    calendar: () => {
+      const t0 = new Date(new Date().toDateString()).getTime();
+      const ev = (d, h, mins, title, color) => ({ title, start: t0 + d * 86400_000 + h * 3600_000, end: t0 + d * 86400_000 + h * 3600_000 + mins * 60_000, allDay: false, cal: "Demo", color, location: "" });
+      return {
+        events: [ev(0, 13, 60, "Lunch with Sam", "#f472b6"), ev(0, 15.5, 30, "Design review", "#38bdf8"), ev(0, 21, 60, "Gym", "#34d399"), ev(1, 9, 15, "Standup", "#38bdf8"), ev(1, 18, 120, "Dinner party", "#fbbf24"), ev(2, 10, 60, "Dentist", "#a78bfa")].filter((e) => e.end > Date.now()),
+        days: 7,
+        errors: [],
+        stale: false,
+        at: Date.now(),
+      };
+    },
     netq: () => {
       const v = Math.random() < 0.03 ? -1 : Math.round(ping() * 10) / 10;
       hist.push(v);
@@ -128,6 +170,8 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     },
     "procs.kill": () => ({ ok: false, reason: "Demo — nothing is actually ended." }),
     "netq.speedtest": () => ({ ok: false, error: "Demo — no speed test is run." }),
+    "feeds.open": () => ({ ok: true, simulated: true }),
+    "image.fetch": () => ({ ok: false, error: "Images load from your computer." }),
     "deck.press": () => ({ ok: true, simulated: true }),
   };
 

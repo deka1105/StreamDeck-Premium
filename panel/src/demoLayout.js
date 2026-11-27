@@ -30,6 +30,20 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "ambient",
+      name: "Ambient",
+      widgets: [
+        { id: "wx", type: "weather", x: 0, y: 0, w: 4, h: 2 },
+        { id: "sm", type: "sunmoon", x: 4, y: 0, w: 4, h: 2 },
+        { id: "aq", type: "airquality", x: 8, y: 0, w: 4, h: 2 },
+        { id: "fc", type: "forecast", x: 0, y: 2, w: 8, h: 2 },
+        { id: "nu", type: "nextup", x: 8, y: 2, w: 4, h: 2 },
+        { id: "ag", type: "agenda", x: 0, y: 4, w: 4, h: 2 },
+        { id: "cr", type: "crypto", x: 4, y: 4, w: 4, h: 2 },
+        { id: "nw", type: "news", x: 8, y: 4, w: 4, h: 2 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [

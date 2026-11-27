@@ -6,13 +6,14 @@ export const TEMPLATES = [
   {
     id: "home",
     name: "Home",
-    description: "Clock, computer load and your deck tiles.",
+    description: "Clock, weather, computer load and your deck tiles.",
     page: {
       name: "Home",
       widgets: [
-        { type: "clock", x: 0, y: 0, w: 6, h: 3 },
-        { type: "metric", x: 6, y: 0, w: 3, h: 3, options: { source: "cpu" } },
-        { type: "metric", x: 9, y: 0, w: 3, h: 3, options: { source: "mem" } },
+        { type: "clock", x: 0, y: 0, w: 4, h: 3 },
+        { type: "weather", x: 4, y: 0, w: 4, h: 3 },
+        { type: "metric", x: 8, y: 0, w: 2, h: 3, options: { source: "cpu" } },
+        { type: "metric", x: 10, y: 0, w: 2, h: 3, options: { source: "mem" } },
         { type: "deck", x: 0, y: 3, w: 12, h: 3 },
       ],
     },
@@ -161,10 +162,11 @@ export const TEMPLATES = [
     page: {
       name: "World",
       widgets: [
-        { type: "worldclocks", x: 0, y: 0, w: 5, h: 4 },
-        { type: "analog", x: 5, y: 0, w: 3, h: 4, options: { zone: "UTC", label: true } },
-        { type: "calendar", x: 8, y: 0, w: 4, h: 6 },
-        { type: "countdown", x: 0, y: 4, w: 8, h: 2 },
+        { type: "worldclocks", x: 0, y: 0, w: 5, h: 3 },
+        { type: "analog", x: 5, y: 0, w: 3, h: 3, options: { zone: "UTC", label: true } },
+        { type: "calendar", x: 8, y: 0, w: 4, h: 4 },
+        { type: "forecast", x: 0, y: 3, w: 8, h: 3, options: { mode: "hourly" } },
+        { type: "nextup", x: 8, y: 4, w: 4, h: 2 },
       ],
     },
   },
@@ -179,6 +181,76 @@ export const TEMPLATES = [
         { type: "battery", x: 6, y: 0, w: 3, h: 3 },
         { type: "progress", x: 9, y: 0, w: 3, h: 3 },
         { type: "quote", x: 6, y: 3, w: 6, h: 3 },
+      ],
+    },
+  },
+  {
+    id: "ambient",
+    name: "Ambient",
+    description: "Analog clock, sun and moon, air quality, a quote and the week's forecast.",
+    page: {
+      name: "Ambient",
+      widgets: [
+        { type: "analog", x: 0, y: 0, w: 3, h: 4 },
+        { type: "sunmoon", x: 3, y: 0, w: 5, h: 2 },
+        { type: "airquality", x: 8, y: 0, w: 4, h: 2 },
+        { type: "forecast", x: 3, y: 2, w: 9, h: 2 },
+        { type: "quote", x: 0, y: 4, w: 12, h: 2 },
+      ],
+    },
+  },
+  {
+    id: "markets",
+    name: "Markets",
+    description: "Exchange rates, crypto prices and Hacker News.",
+    page: {
+      name: "Markets",
+      widgets: [
+        { type: "rates", x: 0, y: 0, w: 4, h: 3 },
+        { type: "crypto", x: 0, y: 3, w: 4, h: 3 },
+        { type: "hackernews", x: 4, y: 0, w: 8, h: 6 },
+      ],
+    },
+  },
+  {
+    id: "planner",
+    name: "Planner",
+    description: "Next up, this month, the agenda and a checklist.",
+    page: {
+      name: "Planner",
+      widgets: [
+        { type: "nextup", x: 0, y: 0, w: 4, h: 2 },
+        { type: "calendar", x: 0, y: 2, w: 4, h: 4 },
+        { type: "agenda", x: 4, y: 0, w: 4, h: 6 },
+        { type: "checklist", x: 8, y: 0, w: 4, h: 4 },
+        { type: "weather", x: 8, y: 4, w: 4, h: 2 },
+      ],
+    },
+  },
+  {
+    id: "news",
+    name: "News",
+    description: "Your news feeds and Hacker News.",
+    page: {
+      name: "News",
+      widgets: [
+        { type: "news", x: 0, y: 0, w: 7, h: 6 },
+        { type: "hackernews", x: 7, y: 0, w: 5, h: 6 },
+      ],
+    },
+  },
+  {
+    id: "weekend",
+    name: "Weekend",
+    description: "Forecast, an analog clock, the moon and a quote.",
+    page: {
+      name: "Weekend",
+      widgets: [
+        { type: "forecast", x: 0, y: 0, w: 8, h: 3 },
+        { type: "analog", x: 8, y: 0, w: 4, h: 3 },
+        { type: "moon", x: 0, y: 3, w: 3, h: 3 },
+        { type: "quote", x: 3, y: 3, w: 6, h: 3 },
+        { type: "weather", x: 9, y: 3, w: 3, h: 3 },
       ],
     },
   },
