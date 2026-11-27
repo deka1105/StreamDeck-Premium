@@ -13,16 +13,51 @@ import { AppState, StyleSheet, View } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import { PANEL_HTML } from "./generated/panelHtml";
 import { panelCall, panelWait } from "./host";
+import { isDemo } from "./demo";
 import type { Pairing } from "./storage";
+import type { DeckButton } from "./buttons";
 import { color } from "./theme";
 
-/** Methods the page may call. Anything else is refused before it leaves the phone. */
-const ALLOWED = new Set(["panel.hello", "panel.needs", "panel.snapshot"]);
+/** Methods forwarded to the computer. Anything else is refused before it leaves the phone. */
+const ALLOWED = new Set(["panel.hello", "panel.needs", "panel.snapshot", "panel.layout"]);
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export function PanelScreen({ pairing }: { pairing: Pairing }) {
+/** What the Deck widget shows: the phone's own tiles, answered locally. */
+export type PanelDeck = { name: string; tiles: DeckButton[] };
+
+function deckPayload(deck: PanelDeck | undefined) {
+  return {
+    name: deck?.name ?? "",
+    tiles: (deck?.tiles ?? []).map((t) => ({
+      id: t.id,
+      label: t.label,
+      icon: t.icon,
+      iconType: t.iconType ?? "emoji",
+      color: t.color,
+      w: t.w ?? 1,
+      h: t.h ?? 1,
+      kind: t.action.type,
+    })),
+  };
+}
+
+export function PanelScreen({
+  pairing,
+  deck,
+  onDeckPress,
+}: {
+  pairing: Pairing;
+  deck?: PanelDeck;
+  /** Runs a tile exactly as the deck screen would. Resolves ok=false on failure. */
+  onDeckPress?: (tile: DeckButton) => Promise<{ ok: boolean; error?: string }>;
+}) {
   const web = useRef<WebView>(null);
+  const deckRef = useRef(deck);
+  deckRef.current = deck;
+  const pressRef = useRef(onDeckPress);
+  pressRef.current = onDeckPress;
+  const demo = isDemo(pairing);
   // Bumped every time the page (re)loads, so a stale loop stops and the new
   // page gets a resync.
   const generation = useRef(0);
@@ -72,6 +107,11 @@ export function PanelScreen({ pairing }: { pairing: Pairing }) {
   // Stop the loop when the screen goes away or the pairing changes.
   useEffect(() => () => void generation.current++, [pairing]);
 
+  // Tiles edited on the deck screen show up in the panel straight away.
+  useEffect(() => {
+    send({ t: "evt", type: "data", data: { kind: "deck", value: deckPayload(deck) } });
+  }, [deck, send]);
+
   // Coming back from the background: let the page refresh its data.
   useEffect(() => {
     const sub = AppState.addEventListener("change", (s) => {
@@ -90,11 +130,29 @@ export function PanelScreen({ pairing }: { pairing: Pairing }) {
       }
       if (msg?.t === "ready") {
         const gen = ++generation.current;
-        runEvents(gen);
+        // The demo page runs its own simulated computer; there's nothing to poll.
+        if (!demo) runEvents(gen);
         return;
       }
       if (msg?.t === "req" && typeof msg.id === "number") {
         const reply = (ok: boolean, payload: Record<string, unknown>) => send({ t: "res", id: msg.id, ok, ...payload });
+        // Deck requests are answered by the phone itself.
+        if (msg.method === "deck.tiles") {
+          reply(true, { result: deckPayload(deckRef.current) });
+          return;
+        }
+        if (msg.method === "deck.press") {
+          const tile = deckRef.current?.tiles.find((t) => t.id === msg.params?.id);
+          if (!tile || !pressRef.current) {
+            reply(false, { error: "no such tile" });
+            return;
+          }
+          pressRef.current(tile).then(
+            (result) => reply(true, { result }),
+            (err) => reply(false, { error: err instanceof Error ? err.message : String(err) }),
+          );
+          return;
+        }
         if (typeof msg.method !== "string" || !ALLOWED.has(msg.method)) {
           reply(false, { error: "not allowed" });
           return;
@@ -114,6 +172,9 @@ export function PanelScreen({ pairing }: { pairing: Pairing }) {
       <WebView
         ref={web}
         source={{ html: PANEL_HTML }}
+        // Demo sessions: the page swaps in its simulated computer (with a
+        // "Simulated" label) instead of talking to a real one.
+        injectedJavaScriptBeforeContentLoaded={demo ? "window.__deskassistBoot={demo:true};true;" : "true;"}
         originWhitelist={["about:*"]}
         // The bundled page is the only thing this WebView may ever show.
         onShouldStartLoadWithRequest={(req) => req.url.startsWith("about:")}
