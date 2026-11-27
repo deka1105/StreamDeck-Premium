@@ -1,3 +1,5 @@
+import { sanitizeShortcuts, sanitizeCommands } from "./shortcuts.mjs";
+import { sanitizeRules } from "./rules.mjs";
 // Panel layout schema (ours; PLAN D2). Everything that comes from the editor,
 // an imported file or the phone passes through sanitizeConfig before it is
 // stored or served. Unknown widget types are dropped, boxes are clamped to the
@@ -204,6 +206,9 @@ export function sanitizeConfig(raw, catalog) {
     version: 1,
     default: sanitizeLayout(raw?.default ?? {}, byType),
     devices,
+    shortcuts: sanitizeShortcuts(raw?.shortcuts),
+    commands: sanitizeCommands(raw?.commands),
+    rules: sanitizeRules(raw?.rules),
     settings: {
       idleSec: Math.max(0, Math.min(4 * 3600, idle)),
       // Internet widget: opt-in public IP, and an optional speed-test schedule (0 = only on tap).
@@ -217,6 +222,12 @@ export function sanitizeConfig(raw, catalog) {
       calendarDays: Math.max(1, Math.min(31, int(raw?.settings?.calendarDays, 7))),
       feeds: cleanFeeds(raw?.settings?.feeds),
       mediaServers: cleanMediaServers(raw?.settings?.mediaServers),
+      webhooks: { lan: raw?.settings?.webhooks?.lan === true },
+      pageSwitch: {
+        minGapSec: Math.max(0, Math.min(600, int(raw?.settings?.pageSwitch?.minGapSec, 20))),
+        waitAfterTouchSec: Math.max(0, Math.min(120, int(raw?.settings?.pageSwitch?.waitAfterTouchSec, 8))),
+        holdMaxMin: Math.max(0, Math.min(600, int(raw?.settings?.pageSwitch?.holdMaxMin, 30))),
+      },
       mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],
     },
   };

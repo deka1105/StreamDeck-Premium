@@ -90,8 +90,13 @@ export function createLocalServer({ port = 8789, panelApi, panelDist = findPanel
       }
     }
 
-    // Extra routes registered by later stages (editor, webhooks…): "METHOD /path".
-    const extra = routes[`${req.method} ${path}`];
+    // Extra routes registered by later stages (editor, webhooks…): "METHOD /path",
+    // or "METHOD /prefix/*" for everything under a prefix.
+    let extra = routes[`${req.method} ${path}`];
+    if (!extra) {
+      const key = Object.keys(routes).find((k) => k.endsWith("/*") && k.startsWith(`${req.method} `) && path.startsWith(k.slice(req.method.length + 1, -1)));
+      extra = key ? routes[key] : null;
+    }
     if (extra) return extra(req, res, { send, readJson, url });
 
     return send(res, 404, { error: "not found" });

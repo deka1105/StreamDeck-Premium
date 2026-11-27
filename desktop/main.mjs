@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readdirSync } from "node:fs";
 import qrcode from "qrcode";
-import { createHost } from "./src/host.mjs";
+import { createHost, webhookRoutes } from "./src/host.mjs";
 import { createLocalServer } from "./src/local.mjs";
 import { createEditorRoutes } from "./src/panel/editorRoutes.mjs";
 
@@ -195,7 +195,7 @@ app.whenReady().then(async () => {
   const local = createLocalServer({
     port: LOCAL_PORT,
     panelApi: host.panelApi,
-    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers }),
+    routes: { ...createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers, rules: host.rules, runner: host.runner }), ...webhookRoutes(host) },
   });
   await local.listen().then(
     () => console.log(`browser panel on http://127.0.0.1:${LOCAL_PORT}/panel/`),

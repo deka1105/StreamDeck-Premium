@@ -31,6 +31,11 @@ import { createEditorRoutes } from "./panel/editorRoutes.mjs";
 import { createWidgetState } from "./panel/widgetState.mjs";
 import { createSecrets } from "./secrets.mjs";
 import { createLyrics, parseStations } from "./providers/mediaExtras.mjs";
+import { createPushes, isOn } from "./panel/pushes.mjs";
+import { createShortcutRunner, createCommandRunner, publicShortcut } from "./panel/shortcuts.mjs";
+import { createWebhooks, keyMatches, readBody as readHookBody } from "./panel/webhooks.mjs";
+import { createRules } from "./panel/rules.mjs";
+import { idleSeconds } from "./providers/idle.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -163,7 +168,58 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   };
   const findWidget = (client, pageId, widgetId) =>
     panelStore.layoutFor(client).pages.find((p) => p.id === pageId)?.widgets.find((w) => w.id === widgetId) ?? null;
-  const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun });
+  const pushes = createPushes({ dir, publish: bus.publish });
+  const provs = { ...(providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun })), ...pushes.providers() };
+  const runner = createShortcutRunner({ getShortcuts: () => panelStore.config().shortcuts, execute, dryRun });
+  const commands = createCommandRunner({ getCommands: () => panelStore.config().commands });
+  const webhooks = createWebhooks({ pushes, publish: bus.publish, runner });
+  // Facts the rules engine reads, each fetched only when a rule needs it.
+  const memo = (ms, fn) => {
+    let at = 0;
+    let v;
+    return async () => (Date.now() - at < ms ? v : ((at = Date.now()), (v = await fn().catch(() => v))));
+  };
+  const startedAt = Date.now();
+  const facts = {
+    apps: memo(3000, async () => await runningApps()),
+    frontmost: memo(1500, async () => await frontmostApp()),
+    mediaNow: memo(2000, async () => provs.media?.sample()),
+    cpuNow: memo(2000, async () => provs.system?.sample()),
+    idle: memo(5000, async () => idleSeconds()),
+  };
+  let lastMedia = null;
+  let lastCpu = null;
+  const rules = createRules({
+    getRules: () => panelStore.config().rules,
+    publish: bus.publish,
+    read: {
+      apps: facts.apps,
+      frontmost: facts.frontmost,
+      media: () => lastMedia,
+      cpu: () => lastCpu,
+      push: (k) => pushes.get(k),
+      isOn,
+      idleSec: async () => (await facts.idle()) ?? 0,
+      uptimeSec: () => (Date.now() - startedAt) / 1000,
+      now: () => Date.now(),
+    },
+    act: async (r, phase) => {
+      const t = r.then;
+      console.log(`⚙ rule "${r.name}" ${phase}`);
+      if (t.type === "show_page") bus.publish(phase === "start" ? "rule" : "rule_end", { id: r.id, name: r.name, page: t.page, countdown: r.countdownSec, priority: r.priority, whileLasts: r.whileLasts });
+      else if (t.type === "notify" && phase === "start") pushes.notify({ title: t.title || r.name, text: t.text, level: t.level, page: t.page || undefined });
+      else if (t.type === "push_value") phase === "start" ? pushes.set(t.key, t.value) : pushes.delete(t.key);
+      else if (t.type === "run_shortcut" && phase === "start") await runner.run(t.id);
+      else if (t.type === "night_screen") bus.publish("night", { on: phase === "start", rule: r.id });
+    },
+  });
+  // Keep the media / CPU facts fresh only while some rule uses them.
+  const ruleFacts = setInterval(async () => {
+    const types = new Set(panelStore.config().rules.filter((r) => r.enabled).map((r) => r.when.type));
+    if (types.has("media_playing")) lastMedia = await facts.mediaNow();
+    if (types.has("cpu_above")) lastCpu = (await facts.cpuNow())?.cpu ?? null;
+  }, 2000);
+  ruleFacts.unref?.();
   const lyrics = createLyrics();
   const sampler = createSampler({ providers: provs, publish: bus.publish });
   /** Does this client's layout contain a widget of `type` (id `widgetId`) with option `key` on? */
@@ -255,6 +311,21 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         }
       },
       "mediaServer.poster": async ({ server, session } = {}) => ({ src: await provs.mediaServer.poster(String(server), String(session)).catch(() => null) }),
+      // ---- shortcuts, commands, rules (Stage 8) ----
+      "shortcuts.list": () => ({ shortcuts: panelStore.config().shortcuts.map(publicShortcut) }),
+      "shortcut.run": async ({ id, value } = {}) => {
+        const r = await runner.run(String(id ?? ""), value === undefined || value === null ? undefined : String(value));
+        console.log(`${r.ok ? "▶" : "⛔"} shortcut ${id}${value !== undefined ? ` = ${value}` : ""}${r.ok ? "" : `: ${r.error}`}`);
+        return r;
+      },
+      // A command widget's output — the phone never sees the command itself.
+      "command.output": async ({ pageId, widgetId } = {}, ctx) => {
+        const w = findWidget(ctx.client, pageId, widgetId);
+        if (!w || w.type !== "command") return { ok: false, error: "No such widget." };
+        return commands.output(String(w.options?.command ?? ""));
+      },
+      "rules.pause": ({ minutes } = {}) => rules.pause(Math.max(0, Math.min(24 * 60, Number(minutes) || 0))),
+      "rules.state": () => ({ pausedUntil: rules.pausedUntil(), active: rules.active() }),
       "state.get": ({ key } = {}) => ({ key, value: widgetState.get(key) }),
       "state.set": ({ key, value } = {}, ctx) => widgetState.set(key, value, ctx.client),
       "netq.speedtest": async () => {
@@ -448,6 +519,15 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       if (r.sealed) return send(res, 200, { pid: undefined, ...r.sealed });
       return send(res, r.status, r.json);
     }
+    // Webhooks from other machines: only when turned on, only with the webhook key.
+    if (url.pathname.startsWith("/hook/")) {
+      const settingsNow = panelStore.config().settings;
+      if (!settingsNow.webhooks?.lan) return send(res, 404, { error: "not found" });
+      const presented = (req.headers.authorization ?? "").replace(/^Bearer\s+/i, "") || url.searchParams.get("token") || "";
+      if (!keyMatches(presented, secrets.get("webhook:key"))) return send(res, 401, { error: "bad webhook key" });
+      const r = await webhooks(req.method, url.pathname.slice(5), await readHookBody(req), url.searchParams);
+      return send(res, r.status, r.json);
+    }
     if (req.method === "POST" && url.pathname === "/rpc") {
       const body = await readBody(req);
       const r = await handleRpc(body);
@@ -487,15 +567,23 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     panelStore,
     secrets,
     providers: provs,
+    pushes,
+    webhooks,
+    rules,
+    runner,
     listen: () =>
       new Promise((r) => {
         sampler.start();
+        rules.start();
         provs.netq?.startUsage?.();
         server.listen(port, r);
       }),
     stop: () =>
       new Promise((r) => {
         sampler.stop();
+        rules.stop();
+        clearInterval(ruleFacts);
+        runner.stopAll();
         provs.netq?.stopUsage?.();
         provs.radio?.stop?.();
         widgetState.flush();
@@ -503,6 +591,20 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         server.close(r);
       }),
   };
+}
+
+/** Loopback webhook routes: /api/push/…, /api/notify, /api/goto/…, /api/refresh, /api/run/…. */
+export function webhookRoutes(host) {
+  const handler = async (req, res, { send, url }) => {
+    const r = await host.webhooks(req.method, url.pathname.slice(4), await readHookBody(req), url.searchParams);
+    send(res, r.status, r.json);
+  };
+  const out = {};
+  for (const m of ["GET", "POST", "DELETE"]) for (const p of ["/api/push/*", "/api/goto/*", "/api/run/*"]) out[`${m} ${p}`] = handler;
+  out["GET /api/push"] = handler;
+  out["POST /api/notify"] = handler;
+  out["POST /api/refresh"] = handler;
+  return out;
 }
 
 // --- CLI: run the host and print a pairing QR to the terminal -----------------
@@ -521,7 +623,7 @@ async function main() {
   const local = createLocalServer({
     port: localPort,
     panelApi: host.panelApi,
-    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers }),
+    routes: { ...createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers, rules: host.rules, runner: host.runner }), ...webhookRoutes(host) },
   });
   await local.listen().then(
     () => console.log(`Browser panel (this computer only): http://127.0.0.1:${localPort}/panel/  ·  editor: http://127.0.0.1:${localPort}/editor/`),
