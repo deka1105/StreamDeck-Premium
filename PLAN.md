@@ -45,17 +45,19 @@ the host's loopback API. Layouts live on the host, per paired device.
 Store review (1.1.0, build 13). Every file write is auto-committed and **pushed
 to a public repo** within seconds, so never write a secret into this tree.
 
-**Status:** Stage 0 not started. Update the checklist below as steps land.
-**Next:** Stage 0, step 0.1.
+**Status (27 Nov 2026):** Stages 0–3 done and verified (see checklist notes). Stage 4 in progress.
+**Next:** Stage 4, step 4.1.
+
+**Dev loop:** `npm run build` in `panel/` after any panel/editor change (CI fails if the committed build is stale). Browser tests: `npx playwright test` in `tools/ui-tests` (each test starts its own throwaway host). Simulator: `npx expo run:ios --device "iPhone 17"`, then drive it with the dev-only deep link `deskassist://dev?pair=<QR JSON>&view=panel` (or `?demo=1&view=panel`) — see `mobile/src/devLink.ts`. Test hosts must use other ports (e.g. `DECK_PORT=18788 DECK_LOCAL_PORT=18789`): the owner's real host holds 8788.
 
 ---
 
 ## Progress checklist
 
-- [ ] Stage 0 — Groundwork (tests, CI on macOS + Windows, clean-room log)
-- [ ] Stage 1 — Walking skeleton: a live CPU number from the computer on the phone
-- [ ] Stage 2 — Pages, grid and navigation; tiles become a widget; demo mode
-- [ ] Stage 3 — Desktop layout editor
+- [x] Stage 0 — Groundwork (tests, CI on macOS + Windows, clean-room log)
+- [x] Stage 1 — Walking skeleton: a live CPU number from the computer on the phone — verified on the iOS simulator (live CPU, offline within 30 s, recovers in ~14 s)
+- [x] Stage 2 — Pages, grid and navigation; tiles become a widget; demo mode — browser tests at 780×360 and 360×780; demo verified on the simulator. Tile *tap* on the phone not yet verified by hand (the headless simulator can't be tapped from a script); the panel side is covered by `demo.spec.mjs`
+- [x] Stage 3 — Desktop layout editor — 8 Playwright tests; save reaches a panel in < 3 s
 - [ ] Stage 4 — Computer widgets (CPU / GPU / RAM / disks / network / processes)
 - [ ] Stage 5 — Time and personal widgets
 - [ ] Stage 6 — Weather, sky and web-data widgets
@@ -245,7 +247,7 @@ The editor builds its option forms from these entries.
 - Fence: no appearance options yet (Stage 10).
 
 **2.3 Deck widget (bridge to the existing tiles)**
-- Goal: widget `deck` renders tiles of the phone's active profile. Taps post `action.run` through the bridge, so the existing typed actions are reused. One-time migration: on first panel open the phone sends its profiles; the host stores them as a "Deck" page.
+- Goal: widget `deck` renders tiles of the phone's active profile. **As built (changed from the original plan):** no migration to the host. The phone answers `deck.tiles` / `deck.press` itself, so the widget always shows the live tiles you edit on the deck screen, and a tap runs the deck's own `press()` (status line, haptics, timers, app allow-list). Copying tiles to the host would create a second source of truth that drifts. Browser panels show a note instead; host-defined keys arrive with Stage 8 shortcuts.
 - Verify: tap Safari on the panel's Deck widget and Safari opens on the Mac (dry-run log in `host:dry`).
 - Fence: the old deck screen stays as it is (users can keep using it). No ID-based shortcuts yet (Stage 8).
 
