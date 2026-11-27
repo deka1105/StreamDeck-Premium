@@ -64,6 +64,19 @@
   <p>When you press a tile, DeskAssist sends that single command directly to the host application running on your computer, over your local network. The connection is encrypted with AES-256-GCM using a key agreed during pairing (X25519 key exchange). It does not pass through any server we control.</p>
   <p>Your computer sends back only what the deck needs to draw itself: which applications are running, and which one is focused. That reply is encrypted the same way and is not stored anywhere but in memory on the phone.</p>
 
+  <!-- Added for version 1.2 (the widget panel). Update the "Effective" date when this ships. -->
+  <h2>The widget panel (version 1.2 and later)</h2>
+  <p>The optional panel shows widgets your computer fills in. Your phone only ever talks to your own computer; any internet lookups are made by the DeskAssist desktop app on your computer, and only for widgets you add. Nothing is sent to us.</p>
+  <ul>
+    <li><strong>Weather, forecast, sun and air quality</strong> — the desktop app sends the location you chose (latitude and longitude) to <a href="https://open-meteo.com">Open-Meteo</a>. The location search sends the place name you type.</li>
+    <li><strong>Exchange rates</strong> — the currencies you chose are requested from Frankfurter (European Central Bank reference rates).</li>
+    <li><strong>Crypto prices</strong> — the coins you chose are requested from CoinGecko.</li>
+    <li><strong>Hacker News</strong> — top stories are read from the public Hacker News API.</li>
+    <li><strong>News feeds, calendars and images</strong> — the addresses you add are fetched directly. For iCloud calendars the desktop app signs in with the Apple ID and app-specific password you enter; that password is kept encrypted by your computer's system keychain and never leaves it except to sign in to iCloud.</li>
+    <li><strong>Internet widget</strong> — measures latency by opening a connection to 1.1.1.1 (or 8.8.8.8). A speed test (only when you tap it or schedule it) and the optional public-IP display contact speed.cloudflare.com.</li>
+  </ul>
+  <p>Computer statistics (CPU, memory, disks, processes), notes, checklists and timers stay on your computer and are sent only to your paired phone, encrypted as described above.</p>
+
   <h2>Device permissions</h2>
   <ul>
     <li><strong>Camera</strong> — used solely to scan the pairing QR code shown by the host application. No photo or video is recorded, stored, or transmitted.</li>
