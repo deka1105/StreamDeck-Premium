@@ -37,7 +37,7 @@ function lanIPv4() {
 
 // --- AES-256-GCM envelope (the phone mirrors these two functions) ------------
 
-function seal(keyBuf, obj) {
+export function seal(keyBuf, obj) {
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv("aes-256-gcm", keyBuf, iv);
   const ct = Buffer.concat([cipher.update(Buffer.from(JSON.stringify(obj), "utf8")), cipher.final()]);
