@@ -23,6 +23,16 @@ line ourselves. See "Clean-room rules" below. They are not optional.
   USB flashing and over-the-air updates have no phone equivalent and are out of
   scope. Its ROADMAP's *unbuilt* ideas are out of scope too, except where
   PhoneBox already has them.
+- **[Stash for Mac](https://www.stashformac.com/)** (littlengine labs): a
+  **closed-source commercial** Mac utility. It adds controls hidden at the
+  screen's edges and corners: a hidden side dock and app launcher, edge
+  sliders, corner dials (some detachable into floating dials), and app
+  profiles that switch with the frontmost app. Its iPhone companion "throws"
+  apps to the Mac and shows widgets. "Creative Pro" adds per-app tool and
+  precision controls for Photoshop, Illustrator, After Effects, Premiere Pro
+  and Blender. We match the *features* in our own design. Its trial, pricing
+  and licensing are out of scope: DeskAssist stays free unless the owner
+  decides otherwise.
 
 **Chosen approach:** one panel renderer written in plain JS/HTML (`panel/`),
 **bundled inside the phone app** and shown in a WebView. The same bundle is also
@@ -58,7 +68,9 @@ to a public repo** within seconds, so never write a secret into this tree.
 - [ ] Stage 13 — Android-only features
 - [ ] Stage 14 — 3D printers (DeskHub)
 - [ ] Stage 15 — Games and integration long tail
-- [ ] Stage 16 — Languages, release
+- [ ] Stage 16 — Desk edges on the computer: hidden dock, edge sliders, corner dials (Stash)
+- [ ] Stage 17 — Creative app controls: Adobe apps and Blender (Stash)
+- [ ] Stage 18 — Languages, release
 
 ---
 
