@@ -1,0 +1,12 @@
+{
+  "name": "deskassist-panel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The DeskAssist widget panel: one bundle for the phone app, the desktop browser panel and the editor preview.",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "devDependencies": {}
+}
