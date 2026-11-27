@@ -733,21 +733,21 @@ function DeckScreen({
     ]);
   }
 
-  async function press(tile: DeckButton) {
+  async function press(tile: DeckButton): Promise<{ ok: boolean; error?: string }> {
     tapFeedback(); // crisp tap the instant the tile registers the press
     if (editing) {
       setEditor(tile);
-      return;
+      return { ok: true };
     }
     if (tile.action.type === "timer") {
       toggleTimer(tile);
-      return;
+      return { ok: true };
     }
     if (tile.action.type === "media" && tile.action.command === "setvol") {
       setShowVolume(true);
-      return;
+      return { ok: true };
     }
-    if (busy) return;
+    if (busy) return { ok: false, error: "busy" };
     setBusy(true);
     setStatus(`Sending ${tile.label}…`);
     try {
@@ -755,10 +755,13 @@ function DeckScreen({
       setOk(r.ok);
       resultFeedback(r.ok);
       setStatus(r.ok ? `${tile.label} ✓` : `${tile.label}: ${r.error ?? "failed"}`);
+      return { ok: r.ok, error: r.error };
     } catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
       setOk(false);
       resultFeedback(false);
-      setStatus(`${tile.label}: ${e instanceof Error ? e.message : String(e)}`);
+      setStatus(`${tile.label}: ${error}`);
+      return { ok: false, error };
     } finally {
       setBusy(false);
     }
@@ -1064,7 +1067,7 @@ function DeckScreen({
 
       {view === "panel" ? (
         <Reveal style={{ flex: 1 }}>
-          <PanelScreen pairing={pairing} />
+          <PanelScreen pairing={pairing} deck={panelDeck} onDeckPress={press} />
         </Reveal>
       ) : view === "apps" ? (
         <Reveal style={{ flex: 1 }}>
