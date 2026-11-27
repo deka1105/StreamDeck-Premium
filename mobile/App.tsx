@@ -1074,7 +1074,13 @@ function DeckScreen({
 
       {view === "panel" ? (
         <Reveal style={{ flex: 1 }}>
-          <PanelScreen pairing={pairing} deck={panelDeck} onDeckPress={press} />
+          <PanelScreen
+            pairing={pairing}
+            deck={panelDeck}
+            onDeckPress={press}
+            hosts={hosts.map((h) => ({ id: h.kid, name: h.name, active: h.kid === activeKid }))}
+            onSwitchHost={onSwitchHost}
+          />
         </Reveal>
       ) : view === "apps" ? (
         <Reveal style={{ flex: 1 }}>

@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { AppState, StyleSheet, View } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import * as Battery from "expo-battery";
 import { PANEL_HTML } from "./generated/panelHtml";
 import { panelCall, panelWait } from "./host";
 import { isDemo } from "./demo";
@@ -44,16 +45,35 @@ function deckPayload(deck: PanelDeck | undefined) {
   };
 }
 
+async function batteryNow() {
+  if (!(await Battery.isAvailableAsync())) throw new Error("Battery level isn't available on this device.");
+  const p = await Battery.getPowerStateAsync();
+  return {
+    level: p.batteryLevel >= 0 ? p.batteryLevel : null,
+    charging: p.batteryState === Battery.BatteryState.CHARGING || p.batteryState === Battery.BatteryState.FULL,
+    lowPower: p.lowPowerMode,
+  };
+}
+
 export function PanelScreen({
   pairing,
   deck,
   onDeckPress,
+  hosts = [],
+  onSwitchHost,
 }: {
   pairing: Pairing;
   deck?: PanelDeck;
   /** Runs a tile exactly as the deck screen would. Resolves ok=false on failure. */
   onDeckPress?: (tile: DeckButton) => Promise<{ ok: boolean; error?: string }>;
+  /** Paired computers, for the Computers widget. */
+  hosts?: { id: string; name: string; active: boolean }[];
+  onSwitchHost?: (id: string) => void;
 }) {
+  const hostsRef = useRef(hosts);
+  hostsRef.current = hosts;
+  const switchRef = useRef(onSwitchHost);
+  switchRef.current = onSwitchHost;
   const web = useRef<WebView>(null);
   const deckRef = useRef(deck);
   deckRef.current = deck;
@@ -109,6 +129,13 @@ export function PanelScreen({
   // Stop the loop when the screen goes away or the pairing changes.
   useEffect(() => () => void generation.current++, [pairing]);
 
+  // Battery changes are pushed to the Phone battery widget.
+  useEffect(() => {
+    const push = () => batteryNow().then((v) => send({ t: "evt", type: "data", data: { kind: "battery", value: v } }), () => {});
+    const subs = [Battery.addBatteryLevelListener(push), Battery.addBatteryStateListener(push), Battery.addLowPowerModeListener(push)];
+    return () => subs.forEach((s) => s.remove());
+  }, [send]);
+
   // Tiles edited on the deck screen show up in the panel straight away.
   useEffect(() => {
     send({ t: "evt", type: "data", data: { kind: "deck", value: deckPayload(deck) } });
@@ -142,6 +169,28 @@ export function PanelScreen({
       }
       if (msg?.t === "req" && typeof msg.id === "number") {
         const reply = (ok: boolean, payload: Record<string, unknown>) => send({ t: "res", id: msg.id, ok, ...payload });
+        // Phone-side requests: answered here, never sent to the computer.
+        if (msg.method === "phone.battery") {
+          batteryNow().then(
+            (result) => reply(true, { result }),
+            (err) => reply(false, { error: err instanceof Error ? err.message : String(err) }),
+          );
+          return;
+        }
+        if (msg.method === "phone.hosts") {
+          reply(true, { result: { hosts: hostsRef.current } });
+          return;
+        }
+        if (msg.method === "phone.switchHost") {
+          const id = String(msg.params?.id ?? "");
+          if (!hostsRef.current.some((h) => h.id === id) || !switchRef.current) {
+            reply(false, { error: "no such computer" });
+            return;
+          }
+          reply(true, { result: { ok: true } });
+          switchRef.current(id);
+          return;
+        }
         // Deck requests are answered by the phone itself.
         if (msg.method === "deck.tiles") {
           reply(true, { result: deckPayload(deckRef.current) });
