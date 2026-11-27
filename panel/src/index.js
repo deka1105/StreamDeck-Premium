@@ -52,6 +52,11 @@ function boot() {
   let lastTouch = Date.now();
 
   const pages = () => visiblePages(layout);
+  const CAL_TYPES = new Set(["agenda", "nextup", "calendar"]);
+  const hasCalendar = (p) => p.widgets.some((w) => CAL_TYPES.has(w.type));
+  // The current page's data, plus calendar data if any page shows a calendar
+  // (its dot marks "still an event today" even while you're elsewhere).
+  const pageNeeds = () => [...new Set([...(current?.needs ?? []), ...(pages().some(hasCalendar) ? ["calendar"] : [])])];
 
   // ---- rendering -----------------------------------------------------------
 
@@ -64,6 +69,16 @@ function boot() {
       b.className = "dot";
       b.setAttribute("aria-label", p.name);
       if (i === index) b.setAttribute("aria-current", "page");
+      if (hasCalendar(p)) {
+        const now = Date.now();
+        const endOfDay = new Date(new Date().toDateString()).getTime() + 86400_000;
+        const next = (store.get("calendar")?.events ?? []).find((e) => !e.allDay && e.end > now && e.start < endOfDay);
+        if (next) {
+          b.dataset.badge = "1";
+          b.style.setProperty("--badge", next.color ?? "#38bdf8");
+          b.setAttribute("aria-label", `${p.name} — still an event today`);
+        }
+      }
       b.addEventListener("click", () => go(i));
       dotsEl.appendChild(b);
     });
@@ -83,7 +98,7 @@ function boot() {
       holder.innerHTML = `<div class="empty">No pages yet. Add some in the editor on your computer.</div>`;
       current = { needs: [], destroy: () => {}, holder, pageId: null };
     }
-    bridge.setNeeds(current.needs);
+    bridge.setNeeds(pageNeeds());
     if (old) {
       if (direction) {
         old.holder.style.transform = `translateX(${direction > 0 ? -100 : 100}%)`;
@@ -160,7 +175,10 @@ function boot() {
   }
 
   bridge.on("event", (e) => {
-    if (e.type === "data" && e.data?.kind) store.set(e.data.kind, e.data.value);
+    if (e.type === "data" && e.data?.kind) {
+      store.set(e.data.kind, e.data.value);
+      if (e.data.kind === "calendar") renderDots();
+    }
     else if (e.type === "state" && e.data?.key) store.set(`state:${e.data.key}`, e.data.value);
     else if (e.type === "layout" && e.data?.rev !== layout?.rev) loadLayout();
     else if (e.type === "goto" && e.data?.page) gotoId(e.data.page);

@@ -15,10 +15,13 @@ import internet from "./internet.js";
 import { analog, wordclock, worldclocks, calendar, progress, countdown } from "./time.js";
 import { timer, stopwatch, pomodoro, focushistory } from "./timers.js";
 import { note, checklist, counter, breathe, quote, title, battery, computers } from "./personal.js";
+import { weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image, agendaWidget, nextup } from "./web.js";
 
 export const WIDGETS = [
   // time
-  clock, analog, wordclock, worldclocks, calendar, progress, countdown, timer, stopwatch, pomodoro, focushistory,
+  clock, analog, wordclock, worldclocks, calendar, agendaWidget, nextup, progress, countdown, timer, stopwatch, pomodoro, focushistory,
+  // weather & web
+  weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image,
   // computer
   metric, gauge, chart, gpu, storage, topprocs, processes, internet,
   // personal
