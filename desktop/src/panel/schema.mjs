@@ -7,10 +7,10 @@
 //   version: 1,
 //   default: Layout,                       used by any client without its own
 //   devices: { [clientId]: Layout & {name?} },
-//   settings: { idleMin }                   panel-wide defaults
+//   settings: { idleSec }                   panel-wide defaults
 // }
 // Layout = { pages: Page[], home: pageId | null }
-// Page   = { id, name, hidden, stayMin, widgets: Widget[] }   stayMin: null = default, 0 = never return home
+// Page   = { id, name, hidden, staySec, widgets: Widget[] }   staySec: null = default, 0 = never return home
 // Widget = { id, type, x, y, w, h, portrait?: {x,y,w,h}, options: {} }
 
 export const COLS = 12;
@@ -133,11 +133,12 @@ export function sanitizeConfig(raw, catalog) {
     if (!/^[A-Za-z0-9:_-]{1,80}$/.test(id) || !layout || typeof layout !== "object") continue;
     devices[id] = { ...sanitizeLayout(layout, byType), name: cleanText(layout.name, 64) };
   }
-  const idle = int(raw?.settings?.idleMin, 5);
+  // Seconds of no touch before the panel returns to its home page; 0 = never.
+  const idle = int(raw?.settings?.idleSec, 300);
   return {
     version: 1,
     default: sanitizeLayout(raw?.default ?? {}, byType),
     devices,
-    settings: { idleMin: Math.max(0, Math.min(240, idle)) },
+    settings: { idleSec: Math.max(0, Math.min(4 * 3600, idle)) },
   };
 }
