@@ -347,7 +347,13 @@ function renderCanvas() {
     return;
   }
   const grid = h("div", { class: "canvas-grid", id: "grid" });
-  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) grid.append(h("div", { class: "cell", dataset: { x, y } }));
+  for (let y = 0; y < ROWS; y++)
+    for (let x = 0; x < COLS; x++) {
+      const cell = h("div", { class: "cell", dataset: { x, y } });
+      cell.style.gridColumn = String(x + 1);
+      cell.style.gridRow = String(y + 1);
+      grid.append(cell);
+    }
   const defs = byType();
   for (const w of p.widgets) {
     const def = defs.get(w.type);
