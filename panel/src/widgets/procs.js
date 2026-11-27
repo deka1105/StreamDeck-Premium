@@ -70,7 +70,10 @@ export const processes = {
     const total = el.querySelector(".proc-total");
     let latest = [];
 
-    const closeSheet = () => (sheet.hidden = true);
+    const closeSheet = () => {
+      sheet.hidden = true;
+      holdUntil = 0;
+    };
     const openSheet = (name) => {
       const p = latest.find((x) => x.name === name);
       if (!p) return;
@@ -109,14 +112,37 @@ export const processes = {
       sheet.hidden = false;
     };
 
+    // Never redraw the rows under a finger: a tap that lands while the list is
+    // being replaced would hit a removed row and be lost.
+    let holdUntil = 0;
+    let pending = null;
+    const draw = (d) => {
+      latest = d?.list ?? [];
+      total.textContent = d?.total ? `· ${d.total}` : "";
+      list.replaceChildren(...rowsFor(sorted(latest, ctx.options.sort, 20), ctx.options.sort));
+    };
+    const flush = () => {
+      if (pending && sheet.hidden && Date.now() >= holdUntil) {
+        draw(pending);
+        pending = null;
+      }
+    };
+    list.addEventListener("pointerdown", () => (holdUntil = Infinity));
+    const release = () => {
+      holdUntil = Date.now() + 400;
+      setTimeout(flush, 450);
+    };
+    list.addEventListener("pointerup", release);
+    list.addEventListener("pointercancel", release);
     list.addEventListener("click", (e) => {
       const row = e.target.closest(".proc-row");
       if (row) openSheet(row.dataset.name);
     });
     ctx.subscribe("procs", (d) => {
-      latest = d?.list ?? [];
-      total.textContent = d?.total ? `· ${d.total}` : "";
-      list.replaceChildren(...rowsFor(sorted(latest, ctx.options.sort, 20), ctx.options.sort));
+      if (!latest.length) return draw(d); // first data: show it at once
+      pending = d;
+      flush();
     });
+    ctx.every(1000, flush);
   },
 };
