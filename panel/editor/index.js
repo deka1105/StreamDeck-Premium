@@ -550,6 +550,22 @@ function renderInspector() {
     });
     if (f) box.append(f);
   }
+  // Per-widget look: overrides the page and panel look for this tile only.
+  const lk = w.look ?? {};
+  const color = (key, label) => {
+    const i = h("input", { type: "color", id: `look-${key}`, value: lk[key] ?? "#000000" });
+    const on = h("input", { type: "checkbox", checked: !!lk[key], "aria-label": `Own ${label}` });
+    const set = () => change(() => {
+      w.look = { ...(w.look ?? {}) };
+      if (on.checked) w.look[key] = i.value;
+      else delete w.look[key];
+      if (!Object.keys(w.look).length) delete w.look;
+    });
+    i.addEventListener("change", () => ((on.checked = true), set()));
+    on.addEventListener("change", set);
+    return h("label", { class: "mini" }, on, label, i);
+  };
+  box.append(h("h4", { text: "This tile's look" }), h("div", { class: "row" }, color("tile", "Tile"), color("accent", "Accent")));
   box.append(
     h(
       "div",
@@ -584,7 +600,7 @@ function renderInspector() {
 
 function previewLayout() {
   const l = layout() ?? state.config.default;
-  return { rev: 0, pages: l.pages, home: l.home, settings: state.config.settings };
+  return { rev: 0, pages: l.pages, home: l.home, look: l.look, display: l.display, settings: state.config.settings };
 }
 function postPreview() {
   const frame = $("#previewFrame");
