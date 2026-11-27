@@ -82,18 +82,25 @@ to a public repo** within seconds, so never write a secret into this tree.
 
 ## Clean-room rules (apply to every step)
 
-1. **Reference material allowed:** PhoneBox's README, `docs/*.md`, `PRIVACY.md`,
-   screenshots, and the live demo used *as a user*. These describe behavior.
-2. **Never open PhoneBox source:** nothing under `agent/`, `android/`, `ios/`,
-   `tools/`, `packaging/`, `bucket/`, `scripts/`, and not `widgets.json`,
-   `templates.json`, `main.js` or `style.css`. That includes not fetching them
-   with `gh api`, not reading them in a browser, and not asking a subagent to.
-   If an answer needs their code, design it ourselves and record that in
-   `docs/CLEANROOM.md`.
-3. **Our own names and assets.** Don't use "PhoneBox", its icon, its screenshots,
-   its demo data or its exact catalogue and template JSON. Widget *categories*
-   (clock, weather, CPU) are generic and fine. Our scripting global is
-   `window.deskassist`, not `window.phonebox`.
+1. **Reference material allowed:** for PhoneBox, its README, `docs/*.md`,
+   `PRIVACY.md`, screenshots, and the live demo used *as a user*. For DeskHub,
+   its `README.md`, `ROADMAP.md` and screenshots. These describe behavior.
+2. **Never open either project's source.**
+   - PhoneBox: nothing under `agent/`, `android/`, `ios/`, `tools/`,
+     `packaging/`, `bucket/`, `scripts/`, and not `widgets.json`,
+     `templates.json`, `main.js` or `style.css`.
+   - DeskHub: nothing under `companion/` (including `config.example.toml` and
+     the tests) or `firmware/`.
+   - That includes not fetching them with `gh api`, not reading them in a
+     browser, and not asking a subagent to. If an answer needs their code,
+     design it ourselves and record that in `docs/CLEANROOM.md`.
+   - Third-party open-source projects that DeskHub's README *names* (for
+     example ha-bambulab, Orca-Flashforge, Snapmaker Luban) count the same way:
+     read their protocol *docs* if they publish any, never their code.
+3. **Our own names and assets.** Don't use "PhoneBox" or "Desk Hub", their
+   icons, screenshots, demo data, exact catalogue/template JSON, or DeskHub's
+   built-in game list. Widget *categories* (clock, weather, CPU, printer) are
+   generic and fine. Our scripting global is `window.deskassist`.
 4. **Our own formats.** The config schema, widget catalogue format, event names
    and HTTP routes are designed here. Where a public, documented convention
    exists (Open-Meteo's API, a Claude Code `PermissionRequest` hook, RSS/OPML,
@@ -102,8 +109,8 @@ to a public repo** within seconds, so never write a secret into this tree.
    consulted and the feature list taken from them. That's the evidence if the
    work is ever questioned.
 
-(PhoneBox is MIT-licensed, so copying with attribution would be legal. The owner
-chose clean-room anyway. Keep to it.)
+(Both projects are MIT-licensed, so copying with attribution would be legal.
+The owner chose clean-room anyway. Keep to it.)
 
 ---
 
@@ -142,9 +149,9 @@ The editor builds its option forms from these entries.
 **Visible at the end:** a green CI run on both macOS and Windows on the `panel-parity` branch, and `docs/CLEANROOM.md` exists.
 
 **0.1 Clean-room log**
-- Goal: create `docs/CLEANROOM.md` with the rules above and a list of the PhoneBox docs consulted so far (README, GUIDE, CONTROL-DECK, DEVELOPMENT, APPEARANCE, SETUP, PRIVACY), plus the feature inventory distilled from them (the widget list in GUIDE §Widgets, the template list in §Pages & templates).
+- Goal: create `docs/CLEANROOM.md` with the rules above and the docs consulted so far. For PhoneBox: README, GUIDE, CONTROL-DECK, DEVELOPMENT, APPEARANCE, SETUP, PRIVACY. For DeskHub: README, ROADMAP. Add a feature inventory per project distilled from them (PhoneBox: GUIDE §Widgets and §Pages & templates; DeskHub: README §Features, §Customizing Home, §3D printer, §Internet, §GitHub contributions, §Claude Code usage). Tag each inventory line with the stage that delivers it.
 - Where: `docs/CLEANROOM.md`.
-- Verify: `grep -c "^- " docs/CLEANROOM.md` shows at least 40 inventory lines, and `grep -ri "phonebox" desktop mobile/src panel 2>/dev/null` prints nothing.
+- Verify: `grep -c "^- " docs/CLEANROOM.md` shows at least 60 inventory lines, every line carries a stage tag, and `grep -riE "phonebox|deskhub|desk hub" desktop mobile/src panel 2>/dev/null` prints nothing.
 - Fence: no code. Don't copy PhoneBox doc prose wholesale; summarize it in our own words.
 
 **0.2 Host test harness**
@@ -240,13 +247,15 @@ The editor builds its option forms from these entries.
 - **4.2 Widgets:** metric tile, gauge, line chart (rolling window, our own lightweight SVG renderer), GPU details, memory & disks, top processes, processes (tap → sheet → end one instance or all). Verify: Playwright snapshots with demo data, and on-device with the Mac.
 - **4.3 End-process guard:** host-side only for the current user's processes, with a deny list of critical system processes per OS and a widget option to disable it. Verify: unit tests prove the deny list and the other-user refusal.
 - **4.4 Templates:** System, Processes, Dashboard, Status (partial).
-- Fence: the processes list samples only while a processes widget is visible (D4).
+- **4.5 Internet quality (DeskHub):** a `netq` provider that every 2 s makes a TCP connect to `1.1.1.1:443` (falling back to `8.8.8.8:443`) instead of ICMP, which needs no privileges. It keeps 60 samples and derives latency (median of the last 5), jitter, loss %, online (≥1 of the last 3 succeeded), up-since and the last drop with its duration. Data used today and this month comes from adapter counters, persisted in user-data. There's an on-demand speed test against `speed.cloudflare.com` (about 25 MB down, 10 MB up, at most once per 2 min, optionally scheduled every N hours) and an opt-in public IP. An "Internet" widget (with a latency chart and a speed-test button) and an Internet view on the System page. Verify: unit tests with a fake clock and fake connect results for the median/jitter/loss/online maths and the month rollover. Live: pull the Ethernet/Wi-Fi and see "offline" plus a recorded drop.
+- Fence: the processes list samples only while a processes widget is visible (D4). The speed test never runs on its own unless scheduled.
 
 ## Stage 5 — Time and personal widgets
 **Visible at the end:** Clock, Daily, Focus and Calm pages work with no computer data at all.
 
 - Widgets: clock (with status line), analog clock (any time zone), word clock, world clocks, calendar month, time progress (day/week/month/year), countdown, pomodoro, focus history, quick timer, stopwatch, note (edited on the phone, stored on the host), checklist (daily reset), counter, breathe, quote, title, phone battery, Computers (switch paired computer).
 - Verify per widget: a Playwright render test with a fake clock (`page.clock`), plus one on-device pass per batch of 5.
+- Timer page (DeskHub): presets of 1–45 min, pause and reset, a full-screen "Time's up" card, and the time left shown on the page's nav tab while you're on another page.
 - Fence: timers must survive a panel reload (state kept host-side, keyed by widget id).
 
 ## Stage 6 — Weather, sky and web data
