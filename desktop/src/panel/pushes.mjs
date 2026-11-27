@@ -16,7 +16,10 @@ const txt = (v, n = 200) => (v === undefined || v === null ? undefined : String(
 /** Normalize a push body (plain text, number or JSON object). Pure (unit-tested). */
 export function normalizePush(body) {
   if (body === null || body === undefined) return { value: "" };
-  if (typeof body !== "object") return { value: txt(body) ?? "", level: AUTO_LEVEL[String(body).toLowerCase()] };
+  if (typeof body !== "object") {
+    const level = AUTO_LEVEL[String(body).toLowerCase()];
+    return level ? { value: txt(body) ?? "", level } : { value: txt(body) ?? "" };
+  }
   const p = {
     value: txt(body.value) ?? "",
     title: txt(body.title, 80),

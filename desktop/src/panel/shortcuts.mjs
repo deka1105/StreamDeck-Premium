@@ -213,11 +213,11 @@ export function createCommandRunner({ getCommands, now = Date.now, exec = execFi
         exec(bin, [...pre, c.script], { timeout: 30_000, maxBuffer: 256 * 1024, windowsHide: true }, (err, stdout, stderr) => {
           const out = { at: now(), output: String(stdout ?? "").slice(-64 * 1024), error: err ? String(stderr || err.message).slice(-2000) : null };
           cache.set(id, out);
-          inflight.delete(id);
           resolve({ ok: true, ...out });
         });
       });
       inflight.set(id, p);
+      p.finally(() => inflight.get(id) === p && inflight.delete(id));
       return p;
     },
   };
