@@ -724,3 +724,5 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .stack-dots i { width: 14px; height: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .stack-dots i::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--ink-faint); }
 .stack-dots i[aria-current]::after { background: var(--accent); }
+.tok-sub { font-size: clamp(10px, 4cqmin, 13px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-quota .quota-row { font-size: clamp(11px, 5cqmin, 14px); }

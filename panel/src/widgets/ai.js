@@ -100,7 +100,7 @@ export const tokenuse = {
       if (!u) return (el.innerHTML = `<div class="w-title">Tokens</div><div class="muted">No data yet.</div>`);
       const max = Math.max(1, ...u.days.map((x) => x.tokens));
       const models = Object.entries(u.models ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 3);
-      el.innerHTML = `<div class="w-title">Tokens today</div><div class="tok-big">${tokens(u.today)}</div><div class="muted">${tokens(u.lastHour)} in the last hour${models.length ? ` · ${models.map(([m, n]) => `${esc(shortModel(m))} ${tokens(n)}`).join(", ")}` : ""}</div><div class="tok-bars">${u.days.map((x) => `<i title="${esc(x.day)}: ${tokens(x.tokens)}" style="height:${Math.max(4, (x.tokens / max) * 100)}%"></i>`).join("")}</div>`;
+      el.innerHTML = `<div class="w-title">Tokens today</div><div class="tok-big">${tokens(u.today)}</div><div class="muted tok-sub">${tokens(u.lastHour)} in the last hour${models.length ? ` · ${models.map(([m, n]) => `${esc(shortModel(m))} ${tokens(n)}`).join(", ")}` : ""}</div><div class="tok-bars">${u.days.map((x) => `<i title="${esc(x.day)}: ${tokens(x.tokens)}" style="height:${Math.max(4, (x.tokens / max) * 100)}%"></i>`).join("")}</div>`;
     });
   },
 };
