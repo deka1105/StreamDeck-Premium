@@ -726,3 +726,5 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .stack-dots i[aria-current]::after { background: var(--accent); }
 .tok-sub { font-size: clamp(10px, 4cqmin, 13px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .w-quota .quota-row { font-size: clamp(11px, 5cqmin, 14px); }
+.w-quota { gap: 4px; overflow-y: auto; }
+.w-quota .quota-sub { line-height: 1.25; }
