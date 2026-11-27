@@ -1,0 +1,44 @@
+// Page templates: starting points in the editor's "New page from template".
+// Our own content. Every widget type used here must exist in the registry
+// (enforced by test/templates.test.mjs). Grows stage by stage.
+
+export const TEMPLATES = [
+  {
+    id: "home",
+    name: "Home",
+    description: "Clock, computer load and your deck tiles.",
+    page: {
+      name: "Home",
+      widgets: [
+        { type: "clock", x: 0, y: 0, w: 6, h: 3 },
+        { type: "metric", x: 6, y: 0, w: 3, h: 3, options: { source: "cpu" } },
+        { type: "metric", x: 9, y: 0, w: 3, h: 3, options: { source: "mem" } },
+        { type: "deck", x: 0, y: 3, w: 12, h: 3 },
+      ],
+    },
+  },
+  {
+    id: "system",
+    name: "System",
+    description: "CPU and memory at a glance.",
+    page: {
+      name: "System",
+      widgets: [
+        { type: "metric", x: 0, y: 0, w: 6, h: 6, options: { source: "cpu" } },
+        { type: "metric", x: 6, y: 0, w: 6, h: 6, options: { source: "mem" } },
+      ],
+    },
+  },
+  {
+    id: "deck",
+    name: "Deck",
+    description: "Your phone's tiles, full screen.",
+    page: { name: "Deck", widgets: [{ type: "deck", x: 0, y: 0, w: 12, h: 6 }] },
+  },
+  {
+    id: "clock",
+    name: "Clock",
+    description: "A big clock with seconds.",
+    page: { name: "Clock", widgets: [{ type: "clock", x: 0, y: 0, w: 12, h: 6, options: { seconds: true } }] },
+  },
+];

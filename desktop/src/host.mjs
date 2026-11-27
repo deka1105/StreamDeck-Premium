@@ -27,6 +27,7 @@ import { createPanelApi } from "./panelApi.mjs";
 import { PROVIDERS } from "./providers/index.mjs";
 import { createLocalServer } from "./local.mjs";
 import { createPanelStore } from "./panel/store.mjs";
+import { createEditorRoutes } from "./panel/editorRoutes.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -405,9 +406,13 @@ async function main() {
   const host = createHost({ dir, dryRun, port, allowShell });
   await host.listen();
   const localPort = process.env.DECK_LOCAL_PORT ? Number(process.env.DECK_LOCAL_PORT) : 8789;
-  const local = createLocalServer({ port: localPort, panelApi: host.panelApi });
+  const local = createLocalServer({
+    port: localPort,
+    panelApi: host.panelApi,
+    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices }),
+  });
   await local.listen().then(
-    () => console.log(`Browser panel (this computer only): http://127.0.0.1:${localPort}/panel/`),
+    () => console.log(`Browser panel (this computer only): http://127.0.0.1:${localPort}/panel/  ·  editor: http://127.0.0.1:${localPort}/editor/`),
     (err) => console.warn(`Browser panel unavailable: ${err.message}`),
   );
 
