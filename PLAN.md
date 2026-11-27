@@ -111,20 +111,33 @@ to a public repo** within seconds, so never write a secret into this tree.
    - Third-party open-source projects that DeskHub's README *names* (for
      example ha-bambulab, Orca-Flashforge, Snapmaker Luban) count the same way:
      read their protocol *docs* if they publish any, never their code.
-3. **Our own names and assets.** Don't use "PhoneBox" or "Desk Hub", their
-   icons, screenshots, demo data, exact catalogue/template JSON, or DeskHub's
-   built-in game list. Widget *categories* (clock, weather, CPU, printer) are
-   generic and fine. Our scripting global is `window.deskassist`.
+   - **Stash is commercial and closed-source, and its terms forbid reverse
+     engineering.** Allowed: the public pages of stashformac.com (home,
+     `/updates`, `/creative-pro`, `/privacy`, `/terms`) and its App Store
+     listing. **Not allowed:** downloading, installing or running the Stash
+     DMG or the Stash Deck app to study them, disassembling or inspecting
+     their bundles, sniffing their traffic, or copying their visual design
+     from screenshots or videos.
+3. **Our own names and assets.** Don't use "PhoneBox", "Desk Hub", "Stash",
+   "Stash Deck", "Creative Pro", or Apple's "Liquid Glass" name. Don't use
+   their icons, screenshots, demo data, exact catalogue/template JSON, or
+   DeskHub's built-in game list. Our desk-edge controls get **our own visual
+   design**, not a lookalike of Stash's dials and dock. Widget *categories*
+   (clock, weather, CPU, printer) and control *kinds* (volume slider,
+   brightness dial) are generic and fine. Our scripting global is
+   `window.deskassist`.
 4. **Our own formats.** The config schema, widget catalogue format, event names
    and HTTP routes are designed here. Where a public, documented convention
    exists (Open-Meteo's API, a Claude Code `PermissionRequest` hook, RSS/OPML,
    ICS), follow the *public spec*, not PhoneBox.
-5. **Log it.** `docs/CLEANROOM.md` records, per stage, which PhoneBox docs were
-   consulted and the feature list taken from them. That's the evidence if the
-   work is ever questioned.
+5. **Log it.** `docs/CLEANROOM.md` records, per stage, which reference docs and
+   pages were consulted and the feature list taken from them. That's the
+   evidence if the work is ever questioned.
 
-(Both projects are MIT-licensed, so copying with attribution would be legal.
-The owner chose clean-room anyway. Keep to it.)
+(PhoneBox and DeskHub are MIT-licensed, so copying them with attribution would
+be legal; the owner chose clean-room anyway. Stash is proprietary, so for Stash
+clean-room isn't a choice: features and ideas from its public description are
+fair game, but its code, assets, names and look are not.)
 
 ---
 
