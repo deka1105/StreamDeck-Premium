@@ -45,8 +45,8 @@ the host's loopback API. Layouts live on the host, per paired device.
 Store review (1.1.0, build 13). Every file write is auto-committed and **pushed
 to a public repo** within seconds, so never write a secret into this tree.
 
-**Status (27 Nov 2026):** Stages 0–3 done and verified (see checklist notes). Stage 4 in progress.
-**Next:** Stage 4, step 4.1.
+**Status (27 Nov 2026):** Stages 0–5 done and verified (see checklist notes).
+**Next:** Stage 6 (weather, sky and web data) — start with its research step.
 
 **Dev loop:** `npm run build` in `panel/` after any panel/editor change (CI fails if the committed build is stale). Browser tests: `npx playwright test` in `tools/ui-tests` (each test starts its own throwaway host). Simulator: `npx expo run:ios --device "iPhone 17"`, then drive it with the dev-only deep link `deskassist://dev?pair=<QR JSON>&view=panel` (or `?demo=1&view=panel`) — see `mobile/src/devLink.ts`. Test hosts must use other ports (e.g. `DECK_PORT=18788 DECK_LOCAL_PORT=18789`): the owner's real host holds 8788.
 
@@ -58,8 +58,8 @@ to a public repo** within seconds, so never write a secret into this tree.
 - [x] Stage 1 — Walking skeleton: a live CPU number from the computer on the phone — verified on the iOS simulator (live CPU, offline within 30 s, recovers in ~14 s)
 - [x] Stage 2 — Pages, grid and navigation; tiles become a widget; demo mode — browser tests at 780×360 and 360×780; demo verified on the simulator. Tile *tap* on the phone not yet verified by hand (the headless simulator can't be tapped from a script); the panel side is covered by `demo.spec.mjs`
 - [x] Stage 3 — Desktop layout editor — 8 Playwright tests; save reaches a panel in < 3 s
-- [ ] Stage 4 — Computer widgets (CPU / GPU / RAM / disks / network / processes)
-- [ ] Stage 5 — Time and personal widgets
+- [x] Stage 4 — Computer widgets (CPU / GPU / RAM / disks / network / processes) — providers sampled live on macOS and Windows in CI; end-process guard tested end to end (refused unless the widget allows it). On this Intel Mac, GPU load and CPU temperature aren't exposed by the OS and show "not reported"/"—"
+- [x] Stage 5 — Time and personal widgets — widget state lives on the host (`state.get/set`, `widget-state.json`); reload/second-screen/alarm tests pass. Phone battery reads via `expo-battery` (not available on the iOS simulator — check on a real phone)
 - [ ] Stage 6 — Weather, sky and web-data widgets
 - [ ] Stage 7 — Media widgets
 - [ ] Stage 8 — Shortcuts by ID, webhooks, notifications, rules, Custom HTML

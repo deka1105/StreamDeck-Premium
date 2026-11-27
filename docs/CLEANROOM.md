@@ -140,3 +140,10 @@ decision made *without* reference material because the docs were silent.
   shape and the catalogue generated from it, the layout schema and its
   sanitizer, the editor's page/canvas/inspector design, template content, and
   the live-tile Deck widget.
+- **Stages 4–5** — no further consultation. Designed here: the provider set and
+  its normalized shapes, the end-process guard (deny lists written from OS
+  knowledge, ownership check, per-widget opt-in verified host-side), the
+  TCP-connect latency probe and quality maths (median / jitter / loss as
+  described in DeskHub's README, implemented from that description), the word
+  clock letter grid, the quote collection (public-domain sources only), and
+  the per-widget state store with panel-level alarms.
