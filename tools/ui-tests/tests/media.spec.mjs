@@ -71,8 +71,10 @@ test("media server card and now-playing fallback; Jellyfin control reaches the s
   // Nothing plays on this computer in the test, so Now playing shows the server's session.
   const np = page.locator(".w-nowplaying");
   await expect(np).toHaveAttribute("data-state", /server|playing|paused/);
+  // The test host runs dry (actions are logged, not performed); the real HTTP
+  // call to Jellyfin is covered by the provider's unit test.
   await card.locator(".mbtn.big").click();
-  await expect.poll(() => posts.join()).toContain("/Sessions/sess1/Playing/PlayPause");
+  await expect.poll(() => host.log()).toContain("(dry-run) media server jf playpause");
   await page.screenshot({ path: "test-results/media-page.png" });
   expect(errors).toEqual([]);
 });
