@@ -44,7 +44,7 @@ export function seal(keyBuf, obj) {
   return { n: iv.toString("base64"), ct: Buffer.concat([ct, cipher.getAuthTag()]).toString("base64") };
 }
 
-function unseal(keyBuf, n, ctB64) {
+export function unseal(keyBuf, n, ctB64) {
   const iv = Buffer.from(n, "base64");
   const buf = Buffer.from(ctB64, "base64");
   const decipher = crypto.createDecipheriv("aes-256-gcm", keyBuf, iv);
