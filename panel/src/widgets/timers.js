@@ -72,7 +72,14 @@ export const timer = {
         ...(left > 0 || s.running ? [button("Reset", "", () => st.set({ running: false, endAt: null, remainingMs: 0, durationMs: 0 }))] : []),
       );
     }
-    ctx.every(250, () => st.value.running && (timeEl.textContent = fmtClock(remaining(st.value)), (fill.style.strokeDashoffset = `${C * (1 - remaining(st.value) / (st.value.durationMs || 1))}`), remaining(st.value) === 0 && draw()));
+    ctx.every(250, () => {
+      const s = st.value;
+      if (!s.running) return;
+      const left = remaining(s);
+      timeEl.textContent = fmtClock(left);
+      fill.style.strokeDashoffset = `${C * (1 - left / (s.durationMs || 1))}`;
+      if (left === 0) st.set({ running: false, endAt: null, remainingMs: 0, durationMs: 0 }); // the panel shows "Time's up"
+    });
   },
 };
 
@@ -139,7 +146,7 @@ export const pomodoro = {
     const o = ctx.options;
     const minutes = { focus: o.focus, short: o.short, long: o.long };
     const st = ctx.persisted({ phase: "focus", round: 1, running: false, endAt: null, remainingMs: o.focus * 60_000 }, () => draw());
-    const log = ctx.persisted({ days: {} }, null);
+    const log = ctx.persistedAt(FOCUS_KEY, { days: {} }, null);
     const $ = (s) => el.querySelector(s);
     const complete = (s) => {
       // Record finished focus time once, keyed by its end time (two screens may both see it end).
@@ -181,11 +188,7 @@ export const pomodoro = {
       $(".po-time").textContent = fmtClock(left);
       if (left === 0) complete(s);
     });
-    // The focus log is shared with the Focus history widget.
-    void log;
   },
-  // The focus log lives under a fixed key so the history widget can read it.
-  stateKey: FOCUS_KEY,
 };
 
 // ------------------------------------------------------------- focus history ----

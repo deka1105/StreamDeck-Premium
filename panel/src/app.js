@@ -16,6 +16,10 @@ function makeContext({ store, bridge, options, onCleanup, widgetId, pageId }) {
      * whenever any screen changes it. Returns { value, set(v) }.
      */
     persisted(initial, onChange) {
+      return this.persistedAt(key, initial, onChange);
+    },
+    /** Like persisted, but for a shared key ("global:focus") several widgets use. */
+    persistedAt(key, initial, onChange) {
       const box = { value: initial, loaded: false };
       const apply = (v) => {
         box.value = v ?? initial;
