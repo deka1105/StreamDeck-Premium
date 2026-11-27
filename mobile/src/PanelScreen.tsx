@@ -46,7 +46,13 @@ function deckPayload(deck: PanelDeck | undefined) {
 }
 
 async function batteryNow() {
-  if (!(await Battery.isAvailableAsync())) throw new Error("Battery level isn't available on this device.");
+  let available = false;
+  try {
+    available = await Battery.isAvailableAsync();
+  } catch {
+    available = false;
+  }
+  if (!available) throw new Error("Battery level isn't available on this device.");
   const p = await Battery.getPowerStateAsync();
   return {
     level: p.batteryLevel >= 0 ? p.batteryLevel : null,
@@ -130,9 +136,15 @@ export function PanelScreen({
   useEffect(() => () => void generation.current++, [pairing]);
 
   // Battery changes are pushed to the Phone battery widget.
+  // Guarded: the panel must keep working even in a build without the module.
   useEffect(() => {
     const push = () => batteryNow().then((v) => send({ t: "evt", type: "data", data: { kind: "battery", value: v } }), () => {});
-    const subs = [Battery.addBatteryLevelListener(push), Battery.addBatteryStateListener(push), Battery.addLowPowerModeListener(push)];
+    let subs: { remove(): void }[] = [];
+    try {
+      subs = [Battery.addBatteryLevelListener(push), Battery.addBatteryStateListener(push), Battery.addLowPowerModeListener(push)];
+    } catch {
+      /* battery events unavailable: the widget still works on request */
+    }
     return () => subs.forEach((s) => s.remove());
   }, [send]);
 
