@@ -15,6 +15,7 @@ import { readdirSync } from "node:fs";
 import qrcode from "qrcode";
 import { createHost } from "./src/host.mjs";
 import { createLocalServer } from "./src/local.mjs";
+import { createEditorRoutes } from "./src/panel/editorRoutes.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SMOKE = !!process.env.SMOKE;
@@ -181,7 +182,11 @@ app.whenReady().then(async () => {
 
   // Loopback-only browser panel + (later) layout editor. A failure here must not
   // take down pairing, so it only logs.
-  const local = createLocalServer({ port: 8789, panelApi: host.panelApi });
+  const local = createLocalServer({
+    port: 8789,
+    panelApi: host.panelApi,
+    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices }),
+  });
   await local.listen().then(
     () => console.log("browser panel on http://127.0.0.1:8789/panel/"),
     (err) => console.warn(`browser panel unavailable: ${err.message}`),
