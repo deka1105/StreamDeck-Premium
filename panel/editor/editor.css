@@ -101,3 +101,5 @@ select, input:not([type=checkbox]):not([type=radio]), textarea { width: 100%; }
 .geo-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .row input { flex: 1; min-width: 120px; width: auto; }
 body[data-view="settings"] aside.right { opacity: 0.4; pointer-events: none; }
+.examples { background: #04070d; border: 1px solid var(--line); border-radius: 10px; padding: 10px; font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; color: var(--ink-dim); }
+#hookKey { word-break: break-all; }

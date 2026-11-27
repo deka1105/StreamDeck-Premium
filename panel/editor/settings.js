@@ -3,6 +3,8 @@
 // Secrets (calendar passwords) go straight to the host's secret store and are
 // never part of the config or read back.
 
+import { renderAutomation } from "./automation.js";
+
 const rid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
 export function renderSettings(root, { state, h, change, api, flash }) {
@@ -211,4 +213,6 @@ export function renderSettings(root, { state, h, change, api, flash }) {
       h("label", {}, "Run a speed test automatically", sel("speedHours", String(s.netq.speedtestHours), [["0", "Only when I tap the button"], ["6", "Every 6 hours"], ["12", "Every 12 hours"], ["24", "Every day"]], (v) => (s.netq.speedtestHours = Number(v)))),
     ),
   );
+
+  renderAutomation(root, { state, h, change, api, flash });
 }
