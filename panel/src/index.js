@@ -250,7 +250,7 @@ function boot() {
   const touched = () => (lastTouch = Date.now());
   for (const ev of ["pointerdown", "keydown", "wheel"]) window.addEventListener(ev, touched, { passive: true });
   setInterval(() => {
-    if (!layout || !overviewEl.hidden) return;
+    if (!layout || !overviewEl.hidden || preview) return;
     const sec = idleReturnSec(layout, pages()[index]);
     if (sec !== null && Date.now() - lastTouch >= sec * 1000) {
       go(homeIndex(layout));
