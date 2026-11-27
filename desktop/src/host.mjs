@@ -25,6 +25,7 @@ import { createEventBus } from "./events.mjs";
 import { createSampler } from "./sampler.mjs";
 import { createPanelApi } from "./panelApi.mjs";
 import { PROVIDERS } from "./providers/index.mjs";
+import { createLocalServer } from "./local.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;

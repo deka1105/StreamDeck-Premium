@@ -44,8 +44,10 @@
       "preload.cjs",
       "pair.html",
       "apps.html",
-      "src/host.mjs",
-      "src/executor.mjs",
+      "src/**/*.mjs",
+      "!src/**/*.test.mjs",
+      "!src/test-*.mjs",
+      "panel-dist/**/*",
       "assets/**/*",
       "!**/*.map"
     ],

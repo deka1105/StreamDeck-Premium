@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { readdirSync } from "node:fs";
 import qrcode from "qrcode";
 import { createHost } from "./src/host.mjs";
+import { createLocalServer } from "./src/local.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SMOKE = !!process.env.SMOKE;
@@ -177,6 +178,14 @@ app.whenReady().then(async () => {
   });
   await host.listen();
   console.log(`host listening on :${host.port} (${host.name})`);
+
+  // Loopback-only browser panel + (later) layout editor. A failure here must not
+  // take down pairing, so it only logs.
+  const local = createLocalServer({ port: 8789, panelApi: host.panelApi });
+  await local.listen().then(
+    () => console.log("browser panel on http://127.0.0.1:8789/panel/"),
+    (err) => console.warn(`browser panel unavailable: ${err.message}`),
+  );
 
   if (SMOKE) {
     console.log("SMOKE OK");
