@@ -128,6 +128,14 @@ export function createRules({ getRules, read, act, now = Date.now, publish = () 
   let timer = null;
   return {
     tick,
+    /** Run a rule's action once (editor "Test"); a "while it lasts" rule ends after 8 s. */
+    async test(id) {
+      const r = getRules().find((x) => x.id === id);
+      if (!r) return { ok: false, error: "Save the rule first." };
+      await act(r, "start");
+      if (r.whileLasts) setTimeout(() => act(r, "end"), 8000).unref?.();
+      return { ok: true };
+    },
     active: () => [...st.entries()].filter(([, s]) => s.active).map(([id]) => id),
     pause(minutes) {
       pausedUntil = minutes > 0 ? now() + minutes * 60_000 : 0;

@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { findPanelDist } from "../local.mjs";
 import { parseOpml, parseBulk } from "../parsers/feed.mjs";
+import { newWebhookKey } from "./webhooks.mjs";
 
 function readTemplates(dist) {
   try {
@@ -18,7 +19,7 @@ function readTemplates(dist) {
   }
 }
 
-export function createEditorRoutes({ store, listDevices = () => [], panelDist = findPanelDist(), secrets = null, providers = {}, fetchImpl = globalThis.fetch }) {
+export function createEditorRoutes({ store, listDevices = () => [], panelDist = findPanelDist(), secrets = null, providers = {}, rules = null, runner = null, fetchImpl = globalThis.fetch }) {
   const json = async (req, readJson) => {
     if (!String(req.headers["content-type"] ?? "").startsWith("application/json")) return null;
     return readJson(req);
@@ -56,6 +57,21 @@ export function createEditorRoutes({ store, listDevices = () => [], panelDist = 
       const text = String(body?.text ?? "").slice(0, 1_000_000);
       const feeds = /<opml\b/i.test(text) ? parseOpml(text) : parseBulk(text);
       send(res, 200, { ok: true, feeds: feeds.slice(0, 200) });
+    },
+    "POST /api/editor/rules/test": async (req, res, { send, readJson }) => {
+      const body = await json(req, readJson);
+      send(res, 200, rules ? await rules.test(String(body?.id ?? "")) : { ok: false, error: "rules unavailable" });
+    },
+    "POST /api/editor/shortcut/test": async (req, res, { send, readJson }) => {
+      const body = await json(req, readJson);
+      send(res, 200, runner ? await runner.run(String(body?.id ?? ""), body?.value) : { ok: false, error: "shortcuts unavailable" });
+    },
+    // The LAN webhook key: shown here (this computer only); rotate to revoke the old one.
+    "POST /api/editor/webhook-key": async (req, res, { send, readJson }) => {
+      const body = await json(req, readJson);
+      if (!secrets) return send(res, 500, { ok: false, error: "no secret store" });
+      if (body?.rotate || !secrets.get("webhook:key")) secrets.set("webhook:key", newWebhookKey());
+      send(res, 200, { ok: true, key: secrets.get("webhook:key") });
     },
     "GET /api/editor/secrets": (_req, res, { send }) => {
       const cfg = store.config();
