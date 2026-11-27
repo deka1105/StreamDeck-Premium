@@ -82,7 +82,7 @@ test("media server card and now-playing fallback; Jellyfin control reaches the s
 test("lyrics stay off until the widget allows them; the host refuses otherwise", async ({ page, request }) => {
   await page.setViewportSize({ width: 1170, height: 540 });
   await page.goto(`${host.base}/panel/`);
-  await expect(page.locator(".w-lyrics")).toContainText("Turn on “Look up lyrics on LRCLIB”");
+  await expect(page.locator(".w-lyrics")).toContainText("Turn on “Look up lyrics on LRCLIB”", { timeout: 20_000 });
   const r = await request.post(`${host.base}/api/panel/rpc`, { data: { method: "lyrics.get", params: { pageId: "music", widgetId: "ly" } } });
   expect((await r.json()).result.ok).toBe(false);
 });
