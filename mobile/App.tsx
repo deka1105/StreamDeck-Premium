@@ -50,7 +50,7 @@ import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
 import { SnippetLibrary } from "./src/SnippetLibrary";
 import { PanelScreen } from "./src/PanelScreen";
-import { useDevLink } from "./src/devLink";
+import { useDevLink, type DevLink } from "./src/devLink";
 import {
   loadSnippets,
   newSnippetId,
