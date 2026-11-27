@@ -6,6 +6,7 @@ import { createBridge } from "./bridge.js";
 import { createStore } from "./store.js";
 import { mountPage } from "./app.js";
 import { visiblePages, homeIndex, indexAfterReload, step, idleReturnSec } from "./nav.js";
+import { createAlarms } from "./alarms.js";
 
 const LONG_PRESS_MS = 550;
 const SWIPE_MIN_PX = 50;
@@ -38,6 +39,15 @@ function boot() {
 
   let layout = null;
   let index = 0;
+  const alarms = createAlarms({
+    store,
+    bridge,
+    overlay: document.getElementById("alarm"),
+    badge: document.getElementById("timerBadge"),
+    currentPageId: () => pages()[index]?.id ?? null,
+    gotoId: (id) => gotoId(id),
+    vibrate: () => navigator.vibrate?.([200, 100, 200, 100, 400]),
+  });
   let current = null; // { el, needs, destroy, pageId }
   let lastTouch = Date.now();
 
@@ -89,6 +99,7 @@ function boot() {
     }
     document.body.dataset.page = page?.id ?? "";
     renderDots();
+    alarms.updateBadge();
     requestAnimationFrame(() => {
       const g = holder.querySelector(".page-grid")?.getBoundingClientRect();
       debug(`render page=${page?.id} of ${list.length} viewport=${innerWidth}x${innerHeight} grid=${g ? `${Math.round(g.width)}x${Math.round(g.height)}` : "none"} widgets=${page?.widgets?.length ?? 0}`);
@@ -123,6 +134,7 @@ function boot() {
       const want = e.data.pageId ?? keepId;
       index = want ? indexAfterReload(layout, want) : homeIndex(layout);
       render(0);
+      alarms.watch(layout);
     });
     window.parent?.postMessage({ type: "deskassist-preview-ready" }, location.origin);
   }
@@ -135,6 +147,7 @@ function boot() {
       layout = next;
       index = keepId ? indexAfterReload(layout, keepId) : homeIndex(layout);
       render(0);
+      alarms.watch(layout);
     } catch (err) {
       debug(`panel.layout failed: ${err.message}`);
       if (!layout) {

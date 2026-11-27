@@ -112,6 +112,9 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     // Taps on controls "succeed" without doing anything.
     "action.run": () => ({ ok: true, simulated: true }),
     "deck.tiles": () => ({ name: "Default", tiles: DEMO_TILES }),
+    "phone.battery": () => ({ level: 0.82, charging: true, lowPower: false }),
+    "phone.hosts": () => ({ hosts: [{ id: "demo", name: "Demo Mac", active: true }] }),
+    "phone.switchHost": () => ({ ok: true }),
     "state.get": ({ key } = {}) => ({ key, value: demoState.get(key) ?? null }),
     "state.set": ({ key, value } = {}) => {
       demoState.set(key, value);

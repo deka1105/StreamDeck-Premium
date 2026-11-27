@@ -44,7 +44,9 @@ export async function buildPanel() {
 <div id="banner" hidden></div>
 <div id="pages"></div>
 <nav id="dots" hidden></nav>
+<button id="timerBadge" hidden></button>
 <div id="overview" hidden></div>
+<div id="alarm" hidden></div>
 <script>${js}</script>
 </body>
 </html>

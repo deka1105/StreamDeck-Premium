@@ -12,8 +12,20 @@ import gpu from "./gpu.js";
 import storage from "./storage.js";
 import { topprocs, processes } from "./procs.js";
 import internet from "./internet.js";
+import { analog, wordclock, worldclocks, calendar, progress, countdown } from "./time.js";
+import { timer, stopwatch, pomodoro, focushistory } from "./timers.js";
+import { note, checklist, counter, breathe, quote, title, battery, computers } from "./personal.js";
 
-export const WIDGETS = [clock, metric, gauge, chart, gpu, storage, topprocs, processes, internet, deck];
+export const WIDGETS = [
+  // time
+  clock, analog, wordclock, worldclocks, calendar, progress, countdown, timer, stopwatch, pomodoro, focushistory,
+  // computer
+  metric, gauge, chart, gpu, storage, topprocs, processes, internet,
+  // personal
+  note, checklist, counter, breathe, quote, title, battery, computers,
+  // controls
+  deck,
+];
 
 export const REGISTRY = Object.fromEntries(WIDGETS.map((w) => [w.type, w]));
 
