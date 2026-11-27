@@ -126,6 +126,59 @@ export function sanitizeLayout(raw, catalogByType) {
   return { pages, home };
 }
 
+const num = (v, lo, hi) => (Number.isFinite(Number(v)) ? Math.max(lo, Math.min(hi, Number(v))) : null);
+const cleanColor = (v) => (typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) ? v : null);
+
+function cleanLocation(l) {
+  if (!l || typeof l !== "object") return null;
+  const lat = num(l.lat, -90, 90);
+  const lon = num(l.lon, -180, 180);
+  if (lat === null || lon === null) return null;
+  return { name: cleanText(l.name, 80) || `${lat.toFixed(2)}, ${lon.toFixed(2)}`, lat, lon, tz: cleanText(l.tz, 64) };
+}
+
+function cleanUrlOrPath(v, { allowFile = false } = {}) {
+  const s = String(v ?? "").trim().replace(/^webcal:/i, "https:");
+  if (/^https?:\/\/[^\s]+$/i.test(s)) return s.slice(0, 2000);
+  if (allowFile && /^\/[^\0]+\.ics$/i.test(s)) return s.slice(0, 1000);
+  return null;
+}
+
+function cleanCalendars(list) {
+  const out = [];
+  const ids = new Set();
+  for (const c of Array.isArray(list) ? list.slice(0, 20) : []) {
+    const kind = c?.kind === "caldav" ? "caldav" : "ics";
+    const url = cleanUrlOrPath(c?.url, { allowFile: kind === "ics" });
+    let id = cleanId(c?.id, null) ?? `cal${out.length + 1}`;
+    while (ids.has(id)) id += "x";
+    if (!url) continue;
+    ids.add(id);
+    out.push({
+      id,
+      name: cleanText(c.name, 60) || (kind === "caldav" ? "iCloud" : "Calendar"),
+      kind,
+      url,
+      user: kind === "caldav" ? cleanText(c.user, 120) : "",
+      color: cleanColor(c.color) ?? "#38bdf8",
+      only: Array.isArray(c.only) ? c.only.filter((x) => typeof x === "string").slice(0, 30).map((x) => cleanText(x, 80)) : [],
+    });
+  }
+  return out;
+}
+
+function cleanFeeds(list) {
+  const out = [];
+  const seen = new Set();
+  for (const f of Array.isArray(list) ? list.slice(0, 200) : []) {
+    const url = cleanUrlOrPath(f?.url);
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    out.push({ name: cleanText(f.name, 80), url, category: cleanText(f.category, 40) });
+  }
+  return out;
+}
+
 export function sanitizeConfig(raw, catalog) {
   const byType = new Map((catalog?.widgets ?? []).map((w) => [w.type, w]));
   const devices = {};
@@ -146,6 +199,11 @@ export function sanitizeConfig(raw, catalog) {
         showIp: raw?.settings?.netq?.showIp === true,
         speedtestHours: Math.max(0, Math.min(48, int(raw?.settings?.netq?.speedtestHours, 0))),
       },
+      location: cleanLocation(raw?.settings?.location),
+      units: { temp: raw?.settings?.units?.temp === "F" ? "F" : "C", wind: raw?.settings?.units?.wind === "mph" ? "mph" : "kmh" },
+      calendars: cleanCalendars(raw?.settings?.calendars),
+      calendarDays: Math.max(1, Math.min(31, int(raw?.settings?.calendarDays, 7))),
+      feeds: cleanFeeds(raw?.settings?.feeds),
     },
   };
 }

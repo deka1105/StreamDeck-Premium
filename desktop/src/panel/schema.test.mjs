@@ -98,3 +98,34 @@ test("store round-trips through panel.json (0600) and bumps the revision", () =>
   assert.equal(reloaded.layoutFor("phone1").own, true);
   assert.ok(JSON.parse(readFileSync(file, "utf8")).default);
 });
+
+test("Stage 6 settings: location, units, calendars and feeds are cleaned", () => {
+  const cfg = sanitizeConfig(
+    {
+      settings: {
+        location: { name: "Charlotte", lat: "35.2", lon: -80.8, tz: "America/New_York" },
+        units: { temp: "F", wind: "knots" },
+        calendars: [
+          { id: "work", name: "Work", kind: "ics", url: "webcal://example.com/cal.ics", color: "#ff0000" },
+          { id: "work", kind: "caldav", url: "https://caldav.icloud.com", user: "me@icloud.com", password: "SHOULD-NOT-SURVIVE" },
+          { kind: "ics", url: "javascript:alert(1)" },
+          { kind: "ics", url: "/Users/me/holidays.ics" },
+        ],
+        calendarDays: 99,
+        feeds: [{ name: "A", url: "https://a.example/feed" }, { url: "https://a.example/feed" }, { url: "file:///etc/passwd" }],
+      },
+    },
+    CATALOG,
+  );
+  const s = cfg.settings;
+  assert.deepEqual(s.location, { name: "Charlotte", lat: 35.2, lon: -80.8, tz: "America/New_York" });
+  assert.deepEqual(s.units, { temp: "F", wind: "kmh" });
+  assert.deepEqual(s.calendars.map((c) => [c.id, c.kind, c.url]), [
+    ["work", "ics", "https://example.com/cal.ics"],
+    ["workx", "caldav", "https://caldav.icloud.com"],
+    ["cal3", "ics", "/Users/me/holidays.ics"],
+  ]);
+  assert.ok(!JSON.stringify(cfg).includes("SHOULD-NOT-SURVIVE")); // passwords never enter the config
+  assert.equal(s.calendarDays, 31);
+  assert.deepEqual(s.feeds.map((f) => f.url), ["https://a.example/feed"]);
+});
