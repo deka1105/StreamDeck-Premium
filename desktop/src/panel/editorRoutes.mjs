@@ -8,6 +8,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { findPanelDist } from "../local.mjs";
+import { parseOpml, parseBulk } from "../parsers/feed.mjs";
 
 function readTemplates(dist) {
   try {
@@ -48,6 +49,13 @@ export function createEditorRoutes({ store, listDevices = () => [], panelDist = 
       if (!secrets) return send(res, 500, { ok: false, error: "no secret store" });
       secrets.set(body.name, typeof body.value === "string" ? body.value : "");
       send(res, 200, { ok: true, saved: secrets.has(body.name), protected: secrets.protected });
+    },
+    // Parse an OPML file or "Category | Name | URL" lines into feed entries.
+    "POST /api/editor/feeds/import": async (req, res, { send, readJson }) => {
+      const body = await json(req, readJson);
+      const text = String(body?.text ?? "").slice(0, 1_000_000);
+      const feeds = /<opml\b/i.test(text) ? parseOpml(text) : parseBulk(text);
+      send(res, 200, { ok: true, feeds: feeds.slice(0, 200) });
     },
     "GET /api/editor/secrets": (_req, res, { send }) => {
       const cfg = store.config();
