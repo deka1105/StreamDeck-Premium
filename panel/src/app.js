@@ -4,10 +4,32 @@ import { REGISTRY, withDefaults } from "./widgets/index.js";
 import { resolveLayout } from "./grid.js";
 
 /** Build the per-widget context. Everything registered here is torn down on unmount. */
-function makeContext({ store, bridge, options, onCleanup, widgetId }) {
+function makeContext({ store, bridge, options, onCleanup, widgetId, pageId }) {
+  const key = `${pageId}:${widgetId}`;
   return {
     options,
     widgetId,
+    pageId,
+    /**
+     * Saved widget state (notes, timers, counters), kept on the computer so it
+     * survives reloads and matches on every screen. `onChange` runs on load and
+     * whenever any screen changes it. Returns { value, set(v) }.
+     */
+    persisted(initial, onChange) {
+      const box = { value: initial, loaded: false };
+      const apply = (v) => {
+        box.value = v ?? initial;
+        box.loaded = true;
+        onChange?.(box.value);
+      };
+      bridge.request("state.get", { key }).then((r) => apply(r?.value), () => apply(initial));
+      onCleanup(store.on(`state:${key}`, apply));
+      box.set = (v) => {
+        apply(v);
+        bridge.request("state.set", { key, value: v }).catch(() => {});
+      };
+      return box;
+    },
     bridge,
     now: () => new Date(),
     request: (method, params) => bridge.request(method, params),
@@ -35,7 +57,7 @@ export function mountWidget(host, instance, { store, bridge }) {
     return { needs: [], destroy: () => body.remove() };
   }
   const options = withDefaults(def, instance.options);
-  const ctx = makeContext({ store, bridge, options, widgetId: instance.id, onCleanup: (fn) => cleanups.push(fn) });
+  const ctx = makeContext({ store, bridge, options, widgetId: instance.id, pageId: env.pageId ?? "page", onCleanup: (fn) => cleanups.push(fn) });
   let handle;
   try {
     handle = def.mount(body, ctx) ?? {};
@@ -73,7 +95,7 @@ export function mountPage(root, page, env, orientation) {
     cell.style.gridColumn = `${b.x + 1} / span ${b.w}`;
     cell.style.gridRow = `${b.y + 1} / span ${b.h}`;
     grid.appendChild(cell);
-    const m = mountWidget(cell, w, env);
+    const m = mountWidget(cell, w, { ...env, pageId: page.id });
     return { ...m, cell };
   });
   root.appendChild(grid);

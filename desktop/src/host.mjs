@@ -28,6 +28,7 @@ import { createProviders } from "./providers/index.mjs";
 import { createLocalServer } from "./local.mjs";
 import { createPanelStore } from "./panel/store.mjs";
 import { createEditorRoutes } from "./panel/editorRoutes.mjs";
+import { createWidgetState } from "./panel/widgetState.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -149,6 +150,7 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
   // Panel plumbing: an event queue, an on-demand sampler feeding it, and the
   // method table both the phone (RPC) and browser panels (loopback) call.
   const bus = createEventBus();
+  const widgetState = createWidgetState({ dir, publish: bus.publish });
   const panelStore = createPanelStore({ dir, onChange: (rev) => bus.publish("layout", { rev }) });
   const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings });
   const sampler = createSampler({ providers: provs, publish: bus.publish });
@@ -174,6 +176,8 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         console.log(`${r.ok ? "■" : "⛔"} end ${all ? "all" : `pid ${pid}`} of "${procName}" from ${ctx.client}: ${r.ok ? `ended ${r.ended}` : r.reason}`);
         return r;
       },
+      "state.get": ({ key } = {}) => ({ key, value: widgetState.get(key) }),
+      "state.set": ({ key, value } = {}, ctx) => widgetState.set(key, value, ctx.client),
       "netq.speedtest": async () => {
         if (!provs.netq?.speedtest) return { ok: false, error: "Not available." };
         const r = await provs.netq.speedtest();
@@ -412,6 +416,7 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
       new Promise((r) => {
         sampler.stop();
         provs.netq?.stopUsage?.();
+        widgetState.flush();
         bus.close(); // release held long-polls so close() can finish
         server.close(r);
       }),

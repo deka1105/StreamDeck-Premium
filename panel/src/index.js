@@ -145,6 +145,7 @@ function boot() {
 
   bridge.on("event", (e) => {
     if (e.type === "data" && e.data?.kind) store.set(e.data.kind, e.data.value);
+    else if (e.type === "state" && e.data?.key) store.set(`state:${e.data.key}`, e.data.value);
     else if (e.type === "layout" && e.data?.rev !== layout?.rev) loadLayout();
     else if (e.type === "goto" && e.data?.page) gotoId(e.data.page);
   });

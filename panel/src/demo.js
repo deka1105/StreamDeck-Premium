@@ -81,6 +81,7 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     for (const fn of listeners.get(name) ?? []) fn(payload);
   };
   const gens = demoGenerators();
+  const demoState = new Map(); // widget state lives in memory in the demo
   let needs = [];
   const latest = {};
   const tick = () => {
@@ -111,6 +112,12 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     // Taps on controls "succeed" without doing anything.
     "action.run": () => ({ ok: true, simulated: true }),
     "deck.tiles": () => ({ name: "Default", tiles: DEMO_TILES }),
+    "state.get": ({ key } = {}) => ({ key, value: demoState.get(key) ?? null }),
+    "state.set": ({ key, value } = {}) => {
+      demoState.set(key, value);
+      setTimeout(() => emit("event", { type: "state", data: { key, value } }), 0);
+      return { ok: true };
+    },
     "panel.history": ({ kind } = {}) => {
       if (!gens[kind]) return { kind, samples: [] };
       const now = Date.now();
