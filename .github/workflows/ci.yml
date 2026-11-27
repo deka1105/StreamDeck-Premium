@@ -34,6 +34,33 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  panel:
+    name: Panel, editor and browser tests
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Panel unit tests
+        working-directory: panel
+        run: npm ci && npm test
+      - name: Built panel matches its source
+        run: |
+          (cd panel && npm run build)
+          git diff --exit-code -- panel/dist mobile/src/generated || (echo "::error::Run 'npm run build' in panel/ and commit the output." && exit 1)
+      - name: Host dependencies (the browser tests start a real host)
+        working-directory: desktop
+        run: npm ci
+      - name: Browser tests
+        working-directory: tools/ui-tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+
   mobile:
     name: Mobile typecheck
     runs-on: ubuntu-latest
