@@ -37,7 +37,8 @@ export function createEventBus({ max = 200, now = Date.now } = {}) {
   function wait({ after = 0, boot: theirBoot = null, client = "", timeoutMs = 25_000 } = {}) {
     const a = Number.isFinite(Number(after)) ? Number(after) : 0;
     const oldest = buf.length ? buf[0].seq : seq + 1;
-    if (theirBoot !== boot || a <= 0 || a > seq || a < oldest - 1) {
+    // An unknown boot id covers both a first call (boot null) and a restart.
+    if (theirBoot !== boot || a < 0 || a > seq || a < oldest - 1) {
       return Promise.resolve({ boot, seq, events: [], fresh: true });
     }
     const ready = since(a, client);
