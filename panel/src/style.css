@@ -528,7 +528,8 @@ html, body {
 .img-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-size: 12px; pointer-events: none; }
 .img-msg:empty { display: none; }
 .ag-day { font-size: 11px; font-weight: 700; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
-.ag-row { display: grid; grid-template-columns: 4px 4.5em 1fr; gap: 8px; align-items: center; font-size: clamp(11px, 4.5cqmin, 15px); }
+.ag-row { display: grid; grid-template-columns: 4px max-content 1fr; gap: 8px; align-items: center; font-size: clamp(11px, 4.5cqmin, 15px); }
+.ag-time { white-space: nowrap; min-width: 4.2em; }
 .ag-row i { height: 1.2em; border-radius: 2px; }
 .ag-time { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 .ag-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
