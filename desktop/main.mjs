@@ -8,7 +8,7 @@
 //         DECK_DRY_RUN=1 npm start  (log actions instead of running them)
 //         SMOKE=1 npm start         (boot the core, print SMOKE OK, exit — no UI)
 
-import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, dialog, shell } from "electron";
+import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, dialog, shell, safeStorage } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readdirSync } from "node:fs";
@@ -177,7 +177,8 @@ app.whenReady().then(async () => {
   app.dock?.hide?.(); // menu-bar utility, no dock icon
 
   const dir = join(app.getPath("userData"), "data");
-  host = createHost({ dir, dryRun, port: HOST_PORT });
+  // Integration secrets are encrypted with the OS keychain via safeStorage.
+  host = createHost({ dir, dryRun, port: HOST_PORT, secretCrypto: safeStorage });
   host.server.on("error", (err) => {
     const msg =
       err.code === "EADDRINUSE"
@@ -194,7 +195,7 @@ app.whenReady().then(async () => {
   const local = createLocalServer({
     port: LOCAL_PORT,
     panelApi: host.panelApi,
-    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices }),
+    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers }),
   });
   await local.listen().then(
     () => console.log(`browser panel on http://127.0.0.1:${LOCAL_PORT}/panel/`),

@@ -29,6 +29,7 @@ import { createLocalServer } from "./local.mjs";
 import { createPanelStore } from "./panel/store.mjs";
 import { createEditorRoutes } from "./panel/editorRoutes.mjs";
 import { createWidgetState } from "./panel/widgetState.mjs";
+import { createSecrets } from "./secrets.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -145,14 +146,23 @@ function saveApps(dir, apps) {
 
 // --- host --------------------------------------------------------------------
 
-export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell, providers } = {}) {
+export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = false, allowShell, providers, secretCrypto = null } = {}) {
   mkdirSync(dir, { recursive: true });
   // Panel plumbing: an event queue, an on-demand sampler feeding it, and the
   // method table both the phone (RPC) and browser panels (loopback) call.
   const bus = createEventBus();
   const widgetState = createWidgetState({ dir, publish: bus.publish });
   const panelStore = createPanelStore({ dir, onChange: (rev) => bus.publish("layout", { rev }) });
-  const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings });
+  const secrets = createSecrets({ dir, crypto: secretCrypto });
+  /** Options of every widget of `type` anywhere in the config (what to fetch). */
+  const widgetsOfType = (type) => {
+    const cfg = panelStore.config();
+    const layouts = [cfg.default, ...Object.values(cfg.devices)];
+    return layouts.flatMap((l) => l.pages.flatMap((p) => p.widgets.filter((w) => w.type === type).map((w) => w.options ?? {})));
+  };
+  const findWidget = (client, pageId, widgetId) =>
+    panelStore.layoutFor(client).pages.find((p) => p.id === pageId)?.widgets.find((w) => w.id === widgetId) ?? null;
+  const provs = providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets });
   const sampler = createSampler({ providers: provs, publish: bus.publish });
   /** Does this client's layout contain a widget of `type` (id `widgetId`) with option `key` on? */
   const widgetAllows = (client, widgetId, type, key) =>
@@ -175,6 +185,24 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
         const r = await provs.procs.kill({ name: String(procName ?? ""), pid: Number(pid), all: all === true });
         console.log(`${r.ok ? "■" : "⛔"} end ${all ? "all" : `pid ${pid}`} of "${procName}" from ${ctx.client}: ${r.ok ? `ended ${r.ended}` : r.reason}`);
         return r;
+      },
+      // Open a news article on the computer — only links the panel was shown.
+      "feeds.open": async ({ url } = {}) => {
+        if (!provs.feeds?.isKnownLink?.(url)) return { ok: false, error: "Unknown link." };
+        await execute({ type: "url", target: url }, { dryRun });
+        return { ok: true };
+      },
+      // An image widget's picture, fetched by the computer from the URL set in
+      // the editor (the phone can't make the computer fetch anything else).
+      "image.fetch": async ({ pageId, widgetId } = {}, ctx) => {
+        const w = findWidget(ctx.client, pageId, widgetId);
+        if (!w || w.type !== "image" || !/^https?:\/\//.test(w.options?.url ?? "")) return { ok: false, error: "No image set." };
+        const r = await fetch(w.options.url, { signal: AbortSignal.timeout(15_000), headers: { "user-agent": "DeskAssist/1.2" } });
+        const type = r.headers.get("content-type") ?? "";
+        if (!r.ok || !/^image\/(png|jpeg|gif|webp)/.test(type)) return { ok: false, error: `Not an image (HTTP ${r.status}).` };
+        const buf = Buffer.from(await r.arrayBuffer());
+        if (buf.length > 3_000_000) return { ok: false, error: "Image is larger than 3 MB." };
+        return { ok: true, src: `data:${type.split(";")[0]};base64,${buf.toString("base64")}` };
       },
       "state.get": ({ key } = {}) => ({ key, value: widgetState.get(key) }),
       "state.set": ({ key, value } = {}, ctx) => widgetState.set(key, value, ctx.client),
@@ -406,6 +434,8 @@ export function createHost({ dir, port = 8788, name = os.hostname(), dryRun = fa
     sampler,
     panelApi,
     panelStore,
+    secrets,
+    providers: provs,
     listen: () =>
       new Promise((r) => {
         sampler.start();
@@ -439,7 +469,7 @@ async function main() {
   const local = createLocalServer({
     port: localPort,
     panelApi: host.panelApi,
-    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices }),
+    routes: createEditorRoutes({ store: host.panelStore, listDevices: host.listDevices, secrets: host.secrets, providers: host.providers }),
   });
   await local.listen().then(
     () => console.log(`Browser panel (this computer only): http://127.0.0.1:${localPort}/panel/  ·  editor: http://127.0.0.1:${localPort}/editor/`),
