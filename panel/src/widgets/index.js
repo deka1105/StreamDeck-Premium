@@ -17,6 +17,7 @@ import { timer, stopwatch, pomodoro, focushistory } from "./timers.js";
 import { note, checklist, counter, breathe, quote, title, battery, computers } from "./personal.js";
 import { weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image, agendaWidget, nextup } from "./web.js";
 import { nowplaying, volume, radio, lyrics, mediaserver } from "./media.js";
+import { pushvalue, notifications, bigbutton, shortcutgrid, command, ruleswidget, customhtml } from "./automation.js";
 
 export const WIDGETS = [
   // time
@@ -29,8 +30,10 @@ export const WIDGETS = [
   nowplaying, volume, radio, lyrics, mediaserver,
   // personal
   note, checklist, counter, breathe, quote, title, battery, computers,
-  // controls
-  deck,
+  // controls & automation
+  deck, bigbutton, shortcutgrid, pushvalue, notifications, command, ruleswidget,
+  // layout
+  customhtml,
 ];
 
 export const REGISTRY = Object.fromEntries(WIDGETS.map((w) => [w.type, w]));

@@ -47,6 +47,8 @@ export async function buildPanel() {
 <button id="timerBadge" hidden></button>
 <div id="overview" hidden></div>
 <div id="alarm" hidden></div>
+<div id="switch" hidden></div>
+<div id="toasts" aria-live="polite"></div>
 <script>${js}</script>
 </body>
 </html>

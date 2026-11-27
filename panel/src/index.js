@@ -7,6 +7,7 @@ import { createStore } from "./store.js";
 import { mountPage } from "./app.js";
 import { visiblePages, homeIndex, indexAfterReload, step, idleReturnSec } from "./nav.js";
 import { createAlarms } from "./alarms.js";
+import { createSwitcher } from "./switcher.js";
 
 const LONG_PRESS_MS = 550;
 const SWIPE_MIN_PX = 50;
@@ -174,6 +175,46 @@ function boot() {
     alarms.watch(layout);
   }
 
+  const switcher = createSwitcher({
+    gotoId: (id) => gotoId(id),
+    currentPageId: () => pages()[index]?.id ?? null,
+    pageExists: (id) => pages().some((p) => p.id === id),
+    getSettings: () => layout?.settings?.pageSwitch ?? {},
+    lastTouch: () => lastTouch,
+    overlay: document.getElementById("switch"),
+    toastBox: document.getElementById("toasts"),
+    vibrate: (p) => p && navigator.vibrate?.(p),
+  });
+  /** A page id, a 1-based number, or next / prev. */
+  const resolvePage = (ref) => {
+    const list = pages();
+    if (ref === "next") return list[step(index, 1, list.length)]?.id;
+    if (ref === "prev") return list[step(index, -1, list.length)]?.id;
+    if (/^\d+$/.test(ref)) return list[Number(ref) - 1]?.id;
+    return ref;
+  };
+  const pageName = (id) => pages().find((p) => p.id === id)?.name ?? id;
+
+  bridge.on("event", (e) => {
+    if (e.type === "notify" && e.data) {
+      switcher.toast(e.data);
+      if (e.data.page) switcher.request({ source: "goto", id: `n:${e.data.id}`, page: resolvePage(e.data.page), pageName: pageName(resolvePage(e.data.page)), countdown: 3, priority: 4, name: e.data.title });
+      if (e.data.wake) document.body.dispatchEvent(new CustomEvent("deskassist-wake"));
+    } else if (e.type === "goto" && e.data?.page) {
+      const page = resolvePage(e.data.page);
+      switcher.request({ source: "goto", id: `g:${Date.now()}`, page, pageName: pageName(page), countdown: e.data.countdown ?? 3, priority: 6 });
+    } else if (e.type === "rule" && e.data?.page) {
+      switcher.request({ source: "rule", id: e.data.id, page: e.data.page, pageName: pageName(e.data.page), countdown: e.data.countdown, priority: e.data.priority, whileLasts: e.data.whileLasts, name: e.data.name });
+    } else if (e.type === "rule_end" && e.data?.id) {
+      switcher.end(e.data.id);
+    } else if (e.type === "refresh") {
+      if (e.data?.reload) location.reload();
+      else loadLayout();
+    } else if (e.type === "night") {
+      document.body.dispatchEvent(new CustomEvent("deskassist-night", { detail: e.data }));
+    }
+  });
+
   bridge.on("event", (e) => {
     if (e.type === "data" && e.data?.kind) {
       store.set(e.data.kind, e.data.value);
@@ -181,7 +222,7 @@ function boot() {
     }
     else if (e.type === "state" && e.data?.key) store.set(`state:${e.data.key}`, e.data.value);
     else if (e.type === "layout" && e.data?.rev !== layout?.rev) loadLayout();
-    else if (e.type === "goto" && e.data?.page) gotoId(e.data.page);
+
   });
   bridge.on("status", ({ online, detail }) => {
     statusEl.dataset.online = online ? "1" : "0";
@@ -296,7 +337,7 @@ function boot() {
   const touched = () => (lastTouch = Date.now());
   for (const ev of ["pointerdown", "keydown", "wheel"]) window.addEventListener(ev, touched, { passive: true });
   setInterval(() => {
-    if (!layout || !overviewEl.hidden || preview) return;
+    if (!layout || !overviewEl.hidden || preview || switcher.holding()) return;
     const sec = idleReturnSec(layout, pages()[index]);
     if (sec !== null && Date.now() - lastTouch >= sec * 1000) {
       go(homeIndex(layout));

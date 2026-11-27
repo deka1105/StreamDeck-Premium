@@ -103,6 +103,8 @@ export function demoGenerators() {
       at: Date.now(),
     }),
     radio: () => ({ playing: null, player: "mpv", at: Date.now() }),
+    pushes: () => ({ values: { temperature: { value: "21.5", unit: "°C", title: "Living room", at: Date.now() - 120_000 }, build: { value: "passed", sub: "main · 3m 12s", level: "ok", progress: 1, at: Date.now() - 600_000 } }, at: Date.now() }),
+    notifications: () => ({ items: [{ id: "1", title: "Deploy", text: "Production is live", level: "ok", at: Date.now() - 300_000 }, { id: "2", title: "Doorbell", text: "Someone is at the door", level: "info", at: Date.now() - 3600_000 }], at: Date.now() }),
     netq: () => {
       const v = Math.random() < 0.03 ? -1 : Math.round(ping() * 10) / 10;
       hist.push(v);
@@ -182,6 +184,11 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "procs.kill": () => ({ ok: false, reason: "Demo — nothing is actually ended." }),
     "netq.speedtest": () => ({ ok: false, error: "Demo — no speed test is run." }),
     "feeds.open": () => ({ ok: true, simulated: true }),
+    "shortcuts.list": () => ({ shortcuts: [{ id: "build", label: "Build", icon: "🔨", color: "#2563eb", kind: "program" }, { id: "deploy", label: "Deploy", icon: "🚀", color: "#9333ea", kind: "program" }, { id: "focus", label: "Focus", icon: "🎧", color: "#0d9488", kind: "macro" }, { id: "lock", label: "Lock", icon: "🔒", color: "#475569", kind: "keys" }] }),
+    "shortcut.run": () => ({ ok: true, simulated: true }),
+    "command.output": () => ({ ok: true, output: "Filesystem      Size  Used Avail Use%\n/dev/disk1s1   932G  612G  320G  66%\n", at: Date.now() }),
+    "rules.state": () => ({ pausedUntil: 0, active: ["music"] }),
+    "rules.pause": () => ({ pausedUntil: 0 }),
     "media.control": () => ({ ok: true, simulated: true }),
     "media.art": () => ({ src: null }),
     "mediaServer.poster": () => ({ src: null }),
