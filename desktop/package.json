@@ -15,11 +15,12 @@
     "test:client": "node src/test-client.mjs",
     "test:panel-client": "node src/test-panel-client.mjs",
     "gen:icon": "node scripts/gen-icon.mjs",
-    "pack": "npm run gen:icon && electron-builder --dir",
-    "dist": "npm run gen:icon && electron-builder",
-    "dist:mac": "npm run gen:icon && electron-builder --mac",
+    "panel:copy": "node scripts/copy-panel.mjs",
+    "pack": "npm run gen:icon && npm run panel:copy && electron-builder --dir",
+    "dist": "npm run gen:icon && npm run panel:copy && electron-builder",
+    "dist:mac": "npm run gen:icon && npm run panel:copy && electron-builder --mac",
     "dist:mac:release": "node scripts/check-signing.mjs --strict && npm run dist:mac",
-    "dist:win": "npm run gen:icon && electron-builder --win",
+    "dist:win": "npm run gen:icon && npm run panel:copy && electron-builder --win",
     "check:signing": "node scripts/check-signing.mjs"
   },
   "dependencies": {
