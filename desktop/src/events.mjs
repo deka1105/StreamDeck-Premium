@@ -52,7 +52,6 @@ export function createEventBus({ max = 200, now = Date.now } = {}) {
         },
       };
       w.timer = setTimeout(w.flush, Math.min(timeoutMs, 25_000));
-      w.timer.unref?.();
       waiters.add(w);
     });
   }
