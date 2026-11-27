@@ -147,3 +147,15 @@ decision made *without* reference material because the docs were silent.
   described in DeskHub's README, implemented from that description), the word
   clock letter grid, the quote collection (public-domain sources only), and
   the per-widget state store with panel-level alarms.
+
+### Stages 8–10
+
+- Written from the feature inventory and our own designs only; no PhoneBox,
+  DeskHub or Stash source was opened. Names are ours (Smart Stack, night
+  screen, "calm" page switching, Link Claude Code).
+- Claude Code integration uses only Anthropic's published hook and status-line
+  documentation (code.claude.com/docs/en/hooks, /statusline). Codex rollout
+  fields are read from files on disk; no Codex code was consulted.
+- Presets, colours and wallpapers are original values; no third-party theme
+  files or images are bundled.
+

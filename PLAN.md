@@ -45,8 +45,8 @@ the host's loopback API. Layouts live on the host, per paired device.
 Store review (1.1.0, build 13). Every file write is auto-committed and **pushed
 to a public repo** within seconds, so never write a secret into this tree.
 
-**Status (27 Nov 2026):** Stages 0–7 done; Stage 8 built and unit/browser-tested on the host side, its own browser tests and phone check not yet written/run.
-**Next:** Stage 8 — browser tests for webhooks → toast, rule countdown (Stay / Go now), Custom HTML sandbox (`parent` unreachable), shortcut grid; then Stages 9 and 10. Phone checks for Stages 6–8 are batched (one dev-client rebuild).
+**Status (27 Nov 2026):** Stages 0–10 done (host 80 tests, panel 35, browser 47 incl. 4 visual snapshots; phone checked in the iOS simulator in demo mode).
+**Next:** Stage 11 (Control Deck, cross-platform part). Open from earlier stages: owner checks with real hardware (phone battery, real Spotify/Music playback, a real iCloud calendar, Codex sessions, Claude Code permission prompts end to end from a real session) and the spectrum-bars decision.
 
 **Dev loop:** `npm run build` in `panel/` after any panel/editor change (CI fails if the committed build is stale). Browser tests: `npx playwright test` in `tools/ui-tests` (each test starts its own throwaway host). Simulator: `npx expo run:ios --device "iPhone 17"`, then drive it with the dev-only deep link `deskassist://dev?pair=<QR JSON>&view=panel` (or `?demo=1&view=panel`) — see `mobile/src/devLink.ts`. Test hosts must use other ports (e.g. `DECK_PORT=18788 DECK_LOCAL_PORT=18789`): the owner's real host holds 8788.
 
@@ -62,9 +62,9 @@ to a public repo** within seconds, so never write a secret into this tree.
 - [x] Stage 5 — Time and personal widgets — widget state lives on the host (`state.get/set`, `widget-state.json`); reload/second-screen/alarm tests pass. Phone battery reads via `expo-battery` (not available on the iOS simulator — check on a real phone)
 - [x] Stage 6 — Weather, sky and web-data widgets — host fetches everything (docs/data-sources.md); ICS/RRULE, iCloud CalDAV (fixture-tested; real iCloud untested), feeds/OPML; privacy-policy draft in site/privacy.html (publishes only on merge to main)
 - [x] Stage 7 — Media widgets — Spotify/Music via AppleScript, Windows via SMTC/PowerShell (docs/media-helpers.md); Plex/Jellyfin, radio, LRCLIB lyrics. **Open:** live check with real playback; spectrum bars need a native helper → owner decision
-- [ ] Stage 8 — Shortcuts by ID, webhooks, notifications, rules, Custom HTML — **built**: host (69 tests), panel widgets + calm switcher, editor sections. **Left:** Stage 8 browser tests and phone check
-- [ ] Stage 9 — AI and code widgets, permission prompts on the phone
-- [ ] Stage 10 — Appearance, display, Smart Stack, night / burn-in
+- [x] Stage 8 — Shortcuts by ID, webhooks, notifications, rules, Custom HTML — browser tests: push → widget, notify → toast, goto countdown (Stay / Go now), while-it-lasts rule, shortcut by id + refused numbers, Custom HTML sandbox (no parent, no network), LAN key
+- [x] Stage 9 — AI and code widgets, permission prompts on the phone — docs/ai-sources.md. Documented Claude Code hooks + status-line bridge (installed only on **Link Claude Code**, backed up, removable); plan limits come from the status line, not an undocumented endpoint. GitHub via gh or a stored token (checked against the real API). **Open:** Codex parsed from fixtures only (not installed here); prompts not yet tried from a live Claude Code session
+- [x] Stage 10 — Appearance, display, Smart Stack, night / burn-in — 7 presets, look inheritance panel → page → tile, wallpaper (dim/blur), 5 navigation styles, OLED shift, dim when untouched, night screen (schedule / PC asleep / rule), follow PC sleep (`pcpower`: ioreg on Intel Macs, else idle ≥ display-sleep timeout; Windows powercfg), marquee titles, Smart Stack. Visual snapshots are compared on the Mac only (CI sets ignoreSnapshots: fonts differ on Linux). Fixed an older Title-widget bug: text was sized against the viewport
 - [ ] Stage 11 — Control Deck, cross-platform part
 - [ ] Stage 12 — Control Deck, Windows-native part
 - [ ] Stage 13 — Android-only features
