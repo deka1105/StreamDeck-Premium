@@ -59,10 +59,14 @@ export function createSwitcher({ gotoId, currentPageId, pageExists, getSettings,
     update();
   }
 
+  // Touches on the countdown card (Stay / Go now) don't count as "using the panel".
+  let cardTouch = 0;
+  overlay.addEventListener("pointerdown", () => (cardTouch = now()));
+
   setInterval(() => {
     if (counting) {
       // A touch outside the card postpones the switch until you're done.
-      if (now() - lastTouch() < 400 && !overlay.matches(":hover")) {
+      if (now() - lastTouch() < 400 && lastTouch() - cardTouch > 50) {
         const item = counting.item;
         clearCountdown();
         pending = pick(pending, item);
