@@ -25,6 +25,24 @@ test.beforeAll(async () => {
       res.writeHead(200, { "content-type": "text/calendar" });
       return res.end(`BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:a\r\nSUMMARY:Project sync\r\nDTSTART:${icsLocal(soon)}\r\nDTEND:${icsLocal(new Date(soon.getTime() + 30 * 60_000))}\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nUID:b\r\nSUMMARY:Haircut\r\nDTSTART:${icsLocal(later)}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`);
     }
+    // Open-Meteo stand-ins, so the test never depends on the live service.
+    if (req.url.startsWith("/v1/forecast")) {
+      const day = new Date().toISOString().slice(0, 10);
+      const days = Array.from({ length: 7 }, (_, i) => new Date(Date.now() + i * 864e5).toISOString().slice(0, 10));
+      const hours = Array.from({ length: 24 }, (_, i) => new Date(Date.now() + i * 3600e3).toISOString().slice(0, 13) + ":00");
+      res.writeHead(200, { "content-type": "application/json" });
+      return res.end(JSON.stringify({
+        utc_offset_seconds: 0, timezone: "UTC",
+        current: { time: `${day}T12:00`, temperature_2m: 18.4, apparent_temperature: 17.9, relative_humidity_2m: 55, is_day: 1, weather_code: 2, wind_speed_10m: 9 },
+        current_units: { temperature_2m: "°C", wind_speed_10m: "km/h" },
+        hourly: { time: hours, temperature_2m: hours.map(() => 18), weather_code: hours.map(() => 2), precipitation_probability: hours.map(() => 10) },
+        daily: { time: days, weather_code: days.map(() => 2), temperature_2m_max: days.map(() => 22), temperature_2m_min: days.map(() => 11), sunrise: days.map((d) => `${d}T06:50`), sunset: days.map((d) => `${d}T17:15`), uv_index_max: days.map(() => 3), daylight_duration: days.map(() => 37000) },
+      }));
+    }
+    if (req.url.startsWith("/v1/air-quality")) {
+      res.writeHead(200, { "content-type": "application/json" });
+      return res.end(JSON.stringify({ current: { european_aqi: 21, us_aqi: 30, pm2_5: 4, pm10: 8, ozone: 50, nitrogen_dioxide: 9 } }));
+    }
     res.writeHead(404);
     res.end();
   });
@@ -33,6 +51,7 @@ test.beforeAll(async () => {
   host = await startHost({
     port: 18930,
     localPort: 18931,
+    env: { DECK_OPEN_METEO_BASE: fixtureBase },
     config: {
       settings: {
         location: { name: "Charlotte, North Carolina, US", lat: 35.227, lon: -80.843, tz: "America/New_York" },

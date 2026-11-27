@@ -57,17 +57,20 @@ export function cached({ ttlMs, load, now = Date.now }) {
 
 // ---------------------------------------------------------------- weather ----
 
+// Tests point both Open-Meteo hosts at a local fixture server.
+const METEO = process.env.DECK_OPEN_METEO_BASE?.replace(/\/$/, "") ?? null;
+
 export function weatherUrls({ lat, lon }, units = {}) {
   const f = units.temp === "F" ? "&temperature_unit=fahrenheit" : "";
   const w = units.wind === "mph" ? "&wind_speed_unit=mph" : "";
   return {
     forecast:
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `${METEO ?? "https://api.open-meteo.com"}/v1/forecast?latitude=${lat}&longitude=${lon}` +
       "&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m" +
       "&hourly=temperature_2m,weather_code,precipitation_probability" +
       "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,daylight_duration" +
       `&timezone=auto&forecast_days=7&forecast_hours=24${f}${w}`,
-    air: `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi,us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&timezone=auto`,
+    air: `${METEO ?? "https://air-quality-api.open-meteo.com"}/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi,us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&timezone=auto`,
   };
 }
 
