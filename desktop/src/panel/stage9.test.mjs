@@ -99,7 +99,7 @@ test("the status-line bridge saves limits and still prints the old status line",
   const d = tmp();
   const claudeDir = join(d, "claude");
   mkdirSync(claudeDir);
-  writeFileSync(join(claudeDir, "settings.json"), JSON.stringify({ statusLine: { type: "command", command: "cat > /dev/null; echo OLD-LINE" } }));
+  writeFileSync(join(claudeDir, "settings.json"), JSON.stringify({ statusLine: { type: "command", command: `"${process.execPath.replace(/\\/g, "/")}" -e "process.stdout.write('OLD-LINE')"` } }));
   const a = createAgents({ log: () => {}, dir: join(d, "data"), claudeDir });
   a.install();
   const input = JSON.stringify({ model: { display_name: "Opus" }, rate_limits: { five_hour: { used_percentage: 50, resets_at: 1 } } });

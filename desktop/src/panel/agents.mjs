@@ -84,7 +84,9 @@ process.stdin.on("end", () => {
     }
   } catch {}
   if (cfg.previousStatusLine) {
-    const r = spawnSync(process.platform === "win32" ? "cmd.exe" : "/bin/sh", process.platform === "win32" ? ["/d", "/s", "/c", cfg.previousStatusLine] : ["-c", cfg.previousStatusLine], { input: raw, encoding: "utf8" });
+    // Claude Code runs status lines in a POSIX shell (Git Bash on Windows); cmd.exe only as a last resort.
+    let r = spawnSync(process.platform === "win32" ? "bash" : "/bin/sh", ["-c", cfg.previousStatusLine], { input: raw, encoding: "utf8" });
+    if (r.error && process.platform === "win32") r = spawnSync("cmd.exe", ["/d", "/s", "/c", cfg.previousStatusLine], { input: raw, encoding: "utf8" });
     process.stdout.write(r.stdout || "");
   }
   process.exit(0);
