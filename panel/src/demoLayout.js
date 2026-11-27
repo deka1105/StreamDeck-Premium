@@ -30,6 +30,19 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "daily",
+      name: "Daily",
+      widgets: [
+        { id: "todo", type: "checklist", x: 0, y: 0, w: 4, h: 4 },
+        { id: "tm", type: "timer", x: 4, y: 0, w: 4, h: 4 },
+        { id: "po", type: "pomodoro", x: 8, y: 0, w: 4, h: 4 },
+        { id: "wc", type: "wordclock", x: 0, y: 4, w: 3, h: 2 },
+        { id: "note", type: "note", x: 3, y: 4, w: 5, h: 2, options: { title: "Note" } },
+        { id: "bat", type: "battery", x: 8, y: 4, w: 2, h: 2 },
+        { id: "ct", type: "counter", x: 10, y: 4, w: 2, h: 2 },
+      ],
+    },
+    {
       id: "deck",
       name: "Deck",
       widgets: [{ id: "deck", type: "deck", x: 0, y: 0, w: 12, h: 6, options: {} }],
