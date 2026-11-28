@@ -32,6 +32,18 @@ jobs:
           cache: npm
           cache-dependency-path: desktop/package-lock.json
       - run: npm ci
+      # Windows: build the native helper (NativeAOT) and run its own checks,
+      # then the host tests talk to the real .exe.
+      - if: runner.os == 'Windows'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - if: runner.os == 'Windows'
+        name: Build the Windows helper
+        working-directory: desktop/native/win-helper
+        run: |
+          dotnet publish -c Release -r win-x64 -o out
+          ./out/DeskAssistHelper.exe --selftest
       - run: npm test
 
   panel:
