@@ -24,8 +24,97 @@ function walker(start, lo, hi, stepSize) {
   };
 }
 
+// Control Deck demo state: taps change it, so the demo feels real.
+const fmt = (ms) => new Date(ms).toISOString().slice(11, 19);
+export function createDemoControl() {
+  const st = {
+    scene: "Camera",
+    recAt: 0,
+    paused: false,
+    liveAt: 0,
+    vcam: false,
+    mutes: { "Mic/Aux": false, "Desktop Audio": false },
+    sources: [{ id: 1, name: "Webcam", on: true }, { id: 2, name: "Lower third", on: false }, { id: 3, name: "Browser", on: true }],
+    ha: [
+      { id: "light.desk", name: "Desk lamp", domain: "light", state: "on", brightness: 70 },
+      { id: "light.shelf", name: "Shelf lights", domain: "light", state: "off", brightness: null },
+      { id: "switch.coffee", name: "Coffee machine", domain: "switch", state: "off" },
+      { id: "sensor.office_temp", name: "Office", domain: "sensor", state: "21.4", unit: "°C" },
+      { id: "lock.front_door", name: "Front door", domain: "lock", state: "locked" },
+      { id: "scene.focus", name: "Focus lighting", domain: "scene", state: "scening" },
+    ],
+    containers: [
+      { id: "a1b2c3d4e5f6", name: "postgres", image: "postgres:17", running: true, upAt: Date.now() - 5 * 3600_000 },
+      { id: "b2c3d4e5f6a1", name: "redis", image: "redis:7-alpine", running: true, upAt: Date.now() - 5 * 3600_000 },
+      { id: "c3d4e5f6a1b2", name: "mailpit", image: "axllent/mailpit", running: false, upAt: 0 },
+    ],
+    services: [
+      { id: "web", name: "Web app", url: "http://localhost:3000", state: "running", since: Date.now() - 42 * 60_000, lines: ["▲ Next.js 15 · http://localhost:3000", "✓ Compiled /dashboard in 412ms"] },
+      { id: "api", name: "API", url: "", state: "running", since: Date.now() - 42 * 60_000, lines: ["listening on :8080", "GET /health 200 2ms"] },
+      { id: "tests", name: "Tests (watch)", url: "", state: "stopped", since: null, lines: [] },
+    ],
+    allMuted: false,
+  };
+  const haOn = (e) => ["on", "unlocked"].includes(e.state);
+  return {
+    st,
+    obs: () => ({
+      connected: true,
+      current: st.scene,
+      scenes: ["Starting soon", "Camera", "Screen + cam", "Screen", "Be right back"],
+      record: { active: !!st.recAt, paused: st.paused, time: st.recAt ? fmt(Date.now() - st.recAt) : "" },
+      stream: { active: !!st.liveAt, time: st.liveAt ? fmt(Date.now() - st.liveAt) : "" },
+      vcam: { active: st.vcam, available: true },
+      sources: st.sources.map((x) => ({ ...x })),
+      inputs: Object.entries(st.mutes).map(([name, muted]) => ({ name, muted })),
+    }),
+    ha: () => ({ entities: st.ha.map((e) => ({ ...e, unit: e.unit ?? "", on: haOn(e), tappable: !["sensor"].includes(e.domain), icon: "", brightness: e.state === "on" ? e.brightness : null })), at: Date.now() }),
+    containers: () => ({ engine: "docker", containers: st.containers.map((c) => ({ id: c.id, name: c.name, image: c.image, running: c.running, state: c.running ? "running" : "exited", status: c.running ? `Up ${Math.max(1, Math.round((Date.now() - c.upAt) / 3600_000))} hours` : "Exited (0) yesterday" })), at: Date.now() }),
+    services: () => ({ services: st.services.map((x) => ({ ...x, code: x.state === "failed" ? 1 : null, lines: [...x.lines] })), at: Date.now() }),
+    meeting: () => ({ canMuteAll: true, mic: st.allMuted ? 0 : 60, outMuted: st.allMuted, allMuted: st.allMuted, at: Date.now() }),
+    act(method, p = {}) {
+      if (method === "obs.control") {
+        const c = p.command;
+        if (c === "scene") st.scene = p.arg;
+        else if (c === "record") (st.recAt = st.recAt ? 0 : Date.now()), (st.paused = false);
+        else if (c === "pause") st.paused = !st.paused;
+        else if (c === "stream") st.liveAt = st.liveAt ? 0 : Date.now();
+        else if (c === "vcam") st.vcam = !st.vcam;
+        else if (c === "mute") st.mutes[p.arg] = !st.mutes[p.arg];
+        else if (c === "source") st.sources.forEach((x) => x.id === p.arg && (x.on = !x.on));
+        return "obs";
+      }
+      if (method === "ha.tap") {
+        const e = st.ha.find((x) => x.id === p.entity);
+        if (e?.domain === "lock") e.state = e.state === "locked" ? "unlocked" : "locked";
+        else if (e && e.domain !== "scene") e.state = e.state === "on" ? "off" : "on";
+        return "ha";
+      }
+      if (method === "containers.control") {
+        const c = st.containers.find((x) => x.id === p.id);
+        if (c) (c.running = p.action !== "stop"), (c.upAt = Date.now());
+        return "containers";
+      }
+      if (method === "services.control") {
+        const x = st.services.find((y) => y.id === p.id);
+        if (x) {
+          x.state = p.action === "stop" ? "stopped" : "running";
+          x.since = p.action === "stop" ? null : Date.now();
+          if (x.state === "running") x.lines = [...x.lines.slice(-1), "started (simulated)"];
+        }
+        return "services";
+      }
+      if (method === "meeting.muteAll") {
+        st.allMuted = !st.allMuted;
+        return "meeting";
+      }
+      return null;
+    },
+  };
+}
+
 /** Generators per data kind. Grows as widgets land. */
-export function demoGenerators() {
+export function demoGenerators(control = createDemoControl()) {
   const cpu = walker(23, 4, 92, 9);
   const mem = walker(11.4, 7, 15, 0.3);
   const gpuU = walker(31, 2, 97, 10);
@@ -120,6 +209,11 @@ export function demoGenerators() {
       };
     },
     alerts: () => ({ alerts: [{ session: "d2", project: "website", kind: "input", message: "Claude is waiting for your input", at: Date.now() - 90_000 }], prompts: [], at: Date.now() }),
+    obs: control.obs,
+    ha: control.ha,
+    containers: control.containers,
+    services: control.services,
+    meeting: control.meeting,
     github: () => {
       const now = Date.now();
       let seed = 7;
@@ -165,7 +259,14 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
   const emit = (name, payload) => {
     for (const fn of listeners.get(name) ?? []) fn(payload);
   };
-  const gens = demoGenerators();
+  const control = createDemoControl();
+  const gens = demoGenerators(control);
+  // A Control Deck tap changes the simulated state and shows it at once.
+  const controlled = (method) => (params) => {
+    const kind = control.act(method, params);
+    if (kind) setTimeout(() => emit("event", { type: "data", data: { kind, value: (latest[kind] = gens[kind]()) } }), 60);
+    return method === "meeting.muteAll" ? { ok: true, allMuted: control.st.allMuted } : { ok: true, simulated: true };
+  };
   const demoState = new Map(); // widget state lives in memory in the demo
   let needs = [];
   const latest = {};
@@ -232,6 +333,18 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "lyrics.get": () => ({ ok: true, found: true, synced: Array.from({ length: 40 }, (_, i) => ({ t: i * 5.3, text: ["Headlights on the open road", "Singing to the radio", "Every mile a little gold", "Golden hour, take it slow"][i % 4] })) }),
     "image.fetch": () => ({ ok: false, error: "Images load from your computer." }),
     "deck.press": () => ({ ok: true, simulated: true }),
+    "obs.control": controlled("obs.control"),
+    "ha.tap": controlled("ha.tap"),
+    "containers.control": controlled("containers.control"),
+    "services.control": controlled("services.control"),
+    "services.open": () => ({ ok: true, simulated: true }),
+    "meeting.press": () => ({ ok: true, simulated: true }),
+    "meeting.muteAll": controlled("meeting.muteAll"),
+    "wol.list": () => ({ items: [{ id: "pc1", name: "Gaming PC" }, { id: "nas", name: "NAS" }] }),
+    "wol.wake": () => ({ ok: true, simulated: true }),
+    "osc.list": () => ({ items: [{ id: "go", name: "GO" }, { id: "stop", name: "Stop all" }, { id: "next", name: "Next cue" }] }),
+    "osc.send": () => ({ ok: true, simulated: true }),
+    "pointer.send": () => ({ ok: true, simulated: true }),
   };
 
   return {
