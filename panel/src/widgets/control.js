@@ -25,24 +25,24 @@ async function act(ctx, btn, method, params, msg) {
 
 /** A button that needs a second tap within 3 s (stopping a stream, leaving a call). */
 function confirmTap(btn, label, run) {
-  let armed = 0;
+  let timer = null;
+  let before = "";
+  const disarm = () => {
+    clearTimeout(timer);
+    timer = null;
+    btn.classList.remove("armed");
+    btn.innerHTML = before;
+  };
   btn.addEventListener("click", () => {
     if (btn.dataset.confirm !== "1") return run();
-    if (Date.now() - armed < 3000) {
-      armed = 0;
-      btn.classList.remove("armed");
+    if (timer) {
+      disarm();
       return run();
     }
-    armed = Date.now();
+    before = btn.innerHTML;
     btn.classList.add("armed");
-    const before = btn.innerHTML;
     btn.innerHTML = `<span class="cd-ico">⚠︎</span><span class="cd-lbl">${esc(label)}</span>`;
-    setTimeout(() => {
-      if (!armed || Date.now() - armed < 2900) return;
-      armed = 0;
-      btn.classList.remove("armed");
-      btn.innerHTML = before;
-    }, 3000);
+    timer = setTimeout(disarm, 3000);
   });
 }
 
@@ -197,7 +197,7 @@ export const containers = {
             )
             .join("")
         : `<div class="muted">${all.length ? "Nothing running." : "No containers."}</div>`;
-      list.querySelectorAll("[data-a]").forEach((b) => b.addEventListener("click", () => act(ctx, b, "containers.control", { widgetId: ctx.widgetId.split("~").pop(), id: b.dataset.id, action: b.dataset.a }, msg)));
+      list.querySelectorAll("[data-a]").forEach((b) => b.addEventListener("click", () => act(ctx, b, "containers.control", { widgetId: ctx.widgetId, id: b.dataset.id, action: b.dataset.a }, msg)));
     });
   },
 };
@@ -358,15 +358,18 @@ export const trackpad = {
     let maxTouches = 0;
     let flushing = false;
     // Moves are summed and sent at most ~30 times a second, one request at a time.
+    // Two fingers scroll (natural direction, like the phone): 6 px of finger = 1 step.
     const flush = async () => {
       if (flushing) return;
       flushing = true;
-      while (Math.abs(acc.dx) >= 1 || Math.abs(acc.dy) >= 1) {
+      for (;;) {
         const scroll = pts.size >= 2;
-        const dx = Math.trunc(acc.dx);
-        const dy = Math.trunc(acc.dy);
-        acc = { dx: acc.dx - dx, dy: acc.dy - dy };
-        await send(scroll ? { op: "scroll", dx: Math.round(dx / 6), dy: Math.round(-dy / 6) } : { op: "move", dx, dy });
+        const unit = scroll ? 6 : 1;
+        const dx = Math.trunc(acc.dx / unit);
+        const dy = Math.trunc(acc.dy / unit);
+        if (!dx && !dy) break;
+        acc = { dx: acc.dx - dx * unit, dy: acc.dy - dy * unit };
+        await send(scroll ? { op: "scroll", dx, dy } : { op: "move", dx, dy });
         await new Promise((r) => setTimeout(r, 33));
       }
       flushing = false;
@@ -380,6 +383,7 @@ export const trackpad = {
         maxTouches = 1;
       }
       maxTouches = Math.max(maxTouches, pts.size);
+      if (pts.size === 2) acc = { dx: 0, dy: 0 }; // switching to scroll: drop leftover motion
       surface.classList.add("touching");
     });
     surface.addEventListener("pointermove", (e) => {
