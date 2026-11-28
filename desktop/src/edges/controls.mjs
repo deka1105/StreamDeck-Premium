@@ -61,9 +61,9 @@ export function createEdgeControls({ platform = process.platform, runImpl = run,
         return { unavailable: true, reason: mac ? "Switching output on a Mac needs a Core Audio helper (planned)." : "Not on this computer." };
       }
       case "music": {
-        const m = await media?.sample?.().catch(() => null);
-        const n = m?.now ?? m;
-        return { playing: n?.state === "playing" || n?.playing === true, title: n?.title ?? "", artist: n?.artist ?? "", progress: n?.duration ? Math.min(1, (n.position ?? 0) / n.duration) : 0 };
+        const n = await media?.sample?.().catch(() => null);
+        const art = n?.artId ? await media.art?.(n.artId).catch(() => null) : null;
+        return { playing: n?.state === "playing", title: n?.title ?? "", artist: n?.artist ?? "", art, progress: n?.duration ? Math.min(1, (n.position ?? 0) / n.duration) : 0 };
       }
       default:
         return { unavailable: true, reason: "Unknown control." };
