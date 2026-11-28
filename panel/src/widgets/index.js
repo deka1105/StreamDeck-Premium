@@ -20,6 +20,7 @@ import { nowplaying, volume, radio, lyrics, mediaserver } from "./media.js";
 import { pushvalue, notifications, bigbutton, shortcutgrid, command, ruleswidget, customhtml } from "./automation.js";
 import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./ai.js";
 import { stack } from "./stack.js";
+import { mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons } from "./audio.js";
 import { obs, homeassistant, containers, services, meeting, wake, oscpad, trackpad } from "./control.js";
 
 export const WIDGETS = [
@@ -37,6 +38,7 @@ export const WIDGETS = [
   deck, bigbutton, shortcutgrid, pushvalue, notifications, command, ruleswidget,
   // control deck
   obs, meeting, homeassistant, containers, services, wake, oscpad, trackpad,
+  mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons,
   // ai & code
   sessions, aiquota, tokenuse, agentalerts, contributions, prs,
   // layout

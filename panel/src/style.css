@@ -830,3 +830,48 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
   .svc .ct-row .grow { flex-basis: calc(100% - 14px); }
   .svc .ct-row .ibtn:first-of-type { margin-left: auto; }
 }
+
+/* --- Stage 12: audio and system --- */
+.w-mixer { gap: 6px; }
+.mx-rows { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.mx-row { display: grid; grid-template-columns: 26px minmax(54px, 26%) 1fr 30px 30px; align-items: center; gap: 7px; font-size: clamp(11px, 4cqmin, 13px); }
+.mx-ico { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-faint); color: var(--accent-soft); display: grid; place-items: center; font-weight: 800; font-size: 12px; }
+.mx-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.mx-track { position: relative; height: 26px; display: flex; align-items: center; }
+.mx-meter { position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px; background: linear-gradient(90deg, var(--success), var(--warn) 75%, var(--danger)); opacity: 0.35; transform-origin: left; transform: scaleX(0); transition: transform 0.2s linear; pointer-events: none; }
+.mx-track input { position: relative; width: 100%; margin: 0; }
+.mx-num { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-dim); }
+.mx-row[data-muted="1"] .mx-name, .mx-row[data-muted="1"] .mx-num { color: var(--ink-faint); text-decoration: line-through; }
+.mx-row[data-muted="1"] .mx-mute { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
+.mx-note { font-size: 11px; padding-top: 2px; }
+@container (max-width: 300px) { .mx-row { grid-template-columns: 22px 1fr 30px; } .mx-row .mx-name, .mx-row .mx-num { display: none; } }
+
+.w-devices { gap: 6px; }
+.dv-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.dv-sec { display: flex; flex-direction: column; gap: 5px; }
+.dv-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: var(--ink-mid); }
+.dv-sec[data-muted="1"] .dv-mute { color: var(--danger); }
+.dv-list { display: flex; flex-direction: column; gap: 4px; }
+.dv-dev { appearance: none; border: 1px solid var(--line); background: var(--field); color: var(--ink); font: inherit; font-size: clamp(11px, 4cqmin, 13px); text-align: left; border-radius: 10px; padding: 6px 9px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.dv-dev span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dv-dev i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink-faint); flex: none; }
+.dv-dev.on { border-color: var(--accent); }
+.dv-dev.on i { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2px var(--field); }
+.dv-dev:disabled { cursor: default; opacity: 0.85; }
+
+.w-ptt { gap: 4px; }
+.ptt-btn { flex: 1; min-height: 0; appearance: none; border: 2px solid var(--line); background: var(--field); color: var(--ink); font: inherit; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; touch-action: none; -webkit-touch-callout: none; transition: background 0.15s, border-color 0.15s, transform 0.1s; }
+.ptt-ico { font-size: clamp(20px, 22cqmin, 54px); line-height: 1; }
+.ptt-lbl { font-weight: 750; font-size: clamp(11px, 6cqmin, 16px); }
+.ptt-btn.live { background: color-mix(in srgb, var(--success) 28%, var(--field)); border-color: var(--success); transform: scale(0.98); box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 18%, transparent); }
+.ptt-btn.live .ptt-lbl::after { content: " · live"; color: var(--success); }
+.w-ptt.off .ptt-btn { opacity: 0.45; }
+
+.duck.on { background: color-mix(in srgb, var(--warn) 18%, var(--field)); border-color: var(--warn); color: var(--warn); }
+.br-rows { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.br-rows .vol-row { display: grid; grid-template-columns: minmax(70px, 34%) 1fr 40px; align-items: center; gap: 8px; }
+.br-name { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-mid); }
+.cd-btn.hold { position: relative; overflow: hidden; touch-action: none; -webkit-touch-callout: none; }
+.hold-fill { position: absolute; inset: 0; background: color-mix(in srgb, var(--accent) 30%, transparent); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+.cd-btn.hold.holding .hold-fill { transform: scaleX(1); transition: transform 1s linear; }
+.cd-msg.hint { color: var(--ink-faint); text-align: center; }
