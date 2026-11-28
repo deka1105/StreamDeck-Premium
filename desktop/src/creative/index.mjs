@@ -26,7 +26,7 @@ export const TOOLS = {
   ],
   illustrator: [
     ["selection", "Selection", "v"], ["direct", "Direct select", "a"], ["magicwand", "Magic wand", "y"], ["lasso", "Lasso", "q"], ["pen", "Pen", "p"], ["type", "Type", "t"],
-    ["line", "Line", "\\"], ["rectangle", "Rectangle", "m"], ["ellipse", "Ellipse", "l"], ["paintbrush", "Paintbrush", "b"], ["pencil", "Pencil", "n"], ["shaper", "Shaper", "shift+n"],
+    ["rectangle", "Rectangle", "m"], ["ellipse", "Ellipse", "l"], ["paintbrush", "Paintbrush", "b"], ["pencil", "Pencil", "n"], ["shaper", "Shaper", "shift+n"],
     ["eraser", "Eraser", "shift+e"], ["rotate", "Rotate", "r"], ["scale", "Scale", "s"], ["width", "Width", "shift+w"], ["freetransform", "Free transform", "e"], ["shapebuilder", "Shape builder", "shift+m"],
     ["gradient", "Gradient", "g"], ["eyedropper", "Eyedropper", "i"], ["blend", "Blend", "w"], ["artboard", "Artboard", "shift+o"], ["hand", "Hand", "h"], ["zoom", "Zoom", "z"],
   ],
