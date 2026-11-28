@@ -38,7 +38,7 @@ export function renderControl(root, { state, h, change, api, flash }) {
     );
 
   // ------------------------------------------------------------------ OBS ----
-  const obsPw = input("obsPassword", { type: "password", placeholder: "WebSocket password (if set in OBS)", autocomplete: "new-password" });
+  const obsPw = input("obsPassword", { type: "password", placeholder: "Password (if set in OBS)", autocomplete: "new-password" });
   // ----------------------------------------------------------- HA ----
   const haToken = input("haToken", { type: "password", placeholder: "Long-lived access token", autocomplete: "new-password" });
   const haOut = h("div", { class: "ha-list" });
@@ -66,9 +66,9 @@ export function renderControl(root, { state, h, change, api, flash }) {
   haFilter.addEventListener("input", drawHa);
 
   // ---------------------------------------------------------- forms ----
-  const wf = { name: input("wolName", { placeholder: "Name, e.g. Gaming PC" }), mac: input("wolMac", { placeholder: "MAC address, e.g. 3C:22:FB:12:34:56" }), addr: input("wolAddr", { placeholder: "Broadcast address (default 255.255.255.255)" }) };
+  const wf = { name: input("wolName", { placeholder: "Name, e.g. Gaming PC" }), mac: input("wolMac", { placeholder: "MAC address, e.g. 3C:22:FB:12:34:56" }), addr: input("wolAddr", { placeholder: "Broadcast address (optional)" }) };
   const of = { name: input("oscName", { placeholder: "Label, e.g. GO" }), host: input("oscHost", { placeholder: "Host, e.g. 192.168.1.40" }), port: input("oscPort", { placeholder: "Port", type: "number", style: "max-width:90px" }), address: input("oscAddress", { placeholder: "Address, e.g. /cue/go" }), args: input("oscArgs", { placeholder: 'Arguments, e.g. 1 0.5 "text"' }) };
-  const sf = { name: input("svcName", { placeholder: "Name, e.g. Web app" }), cmd: input("svcCmd", { placeholder: "Program, e.g. npm" }), args: input("svcArgs", { placeholder: "Arguments, e.g. run dev" }), cwd: input("svcCwd", { placeholder: "Folder, e.g. /Users/me/code/site" }), url: input("svcUrl", { placeholder: "Address to open (optional), e.g. http://localhost:3000" }) };
+  const sf = { name: input("svcName", { placeholder: "Name, e.g. Web app" }), cmd: input("svcCmd", { placeholder: "Program, e.g. npm" }), args: input("svcArgs", { placeholder: "Arguments, e.g. run dev" }), cwd: input("svcCwd", { placeholder: "Project folder" }), url: input("svcUrl", { placeholder: "Page to open (optional), e.g. http://localhost:3000" }) };
 
   root.append(
     h(
