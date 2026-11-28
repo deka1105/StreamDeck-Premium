@@ -395,7 +395,7 @@ export const TEMPLATES = [
     id: "printers",
     name: "3D printers",
     description: "Up to four printers at once: progress, time left, layer, temperatures and filament.",
-    page: { name: "Printers", widgets: [{ type: "printers", x: 0, y: 0, w: 12, h: 6 }] },
+    page: { name: "Printers", widgets: [{ type: "printers", x: 0, y: 0, w: 12, h: 6, portrait: { x: 0, y: 0, w: 6, h: 12 } }] },
   },
   {
     id: "clock",

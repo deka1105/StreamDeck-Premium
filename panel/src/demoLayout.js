@@ -121,7 +121,7 @@ export const DEMO_LAYOUT = {
     {
       id: "printers",
       name: "Printers",
-      widgets: [{ id: "prs", type: "printers", x: 0, y: 0, w: 12, h: 6 }],
+      widgets: [{ id: "prs", type: "printers", x: 0, y: 0, w: 12, h: 6, portrait: { x: 0, y: 0, w: 6, h: 12 } }],
     },
     {
       id: "daily",
