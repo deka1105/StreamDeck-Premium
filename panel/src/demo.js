@@ -285,6 +285,9 @@ export function demoGenerators(control = createDemoControl()) {
     containers: control.containers,
     services: control.services,
     meeting: control.meeting,
+    audio: control.audio,
+    audiolevels: control.audiolevels,
+    winsys: control.winsys,
     github: () => {
       const now = Date.now();
       let seed = 7;
