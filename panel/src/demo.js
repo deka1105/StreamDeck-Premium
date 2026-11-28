@@ -302,6 +302,25 @@ export function demoGenerators(control = createDemoControl()) {
         };
       };
     })(),
+    games: (() => {
+      const since = Date.now() - 47 * 60_000;
+      return () => ({
+        steam: true,
+        user: "Player One",
+        playing: { id: "steam:1145360", appid: "1145360", name: "Hades", since },
+        recent: [
+          { id: "steam:1145360", name: "Hades", lastPlayed: Date.now(), playtimeMin: 4022 },
+          { id: "steam:413150", name: "Stardew Valley", lastPlayed: Date.now() - 86_400_000, playtimeMin: 7710 },
+          { id: "steam:620", name: "Portal 2", lastPlayed: Date.now() - 4 * 86_400_000, playtimeMin: 1310 },
+          { id: "custom:mc", name: "Minecraft", lastPlayed: Date.now() - 9 * 86_400_000, playtimeMin: 620, custom: true },
+          { id: "steam:1086940", name: "Baldur's Gate 3", lastPlayed: Date.now() - 20 * 86_400_000, playtimeMin: 9200 },
+        ],
+        launch: true,
+        friends: [{ name: "Sam", game: "Hades" }, { name: "Ida", game: "Celeste" }],
+        at: Date.now(),
+      });
+    })(),
+    devbatteries: () => ({ devices: [{ name: "Magic Mouse", pct: 64 }, { name: "Magic Keyboard", pct: 22 }, { name: "AirPods Pro", pct: 88 }], at: Date.now() }),
     audio: control.audio,
     audiolevels: control.audiolevels,
     winsys: control.winsys,
@@ -343,6 +362,24 @@ export function demoGenerators(control = createDemoControl()) {
       };
     },
   };
+}
+
+// Demo pictures drawn as SVG, so the photo frame and camera work offline.
+function demoPicture(n) {
+  const scenes = [
+    ["#0f172a", "#f97316", "#fde68a"],
+    ["#082f49", "#0ea5e9", "#e0f2fe"],
+    ["#1a2e05", "#65a30d", "#ecfccb"],
+    ["#3b0764", "#c026d3", "#fae8ff"],
+  ];
+  const [a, b, c] = scenes[n % scenes.length];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="400" height="300" fill="url(#s)"/><circle cx="${280 - (n % 4) * 40}" cy="110" r="38" fill="${c}" opacity="0.9"/><path d="M0 230 L90 150 L160 210 L250 120 L400 240 L400 300 L0 300 Z" fill="${a}" opacity="0.85"/><path d="M0 260 L120 200 L220 250 L330 190 L400 230 L400 300 L0 300 Z" fill="#000" opacity="0.35"/></svg>`;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+function demoCamera() {
+  const t = new Date().toLocaleTimeString();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><rect width="640" height="360" fill="#1f2937"/><rect x="0" y="230" width="640" height="130" fill="#374151"/><rect x="380" y="120" width="140" height="110" fill="#4b5563"/><rect x="410" y="150" width="30" height="30" fill="#fde68a" opacity="0.7"/><rect x="460" y="150" width="30" height="30" fill="#fde68a" opacity="0.4"/><rect x="60" y="180" width="110" height="60" rx="10" fill="#0ea5e9" opacity="0.6"/><text x="16" y="30" fill="#fff" font-family="monospace" font-size="18">DRIVEWAY  ${t}</text></svg>`;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
 export function createDemoBridge({ periodMs = 2000 } = {}) {
@@ -438,6 +475,10 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "pointer.send": () => ({ ok: true, simulated: true }),
     ...Object.fromEntries(["audio.setDefault", "audio.setDeviceVolume", "audio.setDeviceMute", "audio.setSessionVolume", "audio.setSessionMute", "audio.duck", "audio.profile", "ptt.down", "ptt.up", "system.plan", "system.service", "system.brightness"].map((m) => [m, controlled(m)])),
     "ptt.hold": () => ({ ok: true }),
+    "games.cover": () => ({ ok: true, src: null }),
+    "games.launch": () => ({ ok: true, simulated: true }),
+    "frame.picture": () => ({ ok: true, src: demoPicture(Math.floor(Date.now() / 10_000)) }),
+    "camera.snapshot": () => ({ ok: true, src: demoCamera(), at: Date.now() }),
     "phone.platform": () => ({ android: /Android/i.test(navigator.userAgent) }),
     "phone.clipboard.send": () => ({ ok: true, simulated: true }),
     "phone.clipboard.receive": () => ({ ok: true, simulated: true }),

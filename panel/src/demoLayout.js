@@ -124,6 +124,17 @@ export const DEMO_LAYOUT = {
       widgets: [{ id: "prs", type: "printers", x: 0, y: 0, w: 12, h: 6, portrait: { x: 0, y: 0, w: 6, h: 12 } }],
     },
     {
+      id: "play",
+      name: "Play",
+      widgets: [
+        { id: "ng", type: "nowgame", x: 0, y: 0, w: 4, h: 3 },
+        { id: "rg", type: "recentgames", x: 4, y: 0, w: 8, h: 3 },
+        { id: "pf", type: "photoframe", x: 0, y: 3, w: 5, h: 3, options: { every: 10 } },
+        { id: "cam", type: "camera", x: 5, y: 3, w: 4, h: 3, options: { title: "Driveway" } },
+        { id: "bt", type: "devbatteries", x: 9, y: 3, w: 3, h: 3 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [

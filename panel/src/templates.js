@@ -398,6 +398,20 @@ export const TEMPLATES = [
     page: { name: "Printers", widgets: [{ type: "printers", x: 0, y: 0, w: 12, h: 6, portrait: { x: 0, y: 0, w: 6, h: 12 } }] },
   },
   {
+    id: "games",
+    name: "Games",
+    description: "What you're playing (Steam or games you add), recent games, friends in game, and device batteries.",
+    page: {
+      name: "Games",
+      widgets: [
+        { type: "nowgame", x: 0, y: 0, w: 4, h: 4 },
+        { type: "recentgames", x: 4, y: 0, w: 8, h: 4 },
+        { type: "devbatteries", x: 0, y: 4, w: 4, h: 2 },
+        { type: "clock", x: 4, y: 4, w: 8, h: 2 },
+      ],
+    },
+  },
+  {
     id: "clock",
     name: "Clock",
     description: "A big clock with seconds.",
