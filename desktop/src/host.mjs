@@ -44,6 +44,7 @@ import { createPhone } from "./control/phone.mjs";
 import { createPrinters } from "./printers/index.mjs";
 import { createGames } from "./games/index.mjs";
 import { createExtras } from "./extras/index.mjs";
+import { createCreative } from "./creative/index.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -190,6 +191,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
   const phone = createPhone({ pushes, getSettings: () => panelStore.config().settings, port, dryRun });
   const printers = createPrinters({ getSettings: () => panelStore.config().settings, getSecret: (n) => secrets.get(n), isWanted: () => widgetsOfType("printer").length + widgetsOfType("printers").length > 0 });
   const games = createGames({ dir, getSettings: () => panelStore.config().settings, getSecret: (n) => secrets.get(n), isWanted: () => ["nowgame", "recentgames"].some((t) => widgetsOfType(t).length), execute: (a) => execute(a, { dryRun }) });
+  const creative = createCreative({ execute: (a) => execute(a, { dryRun }), runningApps: async () => await runningApps(), frontmost: async () => await frontmostApp(), getSecret: (n) => secrets.get(n), setSecret: (n, v) => secrets.set(n, v), dryRun });
   const extras = createExtras({ getWidget: (client, pageId, widgetId) => findWidget(client, pageId, widgetId), getSecret: (n) => secrets.get(n) });
   const provs = {
     printers,
@@ -377,6 +379,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
       "games.cover": async ({ id } = {}) => ({ ok: true, src: await games.cover(String(id ?? "")) }),
       "games.launch": async ({ id } = {}) => games.launch(String(id ?? "")),
       ...extras.methods,
+      ...creative.methods,
       // ---- Android phone (Stage 13) ----
       ...phone.methods,
       "rules.pause": ({ minutes } = {}) => rules.pause(Math.max(0, Math.min(24 * 60, Number(minutes) || 0))),
@@ -631,6 +634,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
     phone,
     printers,
     games,
+    creative,
     listen: () =>
       new Promise((r) => {
         sampler.start();
@@ -687,6 +691,12 @@ export function agentRoutes(host) {
       }
     },
     "GET /api/editor/games/running": async (_req, res, { send }) => send(res, 200, { ok: true, programs: await host.games.running() }),
+    "GET /api/editor/creative": (_req, res, { send }) => send(res, 200, { ok: true, token: host.creative.blenderToken() }),
+    "GET /api/editor/creative/addon": (_req, res) => {
+      const file = join(dirname(fileURLToPath(import.meta.url)), "..", "blender", "deskassist_blender.py");
+      res.writeHead(200, { "content-type": "text/x-python; charset=utf-8", "content-disposition": 'attachment; filename="deskassist_blender.py"' });
+      res.end(readFileSync(file));
+    },
     "GET /api/editor/usb": async (_req, res, { send }) => send(res, 200, { ok: true, ...(await host.phone.usbStatus()) }),
     "POST /api/editor/audio/snapshot": async (_req, res, { send }) => {
       try {
