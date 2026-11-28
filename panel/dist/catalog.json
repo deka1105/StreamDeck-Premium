@@ -2122,6 +2122,41 @@
       "options": []
     },
     {
+      "type": "printers",
+      "name": "3D printers",
+      "category": "deck",
+      "size": {
+        "w": 12,
+        "h": 6
+      },
+      "min": {
+        "w": 4,
+        "h": 3
+      },
+      "options": []
+    },
+    {
+      "type": "printer",
+      "name": "Printer",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "printer",
+          "type": "text",
+          "label": "Printer name (empty = the first one)",
+          "default": ""
+        }
+      ]
+    },
+    {
       "type": "sessions",
       "name": "Agent sessions",
       "category": "ai",
