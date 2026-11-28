@@ -285,6 +285,23 @@ export function demoGenerators(control = createDemoControl()) {
     containers: control.containers,
     services: control.services,
     meeting: control.meeting,
+    printers: (() => {
+      const start = Date.now();
+      const T = (n, nt, b, bt, c = null) => ({ nozzle: n, nozzleTarget: nt, bed: b, bedTarget: bt, chamber: c });
+      return () => {
+        const k = ((Date.now() - start) / 1000) % 3600;
+        const pctA = Math.min(99, 57 + Math.floor(k / 20));
+        return {
+          printers: [
+            { id: "p1", name: "P1S", brand: "bambu", brandName: "Bambu Lab (LAN)", model: "Bambu Lab P1S", online: true, state: "printing", pct: pctA, remainingMin: Math.max(1, 83 - Math.floor(k / 20)), layer: 120 + Math.floor(k / 10), layers: 300, file: "Planter v3", temps: T(219.6 + Math.random(), 220, 55, 55, 31), speed: "Standard", error: null, slots: [{ color: "#F5F5F5", material: "PLA", active: false }, { color: "#1E90FF", material: "PETG", active: true }, { color: "#111111", material: "PLA", active: false }, { color: "#F97316", material: "PLA", active: false }] },
+            { id: "p2", name: "Voron 2.4", brand: "klipper", brandName: "Klipper (Moonraker)", model: "Voron 2.4 350", online: true, state: "paused", pct: 34, remainingMin: 142, layer: 88, layers: 260, file: "fan_shroud_v6.gcode", temps: T(170, 245, 100, 100, 47), speed: 100, error: null, slots: [{ color: "#DC2626", material: "ABS", active: true }] },
+            { id: "p3", name: "MK4", brand: "prusalink", brandName: "Prusa (PrusaLink)", model: "Prusa MK4S", online: true, state: "finished", pct: 100, remainingMin: null, layer: null, layers: null, file: "cable_clips.bgcode", temps: T(41, 0, 38, 0), speed: 100, error: null, slots: [] },
+            { id: "p4", name: "Centauri", brand: "elegoo", brandName: "Elegoo Centauri Carbon", model: "Centauri Carbon", online: true, state: "error", pct: 12, remainingMin: null, layer: 14, layers: 410, file: "helmet_mount.gcode", temps: T(140, 0, 60, 0, 29), speed: null, error: "Filament runout — load filament to continue", slots: [] },
+          ],
+          at: Date.now(),
+        };
+      };
+    })(),
     audio: control.audio,
     audiolevels: control.audiolevels,
     winsys: control.winsys,

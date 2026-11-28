@@ -119,6 +119,11 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "printers",
+      name: "Printers",
+      widgets: [{ id: "prs", type: "printers", x: 0, y: 0, w: 12, h: 6 }],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [

@@ -880,12 +880,16 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .dv-sec .vol-num { font-size: 13px; min-width: 4ch; }
 
 /* --- Stage 14: 3D printers --- */
-.w-printers { padding: 0; background: transparent; border: 0; box-shadow: none; }
-.w-printer { padding: 0; }
+/* The page widget lays out its own cards; the single one uses the tile itself. */
+.w:has(> .w-printers:not(.w-printer)) { background: transparent; border-color: transparent; box-shadow: none; }
+.w-printers:not(.w-printer) { padding: 0; }
+.w-printer .pr-card { background: none; border: 0; padding: 0; border-radius: 0; }
 .pr-grid { height: 100%; display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); grid-auto-rows: 1fr; }
 .w-printers[data-count="4"] .pr-grid { grid-template-columns: 1fr 1fr; }
 .pr-card { container-type: size; min-height: 0; background: var(--surface); border: var(--tile-border, 1px solid var(--line)); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
 .w-printer .pr-card { height: 100%; }
+.w:has(> .w-printer) .pr-card[data-state="error"] { border: 0; }
+.w:has(> .w-printer[data-err="1"]) { border-color: var(--danger); }
 .pr-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .pr-name { font-weight: 750; font-size: clamp(12px, 5cqmin, 17px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pr-state { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--field); color: var(--ink-dim); white-space: nowrap; }
