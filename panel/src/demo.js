@@ -421,6 +421,9 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "pointer.send": () => ({ ok: true, simulated: true }),
     ...Object.fromEntries(["audio.setDefault", "audio.setDeviceVolume", "audio.setDeviceMute", "audio.setSessionVolume", "audio.setSessionMute", "audio.duck", "audio.profile", "ptt.down", "ptt.up", "system.plan", "system.service", "system.brightness"].map((m) => [m, controlled(m)])),
     "ptt.hold": () => ({ ok: true }),
+    "phone.platform": () => ({ android: /Android/i.test(navigator.userAgent) }),
+    "phone.clipboard.send": () => ({ ok: true, simulated: true }),
+    "phone.clipboard.receive": () => ({ ok: true, simulated: true }),
     "system.power": () => ({ ok: true, simulated: true }),
   };
 
