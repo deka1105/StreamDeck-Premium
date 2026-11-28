@@ -11,3 +11,16 @@ These checks need the real thing and are for the owner. Tick each one when done.
 - [ ] **Dev services**: add `npm` / `run dev` with a project folder. Start it, see output, open its page, stop it, and check the process is gone (`ps`).
 - [ ] **Meeting**: in a Zoom and a Teams call, Mic / Camera / Leave work (DeskAssist needs Accessibility permission). Mute everything mutes the mic and the speakers, and a second tap restores both.
 - [ ] **Trackpad**: turn it on in Settings, then move, tap, two-finger scroll and right-click from the phone. On Windows, repeat on a real PC.
+
+## Stage 12 — on a real Windows PC
+
+- [ ] Install a Windows build (`npm run dist:win` on Windows). Open the Audio template page.
+- [ ] Play Spotify and a YouTube tab. Move Spotify's fader: only Spotify's level changes (check the Windows Volume Mixer). Its meter moves with the music.
+- [ ] Switch the output from speakers to headphones in the Audio devices widget. The sound moves, and Windows' Sound settings show the new default.
+- [ ] Mute the mic in Windows. Hold Push to talk: the mic unmutes (check Sound settings › Input). Release: it's muted again. Hold, then close the panel app: within about 2 s the mic is muted again.
+- [ ] "Duck others" lowers Spotify but not Teams; tap again and it comes back.
+- [ ] Save a profile in the editor (Settings › Audio & Windows), change things, apply it from the panel: devices and levels return.
+- [ ] Power plan switches (check `powercfg /getactivescheme`).
+- [ ] An external monitor with DDC/CI on: its brightness follows the slider. On a laptop, the built-in display does too.
+- [ ] Hold Lock for a second: the PC locks. A quick tap does nothing.
+- [ ] List a service you can control (e.g. one of your own) and start/stop it.
