@@ -1,0 +1,415 @@
+// Stage 11 — Control Deck: OBS, Home Assistant, containers, dev services,
+// meeting controls, Wake-on-LAN, OSC and the trackpad. The phone only sends
+// ids picked from what the host lists; addresses, commands and tokens stay on
+// the computer.
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const since = (t) => {
+  if (!t) return "";
+  const s = Math.max(0, (Date.now() - t) / 1000);
+  return s < 60 ? `${Math.floor(s)}s` : s < 3600 ? `${Math.floor(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h` : `${Math.floor(s / 86400)} d`;
+};
+
+/** Run a method; flash the button green or red, and show an error in `msg`. */
+async function act(ctx, btn, method, params, msg) {
+  btn?.classList.add("busy");
+  const r = await ctx.request(method, params).catch((e) => ({ ok: false, error: e.message }));
+  btn?.classList.remove("busy");
+  if (btn) {
+    btn.dataset.result = r?.ok ? "ok" : "fail";
+    setTimeout(() => delete btn.dataset.result, 900);
+  }
+  if (msg) msg.textContent = r?.ok ? "" : r?.error ?? "That didn't work.";
+  return r;
+}
+
+/** A button that needs a second tap within 3 s (stopping a stream, leaving a call). */
+function confirmTap(btn, label, run) {
+  let armed = 0;
+  btn.addEventListener("click", () => {
+    if (btn.dataset.confirm !== "1") return run();
+    if (Date.now() - armed < 3000) {
+      armed = 0;
+      btn.classList.remove("armed");
+      return run();
+    }
+    armed = Date.now();
+    btn.classList.add("armed");
+    const before = btn.innerHTML;
+    btn.innerHTML = `<span class="cd-ico">⚠︎</span><span class="cd-lbl">${esc(label)}</span>`;
+    setTimeout(() => {
+      if (!armed || Date.now() - armed < 2900) return;
+      armed = 0;
+      btn.classList.remove("armed");
+      btn.innerHTML = before;
+    }, 3000);
+  });
+}
+
+const idsOption = (label) => ({ key: "ids", type: "list", label, default: [] });
+
+// -------------------------------------------------------------------- OBS ----
+
+export const obs = {
+  type: "obs",
+  meta: {
+    name: "OBS Studio",
+    category: "deck",
+    size: { w: 6, h: 4 },
+    min: { w: 3, h: 2 },
+    options: [
+      { key: "scenes", type: "bool", label: "Scenes", default: true },
+      { key: "outputs", type: "bool", label: "Record, stream and virtual camera", default: true },
+      { key: "audio", type: "bool", label: "Audio mutes", default: true },
+      { key: "sources", type: "bool", label: "Sources in the current scene", default: false },
+    ],
+  },
+  needs: () => ["obs"],
+  mount(el, ctx) {
+    el.classList.add("w-obs");
+    el.innerHTML = `<div class="cd-head"><span class="w-title">OBS</span><span class="obs-pills"></span></div><div class="obs-body" data-no-swipe></div><div class="cd-msg muted"></div>`;
+    const pills = el.querySelector(".obs-pills");
+    const body = el.querySelector(".obs-body");
+    const msg = el.querySelector(".cd-msg");
+    const o = ctx.options;
+    const send = (btn, command, arg) => act(ctx, btn, "obs.control", { command, arg }, msg);
+    let sig = "";
+    ctx.subscribe("obs", (d) => {
+      if (!d?.connected) {
+        pills.innerHTML = `<span class="pill off">Offline</span>`;
+        body.innerHTML = `<div class="muted setup">${esc(d?.error ?? "Connecting to OBS…")}</div>`;
+        sig = "";
+        return;
+      }
+      pills.innerHTML = `${d.record.active ? `<span class="pill rec">● REC ${esc(d.record.paused ? "paused" : d.record.time)}</span>` : ""}${d.stream.active ? `<span class="pill live">LIVE ${esc(d.stream.time)}</span>` : ""}${d.vcam.active ? `<span class="pill">VCAM</span>` : ""}${!d.record.active && !d.stream.active ? `<span class="pill ok">Connected</span>` : ""}`;
+      // Rebuild only when something visible changed (keeps taps responsive).
+      const next = JSON.stringify([d.scenes, d.current, d.record.active, d.record.paused, d.stream.active, d.vcam, d.sources, d.inputs]);
+      if (next === sig) return;
+      sig = next;
+      const parts = [];
+      if (o.scenes) parts.push(`<div class="obs-scenes">${d.scenes.map((s) => `<button class="cd-btn obs-scene${s === d.current ? " on" : ""}" data-scene="${esc(s)}"><span class="cd-lbl">${esc(s)}</span></button>`).join("")}</div>`);
+      if (o.sources && d.sources.length) parts.push(`<div class="cd-chips">${d.sources.map((s) => `<button class="chip${s.on ? " on" : ""}" data-source="${s.id}">${s.on ? "👁" : "◌"} ${esc(s.name)}</button>`).join("")}</div>`);
+      const audio = o.audio && d.inputs.length ? d.inputs.map((i) => `<button class="chip${i.muted ? " muted-in" : " on"}" data-input="${esc(i.name)}">${i.muted ? "🔇" : "🎙"} ${esc(i.name)}</button>`).join("") : "";
+      if (o.outputs || audio) {
+        parts.push(
+          `<div class="obs-bar">${
+            o.outputs
+              ? `<button class="cd-btn obs-out${d.record.active ? " on rec" : ""}" data-cmd="record" data-confirm="${d.record.active ? 1 : 0}"><span class="cd-ico">${d.record.active ? "■" : "●"}</span><span class="cd-lbl">${d.record.active ? "Stop rec" : "Record"}</span></button>${d.record.active ? `<button class="cd-btn obs-out${d.record.paused ? " on" : ""}" data-cmd="pause"><span class="cd-ico">${d.record.paused ? "▶" : "❚❚"}</span><span class="cd-lbl">${d.record.paused ? "Resume" : "Pause"}</span></button>` : ""}<button class="cd-btn obs-out${d.stream.active ? " on live" : ""}" data-cmd="stream" data-confirm="${d.stream.active ? 1 : 0}"><span class="cd-ico">📡</span><span class="cd-lbl">${d.stream.active ? "End stream" : "Go live"}</span></button>${d.vcam.available ? `<button class="cd-btn obs-out${d.vcam.active ? " on" : ""}" data-cmd="vcam"><span class="cd-ico">📷</span><span class="cd-lbl">Virtual cam</span></button>` : ""}`
+              : ""
+          }</div>${audio ? `<div class="cd-chips">${audio}</div>` : ""}`,
+        );
+      }
+      body.innerHTML = parts.join("");
+      body.querySelectorAll("[data-scene]").forEach((b) => b.addEventListener("click", () => send(b, "scene", b.dataset.scene)));
+      body.querySelectorAll("[data-source]").forEach((b) => b.addEventListener("click", () => send(b, "source", Number(b.dataset.source))));
+      body.querySelectorAll("[data-input]").forEach((b) => b.addEventListener("click", () => send(b, "mute", b.dataset.input)));
+      body.querySelectorAll("[data-cmd]").forEach((b) => confirmTap(b, b.dataset.cmd === "stream" ? "Tap to end" : "Tap to stop", () => send(b, b.dataset.cmd)));
+    });
+  },
+};
+
+// --------------------------------------------------------- Home Assistant ----
+
+const HA_ICON = { light: "💡", switch: "🔌", fan: "🌀", lock: "🔒", cover: "🪟", sensor: "🌡️", binary_sensor: "◉", scene: "🎬", script: "▶️", media_player: "🎵", climate: "♨️", person: "👤", automation: "⚙️", input_boolean: "🔘", button: "🔘", input_button: "🔘", weather: "⛅", vacuum: "🧹", camera: "📹" };
+const haState = (e) => {
+  if (e.missing) return "Not found";
+  if (e.unit) return `${e.state} ${e.unit}`;
+  if (e.domain === "lock") return e.state === "locked" ? "Locked" : e.state === "unlocked" ? "Unlocked" : e.state;
+  if (e.domain === "light" && e.on && e.brightness !== null) return `On · ${e.brightness}%`;
+  if (["on", "off"].includes(e.state)) return e.state === "on" ? "On" : "Off";
+  if (["scene", "script", "button", "input_button"].includes(e.domain)) return "Run";
+  return String(e.state).replace(/_/g, " ");
+};
+
+export const homeassistant = {
+  type: "homeassistant",
+  meta: {
+    name: "Home Assistant",
+    category: "deck",
+    size: { w: 4, h: 4 },
+    min: { w: 2, h: 2 },
+    options: [
+      { key: "title", type: "text", label: "Title", default: "Home" },
+      { key: "entities", type: "list", label: "Entity ids, one per line (e.g. light.desk) — Settings › Control Deck lists yours", default: [] },
+    ],
+  },
+  needs: () => ["ha"],
+  mount(el, ctx) {
+    el.classList.add("w-ha");
+    el.innerHTML = `<div class="w-title">${esc(ctx.options.title || "Home")}</div><div class="ha-grid" data-no-swipe></div><div class="cd-msg muted"></div>`;
+    const grid = el.querySelector(".ha-grid");
+    const msg = el.querySelector(".cd-msg");
+    if (!(ctx.options.entities ?? []).length) return (grid.innerHTML = `<div class="muted setup">List entity ids in the editor (like light.desk).</div>`);
+    ctx.subscribe("ha", (d) => {
+      if (d?.error) return (grid.innerHTML = `<div class="muted setup">${esc(d.error)}</div>`);
+      const mine = new Set((ctx.options.entities ?? []).map(String));
+      const list = (d?.entities ?? []).filter((e) => mine.has(e.id));
+      grid.innerHTML = list
+        .map((e) => `<button class="ha-tile${e.on ? " on" : ""}${e.tappable ? "" : " ro"}${e.missing ? " gone" : ""}" data-id="${esc(e.id)}" data-domain="${esc(e.domain)}"><span class="ha-ico">${e.domain === "lock" && e.state === "unlocked" ? "🔓" : HA_ICON[e.domain] ?? "◆"}</span><span class="ha-name">${esc(e.name)}</span><span class="ha-state">${esc(haState(e))}</span></button>`)
+        .join("");
+      grid.querySelectorAll(".ha-tile:not(.ro)").forEach((b) =>
+        b.addEventListener("click", async () => {
+          b.classList.toggle("on"); // feel instant; the next sample confirms
+          const r = await act(ctx, b, "ha.tap", { entity: b.dataset.id }, msg);
+          if (!r?.ok) b.classList.toggle("on");
+        }),
+      );
+    });
+  },
+};
+
+// ------------------------------------------------------------- containers ----
+
+export const containers = {
+  type: "containers",
+  meta: {
+    name: "Containers",
+    category: "deck",
+    size: { w: 4, h: 3 },
+    min: { w: 2, h: 2 },
+    options: [
+      { key: "show", type: "choice", label: "Show", default: "all", choices: [{ value: "all", label: "All containers" }, { value: "running", label: "Running only" }] },
+      { key: "allowControl", type: "bool", label: "Allow start / stop / restart from the panel", default: false },
+    ],
+  },
+  needs: () => ["containers"],
+  mount(el, ctx) {
+    el.classList.add("w-list", "w-containers");
+    el.innerHTML = `<div class="w-title">Containers <span class="muted ct-count"></span></div><div class="list" data-no-swipe></div><div class="cd-msg muted"></div>`;
+    const list = el.querySelector(".list");
+    const msg = el.querySelector(".cd-msg");
+    ctx.subscribe("containers", (d) => {
+      if (d?.error) return (list.innerHTML = `<div class="muted">${esc(d.error)}</div>`);
+      const all = d?.containers ?? [];
+      const shown = ctx.options.show === "running" ? all.filter((c) => c.running) : all;
+      el.querySelector(".ct-count").textContent = all.length ? `${all.filter((c) => c.running).length} of ${all.length} running` : "";
+      list.innerHTML = shown.length
+        ? shown
+            .map(
+              (c) =>
+                `<div class="ct-row" data-state="${c.running ? "running" : "stopped"}"><i class="sess-dot"></i><span class="grow"><b>${esc(c.name)}</b><span class="muted ct-sub">${esc(c.image)} · ${esc(c.status)}</span></span>${
+                  ctx.options.allowControl
+                    ? c.running
+                      ? `<button class="ibtn" data-id="${esc(c.id)}" data-a="restart" title="Restart">↻</button><button class="ibtn" data-id="${esc(c.id)}" data-a="stop" title="Stop">■</button>`
+                      : `<button class="ibtn go" data-id="${esc(c.id)}" data-a="start" title="Start">▶</button>`
+                    : ""
+                }</div>`,
+            )
+            .join("")
+        : `<div class="muted">${all.length ? "Nothing running." : "No containers."}</div>`;
+      list.querySelectorAll("[data-a]").forEach((b) => b.addEventListener("click", () => act(ctx, b, "containers.control", { widgetId: ctx.widgetId.split("~").pop(), id: b.dataset.id, action: b.dataset.a }, msg)));
+    });
+  },
+};
+
+// ---------------------------------------------------------- dev services ----
+
+export const services = {
+  type: "services",
+  meta: {
+    name: "Dev services",
+    category: "deck",
+    size: { w: 4, h: 3 },
+    min: { w: 2, h: 2 },
+    options: [idsOption("Service ids, one per line (empty = all from Settings › Control Deck)"), { key: "output", type: "bool", label: "Show the latest output", default: true }],
+  },
+  needs: () => ["services"],
+  mount(el, ctx) {
+    el.classList.add("w-list", "w-services");
+    el.innerHTML = `<div class="w-title">Dev services</div><div class="list" data-no-swipe></div><div class="cd-msg muted"></div>`;
+    const list = el.querySelector(".list");
+    const msg = el.querySelector(".cd-msg");
+    let sig = "";
+    ctx.subscribe("services", (d) => {
+      const want = (ctx.options.ids ?? []).map(String);
+      const items = (d?.services ?? []).filter((s) => !want.length || want.includes(s.id));
+      const next = JSON.stringify(items.map((s) => [s.id, s.state, s.lines.slice(-2), s.code]));
+      if (next === sig) {
+        list.querySelectorAll("[data-since]").forEach((x) => (x.textContent = since(Number(x.dataset.since))));
+        return;
+      }
+      sig = next;
+      if (!items.length) return (list.innerHTML = `<div class="muted">Add services (a command and a folder) in the editor, Settings › Control Deck.</div>`);
+      list.innerHTML = items
+        .map((s) => {
+          const state = { running: "Running", stopped: "Stopped", done: "Finished", failed: `Exited ${s.code ?? ""}` }[s.state];
+          const btns = s.state === "running" ? `<button class="ibtn" data-id="${esc(s.id)}" data-a="restart" title="Restart">↻</button><button class="ibtn" data-id="${esc(s.id)}" data-a="stop" title="Stop">■</button>` : `<button class="ibtn go" data-id="${esc(s.id)}" data-a="start" title="Start">▶</button>`;
+          const tail = ctx.options.output && s.lines.length ? `<pre class="svc-out">${esc(s.lines.slice(-2).join("\n"))}</pre>` : "";
+          return `<div class="svc" data-state="${esc(s.state)}"><div class="ct-row"><i class="sess-dot"></i><span class="grow"><b>${esc(s.name)}</b><span class="muted ct-sub">${state}${s.since ? ` · <span data-since="${s.since}">${since(s.since)}</span>` : ""}</span></span>${s.url ? `<button class="ibtn" data-id="${esc(s.id)}" data-open="1" title="Open">↗</button>` : ""}${btns}</div>${tail}</div>`;
+        })
+        .join("");
+      list.querySelectorAll("[data-a]").forEach((b) => b.addEventListener("click", () => act(ctx, b, "services.control", { id: b.dataset.id, action: b.dataset.a }, msg)));
+      list.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => act(ctx, b, "services.open", { id: b.dataset.id }, msg)));
+    });
+  },
+};
+
+// --------------------------------------------------------------- meeting ----
+
+const MEETING = {
+  zoom: { name: "Zoom", actions: ["mic", "camera", "hand", "share", "leave"] },
+  teams: { name: "Teams", actions: ["mic", "camera", "hand", "share", "leave"] },
+  meet: { name: "Google Meet", actions: ["mic", "camera", "hand"] },
+  webex: { name: "Webex", actions: ["mic", "camera"] },
+};
+const M_ACT = { mic: ["🎙", "Mic"], camera: ["📷", "Camera"], hand: ["✋", "Hand"], share: ["🖥", "Share"], leave: ["📞", "Leave"] };
+
+export const meeting = {
+  type: "meeting",
+  meta: {
+    name: "Meeting controls",
+    category: "deck",
+    size: { w: 3, h: 3 },
+    min: { w: 2, h: 2 },
+    options: [
+      { key: "app", type: "choice", label: "Meeting app", default: "zoom", choices: Object.entries(MEETING).map(([value, m]) => ({ value, label: m.name })) },
+      { key: "muteAll", type: "bool", label: "“Mute everything” button (mic and speakers, system-wide)", default: true },
+    ],
+  },
+  needs: (o) => (o?.muteAll === false ? [] : ["meeting"]),
+  mount(el, ctx) {
+    const app = MEETING[ctx.options.app] ? ctx.options.app : "zoom";
+    el.classList.add("w-meeting");
+    el.innerHTML = `<div class="w-title">${esc(MEETING[app].name)}</div><div class="mt-grid" data-no-swipe>${MEETING[app].actions
+      .map((a) => `<button class="cd-btn mt-${a}" data-a="${a}" data-confirm="${a === "leave" ? 1 : 0}"><span class="cd-ico">${M_ACT[a][0]}</span><span class="cd-lbl">${M_ACT[a][1]}</span></button>`)
+      .join("")}${ctx.options.muteAll === false ? "" : `<button class="cd-btn mt-all" data-all="1"><span class="cd-ico">🔇</span><span class="cd-lbl">Mute everything</span></button>`}</div><div class="cd-msg muted"></div>`;
+    const msg = el.querySelector(".cd-msg");
+    el.querySelectorAll("[data-a]").forEach((b) => confirmTap(b, "Tap to leave", () => act(ctx, b, "meeting.press", { app, action: b.dataset.a }, msg)));
+    const all = el.querySelector("[data-all]");
+    if (!all) return;
+    all.addEventListener("click", () => act(ctx, all, "meeting.muteAll", {}, msg));
+    ctx.subscribe("meeting", (d) => {
+      all.classList.toggle("on", !!d?.allMuted);
+      all.querySelector(".cd-lbl").textContent = d?.allMuted ? "Unmute everything" : "Mute everything";
+      all.hidden = d && d.canMuteAll === false;
+    });
+  },
+};
+
+// --------------------------------------------------- keys from host lists ----
+
+function hostKeys({ type, name, method, listMethod, icon, empty, size }) {
+  return {
+    type,
+    meta: { name, category: "deck", size, min: { w: 1, h: 1 }, options: [{ key: "title", type: "text", label: "Title (optional)", default: "" }, idsOption("Ids, one per line (empty = all from Settings › Control Deck)")] },
+    needs: () => [],
+    async mount(el, ctx) {
+      el.classList.add("w-keys");
+      el.innerHTML = `${ctx.options.title ? `<div class="w-title">${esc(ctx.options.title)}</div>` : ""}<div class="keys-row" data-no-swipe></div><div class="cd-msg muted"></div>`;
+      const row = el.querySelector(".keys-row");
+      const msg = el.querySelector(".cd-msg");
+      const r = await ctx.request(listMethod).catch(() => ({ items: [] }));
+      const want = (ctx.options.ids ?? []).map(String);
+      const items = (r?.items ?? []).filter((x) => !want.length || want.includes(x.id));
+      if (!items.length) return (row.innerHTML = `<div class="muted setup">${empty}</div>`);
+      for (const it of items) {
+        const b = document.createElement("button");
+        b.className = "cd-btn key";
+        b.innerHTML = `<span class="cd-ico">${icon}</span><span class="cd-lbl"></span>`;
+        b.querySelector(".cd-lbl").textContent = type === "wake" ? `Wake ${it.name}` : it.name;
+        b.addEventListener("click", async () => {
+          const res = await act(ctx, b, method, { id: it.id }, msg);
+          if (res?.ok && type === "wake") msg.textContent = `Sent to ${it.name}. It can take a minute to start.`;
+        });
+        row.append(b);
+      }
+    },
+  };
+}
+
+export const wake = hostKeys({ type: "wake", name: "Wake a computer", method: "wol.wake", listMethod: "wol.list", icon: "⏰", empty: "Add a computer to wake (its MAC address) in Settings › Control Deck.", size: { w: 3, h: 2 } });
+export const oscpad = hostKeys({ type: "oscpad", name: "OSC keys", method: "osc.send", listMethod: "osc.list", icon: "📨", empty: "Add OSC messages in Settings › Control Deck.", size: { w: 4, h: 2 } });
+
+// -------------------------------------------------------------- trackpad ----
+
+export const trackpad = {
+  type: "trackpad",
+  meta: {
+    name: "Trackpad",
+    category: "deck",
+    size: { w: 6, h: 4 },
+    min: { w: 3, h: 2 },
+    options: [{ key: "speed", type: "choice", label: "Pointer speed", default: "2", choices: [{ value: "1", label: "Slow" }, { value: "2", label: "Normal" }, { value: "3.5", label: "Fast" }] }],
+  },
+  needs: () => [],
+  mount(el, ctx) {
+    el.classList.add("w-trackpad");
+    el.innerHTML = `<div class="tp-surface" data-no-swipe><span class="tp-hint">Drag to move · tap to click · two fingers to scroll or right-click</span></div><div class="tp-btns" data-no-swipe><button class="cd-btn" data-b="left"><span class="cd-lbl">Left</span></button><button class="cd-btn" data-b="right"><span class="cd-lbl">Right</span></button></div><div class="cd-msg muted"></div>`;
+    const surface = el.querySelector(".tp-surface");
+    const msg = el.querySelector(".cd-msg");
+    const speed = Number(ctx.options.speed) || 2;
+    const send = (req) =>
+      ctx.request("pointer.send", req).then(
+        (r) => {
+          if (!r?.ok) {
+            msg.textContent = r?.error ?? "";
+            el.classList.toggle("off", /off/.test(r?.error ?? ""));
+          } else if (msg.textContent) {
+            msg.textContent = "";
+            el.classList.remove("off");
+          }
+        },
+        (e) => (msg.textContent = e.message),
+      );
+    const pts = new Map();
+    let acc = { dx: 0, dy: 0 };
+    let moved = 0;
+    let downAt = 0;
+    let maxTouches = 0;
+    let flushing = false;
+    // Moves are summed and sent at most ~30 times a second, one request at a time.
+    const flush = async () => {
+      if (flushing) return;
+      flushing = true;
+      while (Math.abs(acc.dx) >= 1 || Math.abs(acc.dy) >= 1) {
+        const scroll = pts.size >= 2;
+        const dx = Math.trunc(acc.dx);
+        const dy = Math.trunc(acc.dy);
+        acc = { dx: acc.dx - dx, dy: acc.dy - dy };
+        await send(scroll ? { op: "scroll", dx: Math.round(dx / 6), dy: Math.round(-dy / 6) } : { op: "move", dx, dy });
+        await new Promise((r) => setTimeout(r, 33));
+      }
+      flushing = false;
+    };
+    surface.addEventListener("pointerdown", (e) => {
+      surface.setPointerCapture?.(e.pointerId);
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 1) {
+        downAt = Date.now();
+        moved = 0;
+        maxTouches = 1;
+      }
+      maxTouches = Math.max(maxTouches, pts.size);
+      surface.classList.add("touching");
+    });
+    surface.addEventListener("pointermove", (e) => {
+      const p = pts.get(e.pointerId);
+      if (!p) return;
+      const dx = e.clientX - p.x;
+      const dy = e.clientY - p.y;
+      p.x = e.clientX;
+      p.y = e.clientY;
+      moved += Math.abs(dx) + Math.abs(dy);
+      // With two fingers, only the first one's motion counts (no double speed).
+      if (pts.size >= 2 && e.pointerId !== pts.keys().next().value) return;
+      const gain = pts.size >= 2 ? 1 : speed * (1 + Math.min(2, Math.hypot(dx, dy) / 12)); // a little acceleration
+      acc.dx += dx * gain;
+      acc.dy += dy * gain;
+      flush();
+    });
+    const end = (e) => {
+      if (!pts.delete(e.pointerId)) return;
+      if (pts.size) return;
+      surface.classList.remove("touching");
+      if (moved < 8 && Date.now() - downAt < 300) send({ op: "click", button: maxTouches >= 2 ? "right" : "left" });
+    };
+    surface.addEventListener("pointerup", end);
+    surface.addEventListener("pointercancel", end);
+    for (const b of el.querySelectorAll("[data-b]")) {
+      // Hold a button to drag with the other hand.
+      b.addEventListener("pointerdown", () => send({ op: "down", button: b.dataset.b }));
+      b.addEventListener("pointerup", () => send({ op: "up", button: b.dataset.b }));
+      b.addEventListener("pointercancel", () => send({ op: "up", button: b.dataset.b }));
+    }
+  },
+};
