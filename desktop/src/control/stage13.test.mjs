@@ -83,3 +83,14 @@ test("USB: adb found, devices parsed, reverse added once per phone", async () =>
   settings.android.usb = false;
   assert.equal((await p.usbStatus()).on, false);
 });
+
+test("wake info: wired adapter first, subnet broadcast computed", async () => {
+  const { wakeInfo } = await import("./phone.mjs");
+  const w = wakeInfo({
+    lo0: [{ family: "IPv4", address: "127.0.0.1", netmask: "255.0.0.0", mac: "00:00:00:00:00:00", internal: true }],
+    "Wi-Fi": [{ family: "IPv4", address: "192.168.1.20", netmask: "255.255.255.0", mac: "aa:bb:cc:00:00:01", internal: false }],
+    Ethernet: [{ family: "IPv4", address: "10.0.4.7", netmask: "255.255.252.0", mac: "3c:22:fb:12:34:56", internal: false }],
+  });
+  assert.deepEqual([w.mac, w.broadcast, w.wired], ["3C:22:FB:12:34:56", "10.0.7.255", true]);
+  assert.equal(wakeInfo({}), null);
+});
