@@ -1962,6 +1962,152 @@
       ]
     },
     {
+      "type": "mixer",
+      "name": "Volume mixer",
+      "category": "deck",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "master",
+          "type": "bool",
+          "label": "Show the main output",
+          "default": true
+        },
+        {
+          "key": "system",
+          "type": "bool",
+          "label": "Show system sounds",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "audiodevices",
+      "name": "Audio devices",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 4
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "input",
+          "type": "bool",
+          "label": "Show microphones",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "ptt",
+      "name": "Push to talk",
+      "category": "deck",
+      "size": {
+        "w": 3,
+        "h": 3
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "label",
+          "type": "text",
+          "label": "Label",
+          "default": "Hold to talk"
+        }
+      ]
+    },
+    {
+      "type": "audioprofiles",
+      "name": "Audio profiles",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "duck",
+          "type": "bool",
+          "label": "Show the “Duck other apps” switch",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "powerplan",
+      "name": "Power plan",
+      "category": "deck",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "winservices",
+      "name": "Windows services",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": []
+    },
+    {
+      "type": "brightness",
+      "name": "Display brightness",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
+      "type": "powerbuttons",
+      "name": "Lock and sleep",
+      "category": "deck",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
       "type": "sessions",
       "name": "Agent sessions",
       "category": "ai",
