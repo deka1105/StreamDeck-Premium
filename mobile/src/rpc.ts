@@ -5,6 +5,8 @@
 import { seal, unseal, b64ToBytes, bytesToB64, genEphemeral, deriveDeviceKey, confirmTag } from "./crypto";
 import { nextCounter, nextEvCounter, type Pairing } from "./storage";
 import type { ButtonAction } from "./buttons";
+import { Platform } from "react-native";
+import { hostAddresses } from "./androidLogic";
 
 export type DeckAction = ButtonAction;
 
@@ -49,6 +51,33 @@ export async function pair(host: string, port: number, pid: string, hostPubB64: 
   return { kid: pid, key: bytesToB64(key), host, port, name: reply.host ?? "host" };
 }
 
+// Android over USB: the computer runs `adb reverse`, so the phone also reaches
+// it at 127.0.0.1. A send that can't reach the Wi-Fi address is retried there
+// (the same sealed envelope — nothing reached the computer, so no replay), and
+// whichever address worked is tried first next time.
+let usbFirst = false;
+export function setUsbFirst(on: boolean) {
+  usbFirst = on;
+}
+const lastGood = new Map<string, string>();
+
+async function postRpc(p: Pairing, envelope: unknown, timeoutMs?: number): Promise<Response> {
+  const list = hostAddresses(p.host, Platform.OS, usbFirst);
+  const good = lastGood.get(p.kid);
+  const order = good && list.includes(good) ? [good, ...list.filter((a) => a !== good)] : list;
+  let lastErr: unknown = null;
+  for (const addr of order) {
+    try {
+      const res = await postJson(`http://${addr}:${p.port}/rpc`, envelope, timeoutMs);
+      lastGood.set(p.kid, addr);
+      return res;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("Can't reach the computer.");
+}
+
 // Serialize every /rpc call. nextCounter() is read-modify-write, so overlapping
 // sends — e.g. a button press landing during a background foreground poll — could
 // reuse a counter and be rejected as a replay. Chaining guarantees each send
@@ -66,7 +95,7 @@ async function sendCmd<T = unknown>(p: Pairing, cmd: Record<string, unknown>): P
     const ctr = await nextCounter(p.kid);
     const envelope = { kid: p.kid, ...seal(key, { ctr, ...cmd }) };
 
-    const res = await postJson(`http://${p.host}:${p.port}/rpc`, envelope);
+    const res = await postRpc(p, envelope);
 
     if (res.status !== 200) {
       const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -138,7 +167,7 @@ export function panelWait(p: Pairing, params: { after: number; boot: string | nu
     const ctr = await nextEvCounter(p.kid);
     const timeoutMs = params.timeoutMs ?? 25_000;
     const envelope = { kid: p.kid, ...seal(key, { ctr, ch: "ev", cmd: "panel", method: "events.wait", params: { ...params, timeoutMs } }) };
-    const res = await postJson(`http://${p.host}:${p.port}/rpc`, envelope, timeoutMs + 8000);
+    const res = await postRpc(p, envelope, timeoutMs + 8000);
     if (res.status !== 200) {
       const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
       throw new Error(err.error ?? `HTTP ${res.status}`);
