@@ -286,7 +286,6 @@ export function cleanControl(c) {
       .filter((s) => typeof s?.cmd === "string" && s.cmd.trim())
       .map((s, i) => ({ id: uid(s.id, i, "svc"), name: cleanText(s.name, 40) || s.cmd, cmd: cleanText(s.cmd, 500).trim(), args: cleanText(s.args, 2000), cwd: cleanText(s.cwd, 1000).trim(), url: cleanUrlOrPath(s.url) ?? "" })),
     trackpad: c?.trackpad === true,
-    trackpadSpeed: Math.max(0.3, Math.min(4, Number(c?.trackpadSpeed) || 1.5)),
   };
 }
 

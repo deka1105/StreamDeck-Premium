@@ -20,6 +20,7 @@ import { nowplaying, volume, radio, lyrics, mediaserver } from "./media.js";
 import { pushvalue, notifications, bigbutton, shortcutgrid, command, ruleswidget, customhtml } from "./automation.js";
 import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./ai.js";
 import { stack } from "./stack.js";
+import { obs, homeassistant, containers, services, meeting, wake, oscpad, trackpad } from "./control.js";
 
 export const WIDGETS = [
   // time
@@ -34,6 +35,8 @@ export const WIDGETS = [
   note, checklist, counter, breathe, quote, title, battery, computers,
   // controls & automation
   deck, bigbutton, shortcutgrid, pushvalue, notifications, command, ruleswidget,
+  // control deck
+  obs, meeting, homeassistant, containers, services, wake, oscpad, trackpad,
   // ai & code
   sessions, aiquota, tokenuse, agentalerts, contributions, prs,
   // layout
@@ -49,6 +52,7 @@ export const CATEGORIES = [
   { id: "web", name: "Weather & web" },
   { id: "media", name: "Media" },
   { id: "controls", name: "Controls" },
+  { id: "deck", name: "Control Deck" },
   { id: "ai", name: "AI & code" },
   { id: "layout", name: "Layout" },
 ];
