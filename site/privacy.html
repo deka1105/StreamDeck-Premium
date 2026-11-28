@@ -74,7 +74,13 @@
     <li><strong>Hacker News</strong> — top stories are read from the public Hacker News API.</li>
     <li><strong>News feeds, calendars and images</strong> — the addresses you add are fetched directly. For iCloud calendars the desktop app signs in with the Apple ID and app-specific password you enter; that password is kept encrypted by your computer's system keychain and never leaves it except to sign in to iCloud.</li>
     <li><strong>Internet widget</strong> — measures latency by opening a connection to 1.1.1.1 (or 8.8.8.8). A speed test (only when you tap it or schedule it) and the optional public-IP display contact speed.cloudflare.com.</li>
+    <li><strong>Media</strong> — synced lyrics (only if you turn them on for a lyrics widget) are looked up on LRCLIB by song title and artist. Radio stations you add are streamed from the addresses you enter. Plex or Jellyfin servers you add are contacted with the key you enter.</li>
+    <li><strong>GitHub</strong> — contributions and pull requests are read from GitHub's API with your signed-in <code>gh</code> tool or a token you enter.</li>
+    <li><strong>Games</strong> — Steam games are read from Steam's own files on your computer. Game cover pictures may be loaded from Steam's public image server by game number. “Friends in game” uses a Steam Web API key you enter and sends your Steam ID to Steam.</li>
+    <li><strong>Your own devices and services</strong> — OBS, Home Assistant, 3D printers, cameras, an Immich server, Docker, other computers to wake (Wake-on-LAN) and OSC devices are contacted at the addresses you enter, usually on your own network. Passwords, tokens and access codes are kept encrypted by your computer's system keychain and are sent only to the device they belong to.</li>
+    <li><strong>Coding agents</strong> — sessions, plan limits and token counts are read from files Claude Code and Codex keep on your computer; prompt and reply text is never read. Nothing is sent anywhere except your paired phone.</li>
   </ul>
+  <p><strong>Android only, each off until you turn it on:</strong> “Show phone notifications on the computer” sends the app name, title and text of new notifications from your phone to your own computer (it needs Android's notification access, which you grant in Android's settings). The clipboard bridge copies text between your phone and your computer when you tap it, and only if the computer allows it. “Share battery with the computer” sends the phone's battery level, charging state and temperature to your computer for rules you set up. None of this leaves your phone and computer.</p>
   <p>Computer statistics (CPU, memory, disks, processes), notes, checklists and timers stay on your computer and are sent only to your paired phone, encrypted as described above.</p>
 
   <h2>Device permissions</h2>
@@ -82,6 +88,8 @@
     <li><strong>Camera</strong> — used solely to scan the pairing QR code shown by the host application. No photo or video is recorded, stored, or transmitted.</li>
     <li><strong>Photo library</strong> — used only when you explicitly choose an image for a tile face. The chosen image is resized on-device and stored in your local deck layout. It is never uploaded.</li>
     <li><strong>Local network</strong> — required to reach your own computer. Used for nothing else.</li>
+    <li><strong>Android: light and proximity sensors</strong> — read on the phone only, to dim the panel in a dark room and wake it when your hand is near, when you turn those on. Nothing is recorded or sent.</li>
+    <li><strong>Android: notification access</strong> — optional; see above.</li>
   </ul>
 
   <h2>Purchases</h2>
