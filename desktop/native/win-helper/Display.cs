@@ -54,10 +54,10 @@ internal static unsafe class Display
 
     public static void SetBrightness(int index, int percent)
     {
-        var done = EachPhysical<object>((i, h, _) =>
+        var done = EachPhysical<object>((i, h, name) =>
         {
             if (i != index) return null;
-            if (!Native.GetMonitorBrightness(h, out var min, out _, out var max)) throw new HelperException("That display doesn't accept brightness over DDC/CI.");
+            if (!Native.GetMonitorBrightness(h, out var min, out var _cur, out var max)) throw new HelperException("That display doesn't accept brightness over DDC/CI.");
             var v = (uint)Math.Round(min + (max - min) * Protocol.ClampPercent(percent) / 100.0);
             if (!Native.SetMonitorBrightness(h, v)) throw new HelperException("The display refused the new brightness.");
             return new object();
