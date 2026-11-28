@@ -175,14 +175,16 @@ export const containers = {
   needs: () => ["containers"],
   mount(el, ctx) {
     el.classList.add("w-list", "w-containers");
-    el.innerHTML = `<div class="w-title">Containers <span class="muted ct-count"></span></div><div class="list" data-no-swipe></div><div class="cd-msg muted"></div>`;
+    el.innerHTML = `<div class="cd-head"><span class="w-title">Containers</span><span class="pill ct-count"></span></div><div class="list" data-no-swipe></div><div class="cd-msg muted"></div>`;
     const list = el.querySelector(".list");
     const msg = el.querySelector(".cd-msg");
     ctx.subscribe("containers", (d) => {
       if (d?.error) return (list.innerHTML = `<div class="muted">${esc(d.error)}</div>`);
       const all = d?.containers ?? [];
       const shown = ctx.options.show === "running" ? all.filter((c) => c.running) : all;
-      el.querySelector(".ct-count").textContent = all.length ? `${all.filter((c) => c.running).length} of ${all.length} running` : "";
+      const count = el.querySelector(".ct-count");
+      count.textContent = all.length ? `${all.filter((c) => c.running).length}/${all.length} up` : "";
+      count.hidden = !all.length;
       list.innerHTML = shown.length
         ? shown
             .map(
