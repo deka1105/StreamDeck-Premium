@@ -41,6 +41,7 @@ function boot() {
   const look = createLook();
   const displayCtl = createDisplay({ store, onNeedsChange: () => bridge.setNeeds(pageNeeds()) });
   document.body.dataset.bridge = bridge.kind;
+  setLocale("auto"); // the device's language until the layout says otherwise
   if (bridge.demo) {
     bannerEl.hidden = false;
     bannerEl.textContent = t("banner.demo");

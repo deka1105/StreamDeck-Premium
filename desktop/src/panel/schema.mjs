@@ -363,6 +363,7 @@ export function sanitizeConfig(raw, catalog) {
       audio: cleanAudio(raw?.settings?.audio),
       printers: cleanPrinters(raw?.settings?.printers),
       edges: cleanEdges(raw?.settings?.edges ?? {}),
+      language: ["auto", "en", "es", "fr", "de", "ar"].includes(raw?.settings?.language) ? raw.settings.language : "auto",
       games: {
         launch: raw?.settings?.games?.launch === true,
         custom: (Array.isArray(raw?.settings?.games?.custom) ? raw.settings.games.custom.slice(0, 30) : [])
