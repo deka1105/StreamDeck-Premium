@@ -337,3 +337,28 @@ export const powerbuttons = {
     }
   },
 };
+
+// ------------------------------------------- phone bridge (Android) ----
+
+export const phonebridge = {
+  type: "phonebridge",
+  meta: { name: "Phone bridge (Android)", category: "personal", size: { w: 3, h: 2 }, min: { w: 2, h: 1 }, options: [] },
+  needs: () => [],
+  async mount(el, ctx) {
+    el.classList.add("w-keys");
+    el.innerHTML = `<div class="w-title">Clipboard</div><div class="keys-row" data-no-swipe></div><div class="cd-msg muted"></div>`;
+    const row = el.querySelector(".keys-row");
+    const msg = el.querySelector(".cd-msg");
+    const p = await ctx.request("phone.platform").catch(() => null);
+    if (!p?.android) return (row.innerHTML = `<div class="muted setup">The clipboard bridge works in the Android app.</div>`);
+    row.innerHTML = `<button class="cd-btn key" data-m="phone.clipboard.send"><span class="cd-ico">📤</span><span class="cd-lbl">Phone → computer</span></button><button class="cd-btn key" data-m="phone.clipboard.receive"><span class="cd-ico">📥</span><span class="cd-lbl">Computer → phone</span></button>`;
+    row.querySelectorAll("[data-m]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const r = await call(ctx, b.dataset.m, {}, msg);
+        b.dataset.result = r?.ok ? "ok" : "fail";
+        if (r?.ok) msg.textContent = b.dataset.m.endsWith("send") ? "Copied to the computer." : "Copied to this phone.";
+        setTimeout(() => delete b.dataset.result, 900);
+      }),
+    );
+  },
+};
