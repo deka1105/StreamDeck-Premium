@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <!-- Mirrors notifications to the computer, only after the user grants
+         notification access in Android's settings and turns it on in DeskAssist. -->
+    <service
+      android:name="expo.modules.deskassistandroid.DeskAssistNotificationService"
+      android:label="DeskAssist notification mirror"
+      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.service.notification.NotificationListenerService" />
+      </intent-filter>
+    </service>
+  </application>
+</manifest>
