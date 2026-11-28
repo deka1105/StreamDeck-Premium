@@ -159,3 +159,8 @@ decision made *without* reference material because the docs were silent.
 - Presets, colours and wallpapers are original values; no third-party theme
   files or images are bundled.
 
+
+### Stage 11
+
+- Built from public protocol documents only: obs-websocket 5 protocol (handshake, auth recipe, request names), Home Assistant REST API (`/api/states`, `/api/services/<domain>/<service>`), RFC 6455 (WebSocket framing), OSC 1.0 spec, the Wake-on-LAN magic-packet format, Docker/Podman CLI `--format` docs, and each meeting app's published keyboard-shortcut list.
+- No reference app's code was read. Widget names, layouts and visuals are our own.
