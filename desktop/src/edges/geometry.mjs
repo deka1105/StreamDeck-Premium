@@ -17,7 +17,13 @@ export function zoneAt({ x, y }, display, { dock = null, edgeSpan = [0.15, 0.85]
   if (x >= w - CORNER && top) return "tr";
   if (x < CORNER && bottom) return "bl";
   if (x >= w - CORNER && bottom) return "br";
-  if (dockTray && inRect({ x, y }, dockTray)) return "dock";
+  // The hidden dock reveals from the screen edge along the tray's span.
+  if (dockTray) {
+    const side = dockTray.side ?? "bottom";
+    const alongX = x >= dockTray.x && x < dockTray.x + dockTray.width;
+    const alongY = y >= dockTray.y && y < dockTray.y + dockTray.height;
+    if ((side === "bottom" && alongX && y >= h - EDGE) || (side === "top" && alongX && y < EDGE) || (side === "left" && alongY && x < EDGE) || (side === "right" && alongY && x >= w - EDGE)) return "dock";
+  }
   // The system Dock / taskbar owns its own edge; never steal it.
   if (dock && inRect({ x, y }, dock)) return null;
   const inSpan = y >= h * (edgeSpan?.[0] ?? 0.15) && y <= h * (edgeSpan?.[1] ?? 0.85);

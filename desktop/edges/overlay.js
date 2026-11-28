@@ -7,12 +7,13 @@
 // get(kind), set(kind, value), act(kind, action, arg), launch(app),
 // icon(app), saveFloating(list).
 
-import { zoneAt, createPressure, controlRect, sliderValue, dialValue, dialDistance, floatingDialValue, clampToDisplay } from "../src/edges/geometry.mjs";
+import { zoneAt, createPressure, controlRect, sliderValue, dialValue, dialDistance, floatingDialValue, clampToDisplay, trayBesideDock } from "../src/edges/geometry.mjs";
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const stage = $("#stage");
 const bridge = window.edges;
 let info = await bridge.info();
+info.dockTray ??= trayBesideDock(info.display, info.dock);
 let display = info.display;
 let cfg = info.profile;
 let pressure = createPressure(cfg.pressureMs ?? 0);

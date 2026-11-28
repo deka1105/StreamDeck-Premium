@@ -126,7 +126,7 @@ test("music corner and the hidden dock with its launcher", async ({ page }) => {
 
   // The tray sits beside the Dock, on its edge.
   await page.mouse.move(200, H - 150);
-  await page.mouse.move(200, H - 30, { steps: 6 });
+  await page.mouse.move(200, H - 1, { steps: 6 });
   const tray = page.locator(".ctl.tray");
   await expect(tray).toHaveClass(/\bin\b/);
   await expect(tray.locator(".app")).toHaveCount(3);
