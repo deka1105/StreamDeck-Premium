@@ -347,6 +347,35 @@ export const TEMPLATES = [
     },
   },
   {
+    id: "controldeck",
+    name: "Control Deck",
+    description: "OBS scenes and recording, meeting controls, volume and a lighting desk over OSC.",
+    page: {
+      name: "Studio",
+      widgets: [
+        { type: "obs", x: 0, y: 0, w: 7, h: 4 },
+        { type: "meeting", x: 7, y: 0, w: 5, h: 3 },
+        { type: "volume", x: 7, y: 3, w: 5, h: 1 },
+        { type: "oscpad", x: 0, y: 4, w: 7, h: 2 },
+        { type: "wake", x: 7, y: 4, w: 5, h: 2 },
+      ],
+    },
+  },
+  {
+    id: "devhome",
+    name: "Dev & home",
+    description: "Your dev servers, Docker containers, Home Assistant and a trackpad.",
+    page: {
+      name: "Dev & home",
+      widgets: [
+        { type: "homeassistant", x: 0, y: 0, w: 4, h: 6 },
+        { type: "services", x: 4, y: 0, w: 4, h: 4 },
+        { type: "containers", x: 8, y: 0, w: 4, h: 4 },
+        { type: "trackpad", x: 4, y: 4, w: 8, h: 2 },
+      ],
+    },
+  },
+  {
     id: "clock",
     name: "Clock",
     description: "A big clock with seconds.",

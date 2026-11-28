@@ -77,6 +77,27 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "studio",
+      name: "Studio",
+      widgets: [
+        { id: "obs", type: "obs", x: 0, y: 0, w: 7, h: 4, options: { scenes: true, outputs: true, audio: true } },
+        { id: "mt", type: "meeting", x: 7, y: 0, w: 5, h: 3, options: { app: "zoom", muteAll: true } },
+        { id: "vol", type: "volume", x: 7, y: 3, w: 5, h: 1 },
+        { id: "osc", type: "oscpad", x: 0, y: 4, w: 7, h: 2, options: { title: "Lighting desk" } },
+        { id: "wk", type: "wake", x: 7, y: 4, w: 5, h: 2 },
+      ],
+    },
+    {
+      id: "devdeck",
+      name: "Dev & home",
+      widgets: [
+        { id: "ha", type: "homeassistant", x: 0, y: 0, w: 4, h: 6, options: { title: "Office", entities: ["light.desk", "light.shelf", "switch.coffee", "sensor.office_temp", "lock.front_door", "scene.focus"] } },
+        { id: "svc", type: "services", x: 4, y: 0, w: 4, h: 4, options: { output: true } },
+        { id: "ct", type: "containers", x: 8, y: 0, w: 4, h: 4, options: { allowControl: true } },
+        { id: "tp", type: "trackpad", x: 4, y: 4, w: 8, h: 2 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [
