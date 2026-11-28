@@ -236,19 +236,4 @@ internal static class Audio
     {
         foreach (var s in Matching(name)) ((ISimpleAudioVolume)s.Control).SetMute(muted ? 1 : 0, Ctx);
     }
-
-    /// <summary>Lower (or restore) every app except the named ones. Returns the levels before.</summary>
-    public static Dictionary<string, float> Duck(float factor, ISet<string> except)
-    {
-        var before = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
-        foreach (var s in LiveSessions())
-        {
-            if (s.System || except.Contains(s.Name)) continue;
-            var v = (ISimpleAudioVolume)s.Control;
-            v.GetMasterVolume(out var level);
-            before.TryAdd(s.Name, level);
-            v.SetMasterVolume(Protocol.Clamp01(level * factor), Ctx);
-        }
-        return before;
-    }
 }
