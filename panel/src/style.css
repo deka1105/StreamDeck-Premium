@@ -938,3 +938,34 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .pr-card { overflow-y: auto; scrollbar-width: none; }
 /* A tall printers widget (phone portrait): one printer per row. */
 @container (max-aspect-ratio: 4/5) { .w-printers .pr-grid { grid-template-columns: 1fr !important; } }
+
+/* --- Stage 15: games, photo frame, camera --- */
+.w-nowgame { padding: 0; }
+.ng-art, .gm-art { background: linear-gradient(150deg, hsl(var(--h, 210) 55% 34%), hsl(calc(var(--h, 210) + 40) 60% 18%)); background-size: cover; background-position: center; position: relative; }
+.ng-art { position: absolute; inset: 0; }
+.ng-art:not(.has-art)::after, .gm-art:not(.has-art)::after { content: attr(data-title); position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 10%; font-weight: 800; color: rgba(255, 255, 255, 0.85); font-size: clamp(11px, 9cqmin, 26px); }
+.ng-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.1) 55%, transparent); }
+.ng-text { position: absolute; left: 12px; right: 12px; bottom: 10px; }
+.ng-label { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--success); }
+.w-nowgame[data-idle="1"] .ng-label { color: var(--ink-dim); }
+.ng-name { font-weight: 800; font-size: clamp(14px, 9cqmin, 26px); line-height: 1.15; }
+.ng-time { font-size: 12px; color: var(--ink-mid); font-variant-numeric: tabular-nums; }
+.w-games { gap: 6px; }
+.gm-row { flex: 1; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(70px, 1fr); gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.gm-tile { appearance: none; border: 0; background: none; color: inherit; font: inherit; padding: 0; display: flex; flex-direction: column; gap: 3px; min-width: 0; min-height: 0; cursor: pointer; text-align: left; }
+.gm-art { flex: 1; min-height: 40px; border-radius: 10px; overflow: hidden; container-type: size; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+.gm-tile.on .gm-art { box-shadow: 0 0 0 2px var(--success); }
+.gm-name { font-size: 12px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gm-meta { font-size: 10px; }
+.gm-friends { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gm-friends:empty { display: none; }
+.w-frame, .w-camera { padding: 0; background: #000; }
+.pf-img, .cam-img { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.w-frame[data-fit="contain"] .pf-img { background-size: contain; }
+.pf-img { opacity: 0; transition: opacity 1.2s ease; }
+.pf-img.on { opacity: 1; }
+.pf-msg, .cam-msg { position: relative; z-index: 1; margin: auto; }
+.pf-msg:empty, .cam-msg:empty { display: none; }
+.cam-img { background-size: contain; }
+.cam-bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding: 6px 10px; font-size: 11px; background: linear-gradient(0deg, rgba(0, 0, 0, 0.7), transparent); }
+.cam-title { font-weight: 700; }

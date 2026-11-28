@@ -22,6 +22,7 @@ import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./
 import { stack } from "./stack.js";
 import { mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons, phonebridge } from "./audio.js";
 import { printers, printer } from "./printers.js";
+import { nowgame, recentgames, photoframe, camera, devbatteries } from "./games.js";
 import { obs, homeassistant, containers, services, meeting, wake, oscpad, trackpad } from "./control.js";
 
 export const WIDGETS = [
@@ -30,11 +31,11 @@ export const WIDGETS = [
   // weather & web
   weather, forecast, sunmoon, moon, airquality, rates, crypto, hackernews, news, image,
   // computer
-  metric, gauge, chart, gpu, storage, topprocs, processes, internet,
+  metric, gauge, chart, gpu, storage, topprocs, processes, internet, devbatteries,
   // media
-  nowplaying, volume, radio, lyrics, mediaserver,
+  nowplaying, volume, radio, lyrics, mediaserver, nowgame, recentgames,
   // personal
-  note, checklist, counter, breathe, quote, title, battery, computers, phonebridge,
+  note, checklist, counter, breathe, quote, title, battery, computers, phonebridge, photoframe, camera,
   // controls & automation
   deck, bigbutton, shortcutgrid, pushvalue, notifications, command, ruleswidget,
   // control deck
