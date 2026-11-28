@@ -143,7 +143,7 @@ export function createPointer({ platform = process.platform, spawnImpl = spawn, 
   /** Stop the helper after a minute without use. */
   function bump() {
     clearTimeout(idle);
-    idle = setTimeout(() => child?.stdin.end(), 60_000);
+    idle = setTimeout(() => child?.kill(), 60_000);
     idle.unref?.();
   }
 
@@ -162,7 +162,7 @@ export function createPointer({ platform = process.platform, spawnImpl = spawn, 
     },
     stop() {
       clearTimeout(idle);
-      child?.stdin.end();
+      child?.kill();
     },
   };
 }
