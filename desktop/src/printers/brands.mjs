@@ -49,7 +49,7 @@ export function shapeMoonraker(status, meta = {}) {
     layers: ps.info?.total_layer ?? meta.layer_count ?? null,
     file: ps.filename ?? "",
     temps: { nozzle: num(status.extruder?.temperature), nozzleTarget: num(status.extruder?.target), bed: num(status.heater_bed?.temperature), bedTarget: num(status.heater_bed?.target), chamber: num(chamber) },
-    speed: status.gcode_move?.speed_factor ? pct(status.gcode_move.speed_factor * 100) : null,
+    speed: status.gcode_move?.speed_factor ? Math.round(status.gcode_move.speed_factor * 100) : null, // can exceed 100 %
     error: st === "error" ? ps.message || "Error" : null,
     slots: (meta.filament_colors ?? []).map((c, i) => ({ color: String(c).startsWith("#") ? c : `#${c}`, material: (meta.filament_type ?? "").split(";")[i] ?? "", active: i === 0 && (meta.filament_colors ?? []).length === 1 })),
   };
@@ -133,7 +133,7 @@ export function shapePrusaLink(status, job) {
     remainingMin: status?.job?.time_remaining ? Math.round(status.job.time_remaining / 60) : null,
     file: job?.file?.display_name ?? job?.file?.name ?? "",
     temps: { nozzle: num(pr.temp_nozzle), nozzleTarget: num(pr.target_nozzle), bed: num(pr.temp_bed), bedTarget: num(pr.target_bed), chamber: null },
-    speed: pct(pr.speed),
+    speed: num(pr.speed),
     error: state === "error" ? (s === "ATTENTION" ? "Needs attention" : "Error") : null,
   };
 }
@@ -243,7 +243,7 @@ export function shapeSdcp(msg) {
     layers: num(pi.TotalLayer),
     file: pi.Filename ?? "",
     temps: { nozzle: num(s.TempOfNozzle), nozzleTarget: num(s.TempTargetNozzle), bed: num(s.TempOfHotbed), bedTarget: num(s.TempTargetHotbed), chamber: num(s.TempOfBox) },
-    speed: pct(pi.PrintSpeedPct),
+    speed: num(pi.PrintSpeedPct),
     error: pi.ErrorNumber ? `Error ${pi.ErrorNumber}` : null,
   };
 }
@@ -301,7 +301,7 @@ export function shapeFlashforgeHttp(d) {
     layers: num(d?.targetPrintLayer),
     file: d?.printFileName ?? "",
     temps: { nozzle: num(d?.rightTemp), nozzleTarget: num(d?.rightTargetTemp), bed: num(d?.platTemp), bedTarget: num(d?.platTargetTemp), chamber: num(d?.chamberTemp) },
-    speed: pct(d?.printSpeedAdjust),
+    speed: num(d?.printSpeedAdjust),
     error: d?.errorCode && d.errorCode !== "0" ? `Error ${d.errorCode}` : null,
     slots,
   };
