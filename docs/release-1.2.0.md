@@ -18,7 +18,7 @@ DeskAssist turns an iPhone into a desk panel and control deck for the user's own
 
 **To review without a computer, use the built-in demo:**
 
-1. On the welcome screen, tap **Try the demo** (no account, no computer needed).
+1. On the welcome screen, tap **Explore the demo instead** (no account, no computer needed).
 2. Tap **Panel** at the top. The yellow "Simulated — demo data" label shows that everything is simulated.
 3. Swipe left and right (or tap the dots at the bottom) to see the pages:
    - **Home**: clock, computer load, deck tiles;
