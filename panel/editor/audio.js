@@ -61,3 +61,32 @@ export function renderAudio(root, { state, h, change, api, flash }) {
     ),
   );
 }
+
+// Editor › Settings › Android phone: the computer's side of the Android features.
+export function renderAndroidHost(root, { state, h, change, api }) {
+  const s = state.config.settings;
+  s.android ??= { usb: false, clipboard: false, showNotifications: true };
+  const a = s.android;
+  const usbStatus = h("p", { class: "muted small", id: "usbStatus" });
+  const refresh = () =>
+    api("/api/editor/usb")
+      .then((r) => {
+        usbStatus.textContent = !r.on ? "USB link is off." : r.error ? r.error : r.phones.length ? `Linked over USB: ${r.phones.join(", ")}` : "No Android phone plugged in (with USB debugging on).";
+      })
+      .catch(() => {});
+  if (a.usb) refresh();
+  const check = (id, key, label) => h("label", { class: "check" }, h("input", { type: "checkbox", id, checked: a[key], onchange: (e) => change(() => (a[key] = e.target.checked)) }), label);
+  root.append(
+    h(
+      "section",
+      { class: "set-section", id: "androidSettings" },
+      h("h3", { text: "Android phone" }),
+      check("androidUsb", "usb", "USB link: reach plugged-in Android phones over the cable (no Wi-Fi needed)"),
+      usbStatus,
+      h("p", { class: "hint", text: "Needs Android's platform-tools (adb) on this computer and USB debugging on the phone. DeskAssist runs `adb reverse` for you; the connection stays encrypted and paired as over Wi-Fi. Then turn on “Prefer the USB cable” in the phone's 📱 settings." }),
+      check("androidNotes", "showNotifications", "Show notifications mirrored from the phone on this computer"),
+      check("androidClip", "clipboard", "Clipboard bridge: let paired phones read and set this computer's clipboard"),
+      h("p", { class: "hint", text: "Battery care: with “Share battery with the computer” on in the phone app, the values phone.battery, phone.charging and phone.temp appear as pushed values. Use them in Rules, for example “phone.battery ≥ 80 → run shortcut plug-off”." }),
+    ),
+  );
+}
