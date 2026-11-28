@@ -29,9 +29,8 @@ function card(p, { compact = false } = {}) {
     <div class="pr-head"><span class="pr-name">${esc(p.name)}</span><span class="pr-state">${STATE[p.state] ?? esc(p.state)}</span></div>
     ${compact ? "" : `<div class="muted pr-brand">${esc(p.model || p.brandName || "")}</div>`}
     <div class="pr-main">${active || p.state === "finished" ? `<div class="pr-progress">${ring(p.state === "finished" ? 100 : p.pct)}<span class="pr-pct">${p.state === "finished" ? "✓" : `${p.pct ?? 0}<small>%</small>`}</span></div>` : `<div class="pr-idle">${p.state === "offline" ? "⏻" : "◎"}</div>`}
-      <div class="pr-info">${active ? `<div class="pr-left">${left(p.remainingMin)}</div><div class="muted pr-eta">${p.remainingMin ? `Done ≈ ${eta(p.remainingMin)}` : ""}</div>` : ""}${p.layers ? `<div class="pr-layer">Layer ${p.layer ?? 0} / ${p.layers}</div>` : ""}${p.file ? `<div class="muted pr-file">${esc(p.file)}</div>` : ""}${p.error ? `<div class="pr-error">${esc(p.error)}</div>` : ""}</div>
+      <div class="pr-info">${active ? `<div class="pr-left">${left(p.remainingMin)}</div><div class="muted pr-eta">${p.remainingMin ? `Done ≈ ${eta(p.remainingMin)}` : ""}</div>` : ""}${p.layers ? `<div class="pr-layer">Layer ${p.layer ?? 0} / ${p.layers}</div>` : ""}${p.file ? `<div class="muted pr-file">${esc(p.file)}</div>` : ""}${p.error ? `<div class="pr-error">${esc(p.error)}</div>` : ""}${p.state === "offline" ? "" : temps}${slots}</div>
     </div>
-    ${p.state === "offline" ? "" : temps}${slots}
   </div>`;
 }
 

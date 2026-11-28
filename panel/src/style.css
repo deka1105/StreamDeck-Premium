@@ -921,4 +921,7 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .pr-slot { flex: 1; max-width: 46px; height: clamp(16px, 9cqh, 26px); border-radius: 6px; background: var(--c); border: 2px solid transparent; display: grid; place-items: center; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15); }
 .pr-slot b { font-size: 8px; font-weight: 800; color: var(--on, #fff); }
 .pr-slot.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
-@container (max-height: 150px) { .pr-temps, .pr-slots, .pr-brand { display: none; } }
+.pr-info .pr-temps { margin-top: 4px; }
+.pr-info .pr-slots { margin-top: 4px; }
+@container (max-height: 150px) { .pr-brand, .pr-eta { display: none; } }
+@container (max-height: 110px) { .pr-slots, .pr-file { display: none; } }
