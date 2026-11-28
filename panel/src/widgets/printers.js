@@ -12,9 +12,18 @@ const ring = (p) => {
   return `<svg viewBox="0 0 100 100" class="pr-ring"><circle cx="50" cy="50" r="42" class="t-track"/><circle cx="50" cy="50" r="42" class="t-fill" transform="rotate(-90 50 50)" style="stroke-dasharray:${C};stroke-dashoffset:${C * (1 - (p ?? 0) / 100)}"/></svg>`;
 };
 
+/** Black or white text, whichever reads on this filament colour. Pure. */
+export function inkOn(hex) {
+  const m = /^#?([0-9a-f]{6})/i.exec(String(hex ?? ""));
+  if (!m) return "#fff";
+  const n = parseInt(m[1], 16);
+  const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return lum > 0.6 ? "#0b1220" : "#fff";
+}
+
 function card(p, { compact = false } = {}) {
   const active = p.state === "printing" || p.state === "paused";
-  const slots = (p.slots ?? []).length ? `<div class="pr-slots">${p.slots.map((s) => `<i class="pr-slot${s.active ? " on" : ""}" style="--c:${esc(s.color ?? "#64748b")}" title="${esc(s.material)}"><b>${esc(s.material || "")}</b></i>`).join("")}</div>` : "";
+  const slots = (p.slots ?? []).length ? `<div class="pr-slots">${p.slots.map((s) => `<i class="pr-slot${s.active ? " on" : ""}" style="--c:${esc(s.color ?? "#64748b")};--on:${inkOn(s.color)}" title="${esc(s.material)}"><b>${esc(s.material || "")}</b></i>`).join("")}</div>` : "";
   const temps = `<div class="pr-temps"><span title="Nozzle">🔥 ${t(p.temps?.nozzle)}${p.temps?.nozzleTarget ? `<small>/${Math.round(p.temps.nozzleTarget)}°</small>` : ""}</span><span title="Bed">▭ ${t(p.temps?.bed)}${p.temps?.bedTarget ? `<small>/${Math.round(p.temps.bedTarget)}°</small>` : ""}</span>${p.temps?.chamber !== null && p.temps?.chamber !== undefined ? `<span title="Chamber">◫ ${t(p.temps.chamber)}</span>` : ""}${p.speed !== null && p.speed !== undefined ? `<span title="Speed">⏩ ${esc(typeof p.speed === "number" ? `${p.speed}%` : p.speed)}</span>` : ""}</div>`;
   return `<div class="pr-card" data-state="${esc(p.state)}" data-id="${esc(p.id)}">
     <div class="pr-head"><span class="pr-name">${esc(p.name)}</span><span class="pr-state">${STATE[p.state] ?? esc(p.state)}</span></div>

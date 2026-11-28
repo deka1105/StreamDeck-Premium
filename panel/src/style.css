@@ -901,7 +901,7 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .pr-card[data-state="offline"] { opacity: 0.6; }
 .pr-brand { font-size: 10px; margin-top: -4px; }
 .pr-main { flex: 1; min-height: 0; display: flex; align-items: center; gap: 12px; }
-.pr-progress { position: relative; height: min(100%, 46cqw); aspect-ratio: 1; flex: none; display: grid; place-items: center; }
+.pr-progress { position: relative; height: min(100%, 46cqw, 58cqh); aspect-ratio: 1; flex: none; display: grid; place-items: center; }
 .pr-ring { position: absolute; inset: 0; width: 100%; height: 100%; }
 .pr-ring .t-track { fill: none; stroke: var(--field); stroke-width: 9; }
 .pr-ring .t-fill { fill: none; stroke: var(--accent); stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 0.6s; }
@@ -909,7 +909,7 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .pr-card[data-state="finished"] .pr-ring .t-fill { stroke: var(--success); }
 .pr-pct { position: relative; font-weight: 800; font-size: clamp(14px, 11cqmin, 32px); font-variant-numeric: tabular-nums; }
 .pr-pct small { font-size: 0.5em; color: var(--ink-dim); }
-.pr-idle { font-size: clamp(22px, 18cqmin, 48px); color: var(--ink-faint); width: min(46cqw, 100%); text-align: center; }
+.pr-idle { font-size: clamp(22px, 18cqmin, 48px); color: var(--ink-faint); width: min(46cqw, 58cqh); text-align: center; flex: none; }
 .pr-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: clamp(11px, 4.4cqmin, 14px); }
 .pr-left { font-weight: 750; font-size: clamp(12px, 5.5cqmin, 18px); }
 .pr-eta, .pr-file { font-size: clamp(10px, 3.8cqmin, 12px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -919,6 +919,6 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .pr-temps small { color: var(--ink-faint); }
 .pr-slots { display: flex; gap: 6px; }
 .pr-slot { flex: 1; max-width: 46px; height: clamp(16px, 9cqh, 26px); border-radius: 6px; background: var(--c); border: 2px solid transparent; display: grid; place-items: center; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15); }
-.pr-slot b { font-size: 8px; font-weight: 800; color: #fff; mix-blend-mode: difference; }
+.pr-slot b { font-size: 8px; font-weight: 800; color: var(--on, #fff); }
 .pr-slot.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
 @container (max-height: 150px) { .pr-temps, .pr-slots, .pr-brand { display: none; } }
