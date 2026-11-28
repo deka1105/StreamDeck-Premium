@@ -52,7 +52,8 @@
       "panel-dist/**/*",
       "assets/**/*",
       "!**/*.map",
-      "edges/**"
+      "edges/**",
+      "blender/deskassist_blender.py"
     ],
     "mac": {
       "target": [
