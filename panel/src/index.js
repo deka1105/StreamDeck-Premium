@@ -230,6 +230,13 @@ function boot() {
       prompts.done(e.data.id);
     } else if (e.type === "night") {
       document.body.dispatchEvent(new CustomEvent("deskassist-night", { detail: e.data }));
+    } else if (e.type === "phone") {
+      // From the Android app: volume keys flip pages, a hand near the phone wakes it.
+      const a = e.data?.action;
+      if (a === "next" || a === "prev") {
+        document.body.dispatchEvent(new CustomEvent("deskassist-wake"));
+        go(step(index, a === "next" ? 1 : -1, pages().length));
+      } else if (a === "wake") document.body.dispatchEvent(new CustomEvent("deskassist-wake"));
     }
   });
 
