@@ -40,6 +40,7 @@ import { createAi } from "./providers/ai.mjs";
 import { createGithub } from "./providers/github.mjs";
 import { createAgents } from "./panel/agents.mjs";
 import { createControl } from "./control/index.mjs";
+import { createPhone } from "./control/phone.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -183,6 +184,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
     widgetAllows: (...a) => widgetAllows(...a),
     dryRun,
   });
+  const phone = createPhone({ pushes, getSettings: () => panelStore.config().settings, port, dryRun });
   const provs = {
     ...control.providers,
     ...(providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun })),
@@ -362,6 +364,8 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
       },
       // ---- Control Deck (Stage 11) ----
       ...control.methods,
+      // ---- Android phone (Stage 13) ----
+      ...phone.methods,
       "rules.pause": ({ minutes } = {}) => rules.pause(Math.max(0, Math.min(24 * 60, Number(minutes) || 0))),
       "rules.state": () => ({ pausedUntil: rules.pausedUntil(), active: rules.active() }),
       "state.get": ({ key } = {}) => ({ key, value: widgetState.get(key) }),
@@ -611,10 +615,12 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
     runner,
     agents,
     control,
+    phone,
     listen: () =>
       new Promise((r) => {
         sampler.start();
         rules.start();
+        phone.start();
         provs.netq?.startUsage?.();
         server.listen(port, r);
       }),
@@ -625,6 +631,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
         clearInterval(ruleFacts);
         runner.stopAll();
         control.stop();
+        phone.stop();
         provs.netq?.stopUsage?.();
         provs.radio?.stop?.();
         widgetState.flush();
@@ -655,6 +662,7 @@ export function agentRoutes(host) {
       }
     },
     "POST /api/editor/agents/remove": (_req, res, { send }) => send(res, 200, { ok: true, ...host.agents.remove() }),
+    "GET /api/editor/usb": async (_req, res, { send }) => send(res, 200, { ok: true, ...(await host.phone.usbStatus()) }),
     "POST /api/editor/audio/snapshot": async (_req, res, { send }) => {
       try {
         send(res, 200, { ok: true, ...(await host.control.audioSnapshot()) });

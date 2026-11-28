@@ -357,6 +357,7 @@ export function sanitizeConfig(raw, catalog) {
       },
       control: cleanControl(raw?.settings?.control),
       audio: cleanAudio(raw?.settings?.audio),
+      android: { usb: raw?.settings?.android?.usb === true, clipboard: raw?.settings?.android?.clipboard === true, showNotifications: raw?.settings?.android?.showNotifications !== false },
       system: { services: (Array.isArray(raw?.settings?.system?.services) ? raw.settings.system.services : []).filter((n) => typeof n === "string" && /^[A-Za-z0-9_.\- ]{1,80}$/.test(n)).slice(0, 20) },
       mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],
     },
