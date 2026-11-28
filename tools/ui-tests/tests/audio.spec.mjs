@@ -88,8 +88,8 @@ test.describe("host", () => {
   });
   test.afterAll(async () => host?.stop());
 
-  test("lock and sleep refuse without the confirmed hold; the hold goes through (dry run)", async ({ page }) => {
-    const rpc = (method, params) => page.evaluate(([m, p]) => window.__panel.bridge.request(m, p), [method, params]);
+  test("lock and sleep refuse without the confirmed hold; the hold goes through (dry run)", async ({ page, request }) => {
+    const rpc = async (method, params) => (await (await request.post(`${host.base}/api/panel/rpc`, { data: { method, params } })).json()).result;
     await page.goto(`${host.base}/panel/`);
     await expect(page.locator(".hold")).toHaveCount(2);
     expect((await rpc("system.power", { action: "sleep" })).error).toMatch(/Hold the button/);
