@@ -45,6 +45,10 @@ jobs:
           dotnet publish -c Release -r win-x64 -o out
           ./out/DeskAssistHelper.exe --selftest
       - run: npm test
+      - name: Blender add-on whitelist (Python)
+        if: runner.os == 'macOS'
+        working-directory: desktop/blender
+        run: python3 -m unittest -v test_deskassist_blender
 
   panel:
     name: Panel, editor and browser tests
