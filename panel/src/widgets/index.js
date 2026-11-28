@@ -21,6 +21,7 @@ import { pushvalue, notifications, bigbutton, shortcutgrid, command, ruleswidget
 import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./ai.js";
 import { stack } from "./stack.js";
 import { mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons, phonebridge } from "./audio.js";
+import { printers, printer } from "./printers.js";
 import { obs, homeassistant, containers, services, meeting, wake, oscpad, trackpad } from "./control.js";
 
 export const WIDGETS = [
@@ -39,6 +40,7 @@ export const WIDGETS = [
   // control deck
   obs, meeting, homeassistant, containers, services, wake, oscpad, trackpad,
   mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons,
+  printers, printer,
   // ai & code
   sessions, aiquota, tokenuse, agentalerts, contributions, prs,
   // layout

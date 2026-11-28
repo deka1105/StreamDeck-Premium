@@ -878,3 +878,43 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .dv-sec .vol-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
 .dv-sec .vol-row input { min-width: 0; width: 100%; }
 .dv-sec .vol-num { font-size: 13px; min-width: 4ch; }
+
+/* --- Stage 14: 3D printers --- */
+.w-printers { padding: 0; background: transparent; border: 0; box-shadow: none; }
+.w-printer { padding: 0; }
+.pr-grid { height: 100%; display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); grid-auto-rows: 1fr; }
+.w-printers[data-count="4"] .pr-grid { grid-template-columns: 1fr 1fr; }
+.pr-card { container-type: size; min-height: 0; background: var(--surface); border: var(--tile-border, 1px solid var(--line)); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+.w-printer .pr-card { height: 100%; }
+.pr-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pr-name { font-weight: 750; font-size: clamp(12px, 5cqmin, 17px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-state { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--field); color: var(--ink-dim); white-space: nowrap; }
+.pr-card[data-state="printing"] .pr-state { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accent-soft); }
+.pr-card[data-state="paused"] .pr-state, .pr-card[data-state="busy"] .pr-state { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); }
+.pr-card[data-state="finished"] .pr-state { background: color-mix(in srgb, var(--success) 22%, transparent); color: var(--success); }
+.pr-card[data-state="error"] { border-color: var(--danger); }
+.pr-card[data-state="error"] .pr-state { background: var(--danger); color: #fff; }
+.pr-card[data-state="offline"] { opacity: 0.6; }
+.pr-brand { font-size: 10px; margin-top: -4px; }
+.pr-main { flex: 1; min-height: 0; display: flex; align-items: center; gap: 12px; }
+.pr-progress { position: relative; height: min(100%, 46cqw); aspect-ratio: 1; flex: none; display: grid; place-items: center; }
+.pr-ring { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pr-ring .t-track { fill: none; stroke: var(--field); stroke-width: 9; }
+.pr-ring .t-fill { fill: none; stroke: var(--accent); stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 0.6s; }
+.pr-card[data-state="paused"] .pr-ring .t-fill { stroke: var(--warn); }
+.pr-card[data-state="finished"] .pr-ring .t-fill { stroke: var(--success); }
+.pr-pct { position: relative; font-weight: 800; font-size: clamp(14px, 11cqmin, 32px); font-variant-numeric: tabular-nums; }
+.pr-pct small { font-size: 0.5em; color: var(--ink-dim); }
+.pr-idle { font-size: clamp(22px, 18cqmin, 48px); color: var(--ink-faint); width: min(46cqw, 100%); text-align: center; }
+.pr-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: clamp(11px, 4.4cqmin, 14px); }
+.pr-left { font-weight: 750; font-size: clamp(12px, 5.5cqmin, 18px); }
+.pr-eta, .pr-file { font-size: clamp(10px, 3.8cqmin, 12px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-layer { color: var(--ink-mid); font-variant-numeric: tabular-nums; }
+.pr-error { color: var(--danger); font-weight: 700; font-size: 12px; }
+.pr-temps { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: clamp(10px, 4cqmin, 13px); font-variant-numeric: tabular-nums; color: var(--ink-mid); }
+.pr-temps small { color: var(--ink-faint); }
+.pr-slots { display: flex; gap: 6px; }
+.pr-slot { flex: 1; max-width: 46px; height: clamp(16px, 9cqh, 26px); border-radius: 6px; background: var(--c); border: 2px solid transparent; display: grid; place-items: center; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15); }
+.pr-slot b { font-size: 8px; font-weight: 800; color: #fff; mix-blend-mode: difference; }
+.pr-slot.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
+@container (max-height: 150px) { .pr-temps, .pr-slots, .pr-brand { display: none; } }
