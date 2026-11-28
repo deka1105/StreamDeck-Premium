@@ -128,7 +128,7 @@ export function renderControl(root, { state, h, change, api, flash }) {
 
       h("h4", { text: "Computers to wake (Wake-on-LAN)" }),
       list(c.wol, (m) => m.name, (m) => `${m.mac} → ${m.address}:${m.port}`, (m) => (c.wol = c.wol.filter((x) => x.id !== m.id))),
-      h("div", { class: "row" }, wf.name, wf.mac, wf.addr, h("button", {
+      h("div", { class: "row form" }, wf.name, wf.mac, wf.addr, h("button", {
         class: "btn",
         id: "addWol",
         text: "Add",
@@ -141,7 +141,7 @@ export function renderControl(root, { state, h, change, api, flash }) {
 
       h("h4", { text: "OSC messages" }),
       list(c.osc, (o) => o.name, (o) => `${o.host}:${o.port} ${o.address} ${o.args}`, (o) => (c.osc = c.osc.filter((x) => x.id !== o.id))),
-      h("div", { class: "row" }, of.name, of.host, of.port, of.address, of.args, h("button", {
+      h("div", { class: "row form" }, of.name, of.host, of.port, of.address, of.args, h("button", {
         class: "btn",
         id: "addOsc",
         text: "Add",
@@ -155,7 +155,7 @@ export function renderControl(root, { state, h, change, api, flash }) {
 
       h("h4", { text: "Dev services" }),
       list(c.services, (x) => x.name, (x) => `${x.cmd} ${x.args}${x.cwd ? ` in ${x.cwd}` : ""}`, (x) => (c.services = c.services.filter((y) => y.id !== x.id))),
-      h("div", { class: "row" }, sf.name, sf.cmd, sf.args, sf.cwd, sf.url, h("button", {
+      h("div", { class: "row form" }, sf.name, sf.cmd, sf.args, sf.cwd, sf.url, h("button", {
         class: "btn",
         id: "addSvc",
         text: "Add",

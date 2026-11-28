@@ -111,3 +111,6 @@ body[data-view="settings"] aside.right { opacity: 0.4; pointer-events: none; }
 .btn.small { padding: 3px 8px; font-size: 11px; }
 .ha-list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 220px; overflow-y: auto; margin-top: 6px; }
 .ha-pick { font-family: var(--mono, ui-monospace, monospace); }
+.row.form { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: center; }
+.row.form input { min-width: 0; }
+.row.form .btn { justify-self: start; }
