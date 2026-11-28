@@ -925,3 +925,14 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .pr-info .pr-slots { margin-top: 4px; }
 @container (max-height: 150px) { .pr-brand, .pr-eta { display: none; } }
 @container (max-height: 110px) { .pr-slots, .pr-file { display: none; } }
+/* Narrow printer cards (phone portrait): ring on top, details below, and the card scrolls. */
+@container (max-width: 260px) {
+  .pr-card .pr-main { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .pr-card .pr-progress { height: 64px; }
+  .pr-card .pr-idle { width: auto; font-size: 28px; }
+  .pr-card .pr-pct { font-size: 17px; }
+  .pr-card .pr-info { width: 100%; }
+  .pr-card .pr-temps small, .pr-card .pr-eta, .pr-card .pr-brand { display: none; }
+  .pr-card .pr-temps { gap: 2px 8px; }
+}
+.pr-card { overflow-y: auto; scrollbar-width: none; }
