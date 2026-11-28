@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 // Calm page switching (rules and webhooks) and notification toasts.
 //
 // A request to switch never yanks the page away: it waits while you're using
@@ -40,7 +41,7 @@ export function createSwitcher({ gotoId, currentPageId, pageExists, getSettings,
   function startCountdown(item) {
     const secs = Math.max(0, item.countdown ?? 3);
     if (!secs) return doSwitch(item);
-    overlay.innerHTML = `<div class="sw-card"><div class="sw-why"></div><div class="sw-text"></div><div class="sw-actions"><button class="tbtn sw-stay">Stay</button><button class="tbtn primary sw-go">Go now</button></div></div>`;
+    overlay.innerHTML = `<div class="sw-card"><div class="sw-why"></div><div class="sw-text"></div><div class="sw-actions"><button class="tbtn sw-stay">${t("switch.stay")}</button><button class="tbtn primary sw-go">${t("switch.go")}</button></div></div>`;
     overlay.querySelector(".sw-why").textContent = item.name ? `${item.name}` : "Switching page";
     const text = overlay.querySelector(".sw-text");
     overlay.querySelector(".sw-stay").onclick = () => {
@@ -52,7 +53,7 @@ export function createSwitcher({ gotoId, currentPageId, pageExists, getSettings,
     const endsAt = now() + secs * 1000;
     const update = () => {
       const left = Math.ceil((endsAt - now()) / 1000);
-      text.textContent = `Switching to ${item.pageName ?? item.page} in ${left}…`;
+      text.textContent = t("switch.to", { page: item.pageName ?? item.page, n: left });
       if (left <= 0) doSwitch(item);
     };
     counting = { item, endsAt, timer: setInterval(update, 250) };

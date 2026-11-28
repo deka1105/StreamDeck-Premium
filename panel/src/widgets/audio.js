@@ -1,3 +1,4 @@
+import { t } from "../i18n.js";
 // Stage 12 — audio and system controls: per-app mixer with meters, audio
 // devices, push-to-talk, audio profiles and ducking, power plans, Windows
 // services, display brightness, and lock / sleep with a hold to confirm.
@@ -311,7 +312,7 @@ export const powerbuttons = {
       ["sleep", "🌙", "Sleep"],
     ]
       .map(([a, i, l]) => `<button class="cd-btn key hold" data-a="${a}"><span class="hold-fill"></span><span class="cd-ico">${i}</span><span class="cd-lbl">${l}</span></button>`)
-      .join("")}</div><div class="cd-msg muted">Hold to confirm</div>`;
+      .join("")}</div><div class="cd-msg muted">${t("hold.confirm")}</div>`;
     const msg = el.querySelector(".cd-msg");
     msg.classList.add("hint");
     for (const b of el.querySelectorAll(".hold")) {

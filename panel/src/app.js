@@ -1,5 +1,6 @@
 // Panel app: mounts widgets for a page and feeds them data from the bridge.
 
+import { t } from "./i18n.js";
 import { applyWidgetLook } from "./look.js";
 import { REGISTRY, withDefaults } from "./widgets/index.js";
 import { resolveLayout } from "./grid.js";
@@ -78,7 +79,7 @@ export function mountWidget(host, instance, env) {
   } catch (err) {
     console.error(`[panel] widget "${instance.type}" failed to mount`, err);
     body.classList.add("w-missing");
-    body.textContent = "This widget failed to load.";
+    body.textContent = t("widget.failed");
     handle = {};
   }
   return {

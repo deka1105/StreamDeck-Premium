@@ -13,6 +13,7 @@ const RTL = new Set(["ar"]);
 
 const DICT = {
   en: {
+    "status.waiting": "Waiting for your computer…",
     "banner.demo": "Simulated — demo data",
     "status.connected": "Connected",
     "status.offline": "Offline",
@@ -28,6 +29,7 @@ const DICT = {
     "common.none": "Nothing yet.",
   },
   es: {
+    "status.waiting": "Esperando a tu ordenador…",
     "banner.demo": "Simulado: datos de demostración",
     "status.connected": "Conectado",
     "status.offline": "Sin conexión",
@@ -43,6 +45,7 @@ const DICT = {
     "common.none": "Nada todavía.",
   },
   fr: {
+    "status.waiting": "En attente de votre ordinateur…",
     "banner.demo": "Simulé — données de démonstration",
     "status.connected": "Connecté",
     "status.offline": "Hors ligne",
@@ -58,6 +61,7 @@ const DICT = {
     "common.none": "Rien pour l’instant.",
   },
   de: {
+    "status.waiting": "Warte auf deinen Computer…",
     "banner.demo": "Simuliert – Demodaten",
     "status.connected": "Verbunden",
     "status.offline": "Offline",
@@ -73,6 +77,7 @@ const DICT = {
     "common.none": "Noch nichts.",
   },
   ar: {
+    "status.waiting": "في انتظار حاسوبك…",
     "banner.demo": "محاكاة — بيانات تجريبية",
     "status.connected": "متصل",
     "status.offline": "غير متصل",

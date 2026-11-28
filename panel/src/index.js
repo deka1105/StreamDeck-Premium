@@ -2,6 +2,7 @@
 // the current page, and handles navigation — swipe, page dots, the overview,
 // keyboard arrows, and returning home when idle.
 
+import { t, setLocale } from "./i18n.js";
 import { createLook } from "./look.js";
 import { createDisplay } from "./display.js";
 
@@ -42,7 +43,7 @@ function boot() {
   document.body.dataset.bridge = bridge.kind;
   if (bridge.demo) {
     bannerEl.hidden = false;
-    bannerEl.textContent = "Simulated — demo data";
+    bannerEl.textContent = t("banner.demo");
   }
 
   let layout = null;
@@ -176,13 +177,14 @@ function boot() {
     } catch (err) {
       // The computer didn't answer: keep what we have and try again on resync.
       debug(`panel.layout failed: ${err.message}`);
-      if (!layout) pagesEl.innerHTML = `<div class="empty">Waiting for your computer…</div>`;
+      if (!layout) pagesEl.innerHTML = `<div class="empty">${t("status.waiting")}</div>`;
       return;
     }
     // Render errors are bugs: let them surface (console / dev log) instead of
     // being mistaken for "computer offline".
     const keepId = layout ? pages()[index]?.id : null;
     layout = next;
+    setLocale(layout?.settings?.language ?? "auto");
     index = keepId ? indexAfterReload(layout, keepId) : homeIndex(layout);
     render(0);
     alarms.watch(layout);
@@ -252,7 +254,7 @@ function boot() {
   });
   bridge.on("status", ({ online, detail }) => {
     statusEl.dataset.online = online ? "1" : "0";
-    statusEl.title = online ? "Connected" : `Offline${detail ? `: ${detail}` : ""}`;
+    statusEl.title = online ? t("status.connected") : `${t("status.offline")}${detail ? `: ${detail}` : ""}`;
   });
   bridge.on("resync", async () => {
     await loadLayout();

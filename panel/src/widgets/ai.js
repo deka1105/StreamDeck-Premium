@@ -1,3 +1,4 @@
+import { t } from "../i18n.js";
 // Stage 9 widgets: coding-agent sessions, plan limits, token use, waiting
 // alerts, GitHub contributions and pull requests. The host sends only ids,
 // project folder names, models, counts and timestamps — never prompt text.
@@ -175,7 +176,7 @@ export function createPromptCard(root, bridge) {
         c.className = "prompt-card";
         c.dataset.id = p.id;
         const left = Math.max(0, Math.round((p.expiresAt - Date.now()) / 1000));
-        c.innerHTML = `<div class="sw-why">Claude Code · ${esc(p.project)}</div><div class="prompt-tool">${esc(p.tool)}</div><pre class="prompt-detail">${esc(p.detail)}</pre><div class="sw-actions"><button class="tbtn prompt-deny">Deny</button><button class="tbtn primary prompt-allow">Allow</button></div><div class="muted prompt-left">Asks in the terminal in ${left} s</div>`;
+        c.innerHTML = `<div class="sw-why">Claude Code · ${esc(p.project)}</div><div class="prompt-tool">${esc(p.tool)}</div><pre class="prompt-detail">${esc(p.detail)}</pre><div class="sw-actions"><button class="tbtn prompt-deny">${t("prompt.deny")}</button><button class="tbtn primary prompt-allow">${t("prompt.allow")}</button></div><div class="muted prompt-left">${t("prompt.left", { n: left })}</div>`;
         return c;
       }),
     );
