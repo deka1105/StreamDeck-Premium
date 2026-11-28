@@ -5,7 +5,7 @@
   "type": "module",
   "main": "main.mjs",
   "author": "Shubham A. D.",
-  "description": "Installable desktop host for streamPhoneDeck — pairs with the phone over an encrypted channel.",
+  "description": "Installable desktop host for streamPhoneDeck \u2014 pairs with the phone over an encrypted channel.",
   "scripts": {
     "start": "electron .",
     "smoke": "SMOKE=1 electron .",
@@ -20,8 +20,9 @@
     "dist": "npm run gen:icon && npm run panel:copy && electron-builder",
     "dist:mac": "npm run gen:icon && npm run panel:copy && electron-builder --mac",
     "dist:mac:release": "node scripts/check-signing.mjs --strict && npm run dist:mac",
-    "dist:win": "npm run gen:icon && npm run panel:copy && electron-builder --win",
-    "check:signing": "node scripts/check-signing.mjs"
+    "dist:win": "npm run build:win-helper && npm run gen:icon && npm run panel:copy && electron-builder --win",
+    "check:signing": "node scripts/check-signing.mjs",
+    "build:win-helper": "dotnet publish native/win-helper -c Release -r win-x64 -o native/win-helper/out"
   },
   "dependencies": {
     "qrcode": "^1.5.4",
@@ -68,7 +69,13 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "extraResources": [
+        {
+          "from": "native/win-helper/out/DeskAssistHelper.exe",
+          "to": "win-helper/DeskAssistHelper.exe"
+        }
+      ]
     },
     "linux": {
       "target": [
