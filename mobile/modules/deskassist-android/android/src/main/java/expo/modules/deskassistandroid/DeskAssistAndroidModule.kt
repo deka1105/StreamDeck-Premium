@@ -14,6 +14,9 @@ import android.os.BatteryManager
 import android.provider.Settings
 import android.view.KeyEvent
 import android.view.WindowManager
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -172,6 +175,22 @@ class DeskAssistAndroidModule : Module() {
     Function("setClipboard") { text: String ->
       val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
       cm.setPrimaryClip(ClipData.newPlainText("DeskAssist", text))
+    }
+
+    // ---- wake the computer (Wake-on-LAN magic packet, sent 3 times) ----
+    AsyncFunction("sendWake") { mac: String, address: String, port: Int ->
+      val hex = mac.replace(Regex("[^0-9A-Fa-f]"), "")
+      if (hex.length != 12) throw IllegalArgumentException("Not a MAC address.")
+      val m = ByteArray(6) { i -> hex.substring(i * 2, i * 2 + 2).toInt(16).toByte() }
+      val pkt = ByteArray(102)
+      for (i in 0 until 6) pkt[i] = 0xFF.toByte()
+      for (r in 0 until 16) for (i in 0 until 6) pkt[6 + r * 6 + i] = m[i]
+      DatagramSocket().use { sock ->
+        sock.broadcast = true
+        val addr = InetAddress.getByName(address)
+        repeat(3) { sock.send(DatagramPacket(pkt, pkt.size, addr, port)) }
+      }
+      true
     }
 
     // ---- notification mirror ----

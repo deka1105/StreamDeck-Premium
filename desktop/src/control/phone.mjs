@@ -9,7 +9,7 @@
 
 import { execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, networkInterfaces } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 
@@ -27,6 +27,25 @@ export function findAdb({ env = process.env, platform = process.platform, exists
     if (dir && exists(join(dir, exe))) return join(dir, exe);
   }
   return null;
+}
+
+/** This computer's wired-first MAC and the subnet broadcast, for the phone's "Wake" button. Pure given the interface list. */
+export function wakeInfo(ifaces = networkInterfaces()) {
+  const cands = [];
+  for (const [name, addrs] of Object.entries(ifaces ?? {})) {
+    for (const a of addrs ?? []) {
+      if (a.family !== "IPv4" && a.family !== 4) continue;
+      if (a.internal || !a.mac || a.mac === "00:00:00:00:00:00") continue;
+      const ip = a.address.split(".").map(Number);
+      const mask = a.netmask.split(".").map(Number);
+      const broadcast = ip.map((b, i) => (b | (~mask[i] & 255)) & 255).join(".");
+      // Wired adapters first: Wake-on-LAN usually works only over Ethernet.
+      const wired = /^(en0|eth|Ethernet)/i.test(name) && !/wi-?fi|wlan|wireless/i.test(name);
+      cands.push({ mac: a.mac.toUpperCase(), broadcast, iface: name, wired });
+    }
+  }
+  cands.sort((a, b) => Number(b.wired) - Number(a.wired));
+  return cands[0] ?? null;
 }
 
 /** `adb devices` → serials that are ready ("device" state). Pure. */
@@ -134,6 +153,7 @@ $t = $x.GetElementsByTagName('text'); $t.Item(0).AppendChild($x.CreateTextNode($
         await osNotify(head || "Phone", body || " ").catch((err) => log(`notification failed: ${err.message}`));
         return { ok: true };
       },
+      "host.wakeInfo": () => ({ ok: true, ...(wakeInfo() ?? {}) }),
       "clipboard.set": async ({ text } = {}) => {
         if (!android().clipboard) return { ok: false, error: "Turn on the clipboard bridge on the computer (editor › Settings › Android phone)." };
         const t = String(text ?? "");

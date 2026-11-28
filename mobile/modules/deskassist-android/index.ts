@@ -20,6 +20,7 @@ export type DeskAssistAndroid = {
   notificationAccess(): boolean;
   openNotificationAccess(): void;
   setNotificationMirror(on: boolean): void;
+  sendWake(mac: string, address: string, port: number): Promise<boolean>;
   addListener(event: "onVolumeKey", fn: (e: { direction: "up" | "down" }) => void): { remove(): void };
   addListener(event: "onNotification", fn: (e: { app: string; pkg: string; title: string; text: string; at: number }) => void): { remove(): void };
   addListener(event: "onLight", fn: (e: { lux: number }) => void): { remove(): void };
