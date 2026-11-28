@@ -61,7 +61,7 @@ body[data-look="minimal"] .ctl, body[data-look="minimal"] .float { backdrop-filt
 .dial.z-tr::before { right: -100%; top: -100%; }
 .dial.z-bl::before { left: -100%; bottom: -100%; }
 .dial.z-br::before { right: -100%; bottom: -100%; }
-.dial { overflow: hidden; }
+.dial { overflow: visible; }
 .dl-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .dl-track { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 9; stroke-linecap: round; }
 .dl-fill { fill: none; stroke: var(--accent); stroke-width: 9; stroke-linecap: round; transition: d 0.08s linear; }
