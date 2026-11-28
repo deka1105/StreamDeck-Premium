@@ -1171,6 +1171,20 @@
       ]
     },
     {
+      "type": "devbatteries",
+      "name": "Device batteries",
+      "category": "computer",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 2,
+        "h": 1
+      },
+      "options": []
+    },
+    {
       "type": "nowplaying",
       "name": "Now playing",
       "category": "media",
@@ -1280,6 +1294,41 @@
         "h": 2
       },
       "options": []
+    },
+    {
+      "type": "nowgame",
+      "name": "Now playing (game)",
+      "category": "media",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": []
+    },
+    {
+      "type": "recentgames",
+      "name": "Recent games",
+      "category": "media",
+      "size": {
+        "w": 8,
+        "h": 3
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "friends",
+          "type": "bool",
+          "label": "Show friends in game (needs a Steam Web API key)",
+          "default": true
+        }
+      ]
     },
     {
       "type": "note",
@@ -1538,6 +1587,124 @@
         "h": 1
       },
       "options": []
+    },
+    {
+      "type": "photoframe",
+      "name": "Photo frame",
+      "category": "personal",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "source",
+          "type": "choice",
+          "label": "Pictures from",
+          "default": "folder",
+          "choices": [
+            {
+              "value": "folder",
+              "label": "A folder on this computer"
+            },
+            {
+              "value": "immich",
+              "label": "Immich"
+            }
+          ]
+        },
+        {
+          "key": "folder",
+          "type": "text",
+          "label": "Folder (e.g. /Users/me/Pictures/Frame)",
+          "default": "",
+          "maxLength": 500
+        },
+        {
+          "key": "immich",
+          "type": "text",
+          "label": "Immich address (https://…)",
+          "default": "",
+          "maxLength": 300
+        },
+        {
+          "key": "album",
+          "type": "text",
+          "label": "Immich album id (empty = random)",
+          "default": "",
+          "maxLength": 80
+        },
+        {
+          "key": "every",
+          "type": "number",
+          "label": "Change every (seconds)",
+          "default": 60,
+          "min": 10,
+          "max": 3600
+        },
+        {
+          "key": "shuffle",
+          "type": "bool",
+          "label": "Shuffle",
+          "default": true
+        },
+        {
+          "key": "fit",
+          "type": "choice",
+          "label": "Fit",
+          "default": "cover",
+          "choices": [
+            {
+              "value": "cover",
+              "label": "Fill the tile"
+            },
+            {
+              "value": "contain",
+              "label": "Show the whole picture"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "camera",
+      "name": "Camera",
+      "category": "personal",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "url",
+          "type": "text",
+          "label": "rtsp:// stream or http(s):// snapshot address",
+          "default": "",
+          "maxLength": 500
+        },
+        {
+          "key": "title",
+          "type": "text",
+          "label": "Title",
+          "default": ""
+        },
+        {
+          "key": "every",
+          "type": "number",
+          "label": "Refresh every (seconds)",
+          "default": 3,
+          "min": 2,
+          "max": 600
+        }
+      ]
     },
     {
       "type": "deck",
