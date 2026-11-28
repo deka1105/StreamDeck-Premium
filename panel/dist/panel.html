@@ -844,7 +844,7 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .mx-ico { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-faint); color: var(--accent-soft); display: grid; place-items: center; font-weight: 800; font-size: 12px; }
 .mx-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .mx-track { position: relative; height: 26px; display: flex; align-items: center; }
-.mx-meter { position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px; background: linear-gradient(90deg, var(--success), var(--warn) 75%, var(--danger)); opacity: 0.35; transform-origin: left; transform: scaleX(0); transition: transform 0.2s linear; pointer-events: none; }
+.mx-meter { position: absolute; left: 2px; right: 2px; bottom: 0; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--success), var(--warn) 75%, var(--danger)); transform-origin: left; transform: scaleX(0); transition: transform 0.2s linear; pointer-events: none; }
 .mx-track input { position: relative; width: 100%; margin: 0; }
 .mx-num { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-dim); }
 .mx-row[data-muted="1"] .mx-name, .mx-row[data-muted="1"] .mx-num { color: var(--ink-faint); text-decoration: line-through; }
@@ -881,6 +881,9 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .hold-fill { position: absolute; inset: 0; background: color-mix(in srgb, var(--accent) 30%, transparent); transform: scaleX(0); transform-origin: left; pointer-events: none; }
 .cd-btn.hold.holding .hold-fill { transform: scaleX(1); transition: transform 1s linear; }
 .cd-msg.hint { color: var(--ink-faint); text-align: center; }
+.dv-sec .vol-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.dv-sec .vol-row input { min-width: 0; width: 100%; }
+.dv-sec .vol-num { font-size: 13px; min-width: 4ch; }
 </style>
 </head>
 <body>
