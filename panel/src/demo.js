@@ -485,6 +485,16 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "system.power": () => ({ ok: true, simulated: true }),
   };
 
+  // Inside the phone app, the app still sends phone events (volume keys,
+  // proximity wake, phone battery, deck tiles) even in demo mode.
+  if (typeof window !== "undefined" && window.ReactNativeWebView) {
+    window.__deskassist = {
+      receive(msg) {
+        if (msg?.t === "evt" && (msg.type === "phone" || (msg.type === "data" && ["battery", "deck"].includes(msg.data?.kind)))) emit("event", { type: msg.type, data: msg.data });
+      },
+    };
+  }
+
   return {
     kind: "demo",
     demo: true,
