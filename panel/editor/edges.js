@@ -82,3 +82,20 @@ export function renderEdges(root, { state, h, change }) {
     ),
   );
 }
+
+// Editor › Settings › Creative apps: how pages follow the app in front, and the Blender add-on.
+export function renderCreative(root, { h, api, flash }) {
+  const token = h("code", { id: "blenderToken", text: "…" });
+  api("/api/editor/creative").then((r) => (token.textContent = r.token ?? "—"), () => {});
+  root.append(
+    h(
+      "section",
+      { class: "set-section", id: "creativeSettings" },
+      h("h3", { text: "Creative apps" }),
+      h("p", { class: "hint", text: "Photoshop, Illustrator, After Effects, Premiere Pro and Blender pages come from “New page from template”. To switch to one automatically, add the rule example “Photoshop in front → Photoshop page” (Settings › Rules). Tool keys use each app's own shortcuts; sliders and colours use the apps' documented scripting. Untested on real copies of these apps until you try them." }),
+      h("h4", { text: "Blender add-on" }),
+      h("p", { class: "hint", text: "Blender › Edit › Preferences › Add-ons › Install from Disk…, pick the file below, tick “DeskAssist”, then paste this token into the add-on's preferences. It listens on this computer only and accepts only a fixed list of operations." }),
+      h("div", { class: "row" }, h("a", { class: "btn", href: "/api/editor/creative/addon", download: "deskassist_blender.py", text: "Download the Blender add-on" }), h("span", { class: "muted small", text: "Token: " }), token, h("button", { class: "btn small", text: "Copy", onclick: async () => (await navigator.clipboard?.writeText(token.textContent).catch(() => {}), flash("Token copied.")) })),
+    ),
+  );
+}
