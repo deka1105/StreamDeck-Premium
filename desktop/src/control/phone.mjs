@@ -10,7 +10,7 @@
 import { execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir, networkInterfaces } from "node:os";
-import { join } from "node:path";
+import { join, posix, win32 } from "node:path";
 import { promisify } from "node:util";
 
 const run = promisify(execFile);
@@ -18,6 +18,8 @@ const run = promisify(execFile);
 /** Where adb is: PATH, ANDROID_HOME / ANDROID_SDK_ROOT, or the default SDK folder. */
 export function findAdb({ env = process.env, platform = process.platform, exists = existsSync } = {}) {
   const exe = platform === "win32" ? "adb.exe" : "adb";
+  // Paths follow the target platform's rules (tests run every platform's case everywhere).
+  const join = platform === "win32" ? win32.join : posix.join;
   const roots = [env.ANDROID_HOME, env.ANDROID_SDK_ROOT, platform === "darwin" ? join(homedir(), "Library", "Android", "sdk") : platform === "win32" ? join(env.LOCALAPPDATA ?? "", "Android", "Sdk") : join(homedir(), "Android", "Sdk")].filter(Boolean);
   for (const r of roots) {
     const p = join(r, "platform-tools", exe);
