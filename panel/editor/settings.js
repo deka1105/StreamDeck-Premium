@@ -7,6 +7,7 @@ import { renderAutomation } from "./automation.js";
 import { renderAi } from "./ai.js";
 import { renderLook } from "./look.js";
 import { renderControl } from "./control.js";
+import { renderAudio } from "./audio.js";
 
 const rid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -220,6 +221,7 @@ export function renderSettings(root, { state, h, change, api, flash }) {
   renderAutomation(root, { state, h, change, api, flash });
   renderAi(root, { state, h, change, api, flash });
   renderControl(root, { state, h, change, api, flash });
+  renderAudio(root, { state, h, change, api, flash });
 }
 
 export { renderLook };
