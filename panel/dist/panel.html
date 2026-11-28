@@ -811,6 +811,14 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .tp-hint { font-size: 11px; color: var(--ink-faint); text-align: center; padding: 10px; pointer-events: none; }
 .tp-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; height: max(36px, 16%); }
 .w-trackpad.off .tp-surface { opacity: 0.4; }
+/* Short tiles: icon beside the label so nothing clips. */
+@container (max-height: 240px) {
+  .mt-grid .cd-btn, .keys-row .cd-btn { flex-direction: row; gap: 6px; padding: 4px 6px; }
+  .mt-grid .cd-ico, .keys-row .cd-ico { font-size: 15px; }
+}
+@container (max-height: 150px) {
+  .w-meeting > .w-title, .w-keys > .w-title { display: none; }
+}
 </style>
 </head>
 <body>
