@@ -258,6 +258,38 @@ function cleanMediaServers(list) {
   return out;
 }
 
+// Control Deck (Stage 11): OBS, Home Assistant, containers, machines to wake,
+// OSC targets, dev services and the trackpad. Passwords and tokens live in the
+// secret store, never here.
+const HOST_RE = /^[A-Za-z0-9.:\[\]_-]{1,255}$/;
+export function cleanControl(c) {
+  const list = (v, max) => (Array.isArray(v) ? v.slice(0, max) : []);
+  const port = (v, d) => Math.max(1, Math.min(65535, int(v, d)));
+  const ids = new Set();
+  const uid = (v, i, p) => {
+    let id = cleanId(v, `${p}${i + 1}`);
+    while (ids.has(id)) id += "x";
+    ids.add(id);
+    return id;
+  };
+  return {
+    obs: { enabled: c?.obs?.enabled === true, host: HOST_RE.test(c?.obs?.host ?? "") ? c.obs.host : "127.0.0.1", port: port(c?.obs?.port, 4455) },
+    ha: { url: cleanUrlOrPath(c?.ha?.url)?.replace(/\/+$/, "") ?? "" },
+    containers: ["docker", "podman"].includes(c?.containers) ? c.containers : "auto",
+    wol: list(c?.wol, 16)
+      .filter((m) => /^([0-9a-f]{2}[:-]?){5}[0-9a-f]{2}$/i.test(String(m?.mac ?? "").trim()))
+      .map((m, i) => ({ id: uid(m.id, i, "pc"), name: cleanText(m.name, 40) || "Computer", mac: String(m.mac).trim().toUpperCase().replace(/-/g, ":"), address: HOST_RE.test(m.address ?? "") ? m.address : "255.255.255.255", port: port(m.port, 9) })),
+    osc: list(c?.osc, 32)
+      .filter((o) => HOST_RE.test(o?.host ?? "") && /^\/[\x21-\x7e]{0,200}$/.test(o?.address ?? ""))
+      .map((o, i) => ({ id: uid(o.id, i, "osc"), name: cleanText(o.name, 40) || o.address, host: o.host, port: port(o.port, 8000), address: o.address, args: cleanText(o.args, 200) })),
+    services: list(c?.services, 16)
+      .filter((s) => typeof s?.cmd === "string" && s.cmd.trim())
+      .map((s, i) => ({ id: uid(s.id, i, "svc"), name: cleanText(s.name, 40) || s.cmd, cmd: cleanText(s.cmd, 500).trim(), args: cleanText(s.args, 2000), cwd: cleanText(s.cwd, 1000).trim(), url: cleanUrlOrPath(s.url) ?? "" })),
+    trackpad: c?.trackpad === true,
+    trackpadSpeed: Math.max(0.3, Math.min(4, Number(c?.trackpadSpeed) || 1.5)),
+  };
+}
+
 export function sanitizeConfig(raw, catalog) {
   const byType = new Map((catalog?.widgets ?? []).map((w) => [w.type, w]));
   const devices = {};
@@ -300,6 +332,7 @@ export function sanitizeConfig(raw, catalog) {
         waitAfterTouchSec: Math.max(0, Math.min(120, int(raw?.settings?.pageSwitch?.waitAfterTouchSec, 8))),
         holdMaxMin: Math.max(0, Math.min(600, int(raw?.settings?.pageSwitch?.holdMaxMin, 30))),
       },
+      control: cleanControl(raw?.settings?.control),
       mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],
     },
   };
