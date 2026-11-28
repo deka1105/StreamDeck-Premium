@@ -16,6 +16,9 @@ import qrcode from "qrcode";
 import { createHost, webhookRoutes, agentRoutes } from "./src/host.mjs";
 import { createLocalServer } from "./src/local.mjs";
 import { createEditorRoutes } from "./src/panel/editorRoutes.mjs";
+import { createEdges } from "./src/edges/electron.mjs";
+import { createEdgeControls } from "./src/edges/controls.mjs";
+import { execute, frontmostApp } from "./src/executor.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SMOKE = !!process.env.SMOKE;
@@ -201,6 +204,33 @@ app.whenReady().then(async () => {
     () => console.log(`browser panel on http://127.0.0.1:${LOCAL_PORT}/panel/`),
     (err) => console.warn(`browser panel unavailable: ${err.message}`),
   );
+
+  // Desk edges (Stage 16): overlay windows at the screen edges, on when the editor turns them on.
+  const store = host.panelStore;
+  edges = createEdges({
+    getSettings: () => store.config().settings,
+    saveEdges: (floating) => {
+      const cfg = store.config();
+      store.save({ ...cfg, settings: { ...cfg.settings, edges: { ...cfg.settings.edges, floating } } });
+    },
+    controls: createEdgeControls({ execute: (a) => execute(a, { dryRun }), media: host.providers.media, audio: host.control.providers.audio, system: host.control.providers.winsys }),
+    frontmostApp,
+  });
+  await edges.start();
+  let edgesRev = store.rev;
+  setInterval(() => {
+    if (store.rev !== edgesRev) {
+      edgesRev = store.rev;
+      edges.reload();
+    }
+  }, 1500).unref?.();
+  if (process.env.EDGES_SMOKE) {
+    // Development check: show the overlay with edges on, capture it, and quit.
+    const { runEdgesSmoke } = await import("./scripts/edges-smoke.mjs");
+    await runEdgesSmoke({ edges, store });
+    app.quit();
+    return;
+  }
 
   if (SMOKE) {
     console.log("SMOKE OK");

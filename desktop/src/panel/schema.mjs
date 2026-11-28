@@ -1,4 +1,5 @@
 import { cleanPrinters } from "../printers/index.mjs";
+import { cleanEdges } from "../edges/config.mjs";
 import { sanitizeShortcuts, sanitizeCommands } from "./shortcuts.mjs";
 import { sanitizeRules } from "./rules.mjs";
 // Panel layout schema (ours; PLAN D2). Everything that comes from the editor,
@@ -361,6 +362,7 @@ export function sanitizeConfig(raw, catalog) {
       control: cleanControl(raw?.settings?.control),
       audio: cleanAudio(raw?.settings?.audio),
       printers: cleanPrinters(raw?.settings?.printers),
+      edges: cleanEdges(raw?.settings?.edges ?? {}),
       games: {
         launch: raw?.settings?.games?.launch === true,
         custom: (Array.isArray(raw?.settings?.games?.custom) ? raw.settings.games.custom.slice(0, 30) : [])
