@@ -22,6 +22,7 @@ import { sessions, aiquota, tokenuse, agentalerts, contributions, prs } from "./
 import { stack } from "./stack.js";
 import { mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons, phonebridge } from "./audio.js";
 import { printers, printer } from "./printers.js";
+import { creativekeys, creativeslider, creativecolor, blender } from "./creative.js";
 import { nowgame, recentgames, photoframe, camera, devbatteries } from "./games.js";
 import { obs, homeassistant, containers, services, meeting, wake, oscpad, trackpad } from "./control.js";
 
@@ -41,7 +42,7 @@ export const WIDGETS = [
   // control deck
   obs, meeting, homeassistant, containers, services, wake, oscpad, trackpad,
   mixer, audiodevices, ptt, audioprofiles, powerplan, winservices, brightness, powerbuttons,
-  printers, printer,
+  printers, printer, creativekeys, creativeslider, creativecolor, blender,
   // ai & code
   sessions, aiquota, tokenuse, agentalerts, contributions, prs,
   // layout

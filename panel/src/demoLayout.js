@@ -135,6 +135,21 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "create",
+      name: "Create",
+      widgets: [
+        { id: "ck", type: "creativekeys", x: 0, y: 0, w: 6, h: 4, options: { app: "photoshop" } },
+        { id: "cc", type: "creativecolor", x: 6, y: 0, w: 6, h: 4, options: { app: "photoshop" } },
+        { id: "cs", type: "creativeslider", x: 0, y: 4, w: 6, h: 2, options: { app: "illustrator", control: "stroke" } },
+        { id: "cs2", type: "creativeslider", x: 6, y: 4, w: 6, h: 2, options: { app: "photoshop", control: "opacity" } },
+      ],
+    },
+    {
+      id: "blender",
+      name: "Blender",
+      widgets: [{ id: "bl", type: "blender", x: 0, y: 0, w: 12, h: 6 }],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [

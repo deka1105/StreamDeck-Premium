@@ -475,6 +475,21 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "pointer.send": () => ({ ok: true, simulated: true }),
     ...Object.fromEntries(["audio.setDefault", "audio.setDeviceVolume", "audio.setDeviceMute", "audio.setSessionVolume", "audio.setSessionMute", "audio.duck", "audio.profile", "ptt.down", "ptt.up", "system.plan", "system.service", "system.brightness"].map((m) => [m, controlled(m)])),
     "ptt.hold": () => ({ ok: true }),
+    "creative.tools": ({ app } = {}) => {
+      const T = {
+        photoshop: [["move", "Move"], ["marquee", "Marquee"], ["lasso", "Lasso"], ["brush", "Brush"], ["eraser", "Eraser"], ["clone", "Clone stamp"], ["eyedropper", "Eyedropper"], ["type", "Type"], ["crop", "Crop"]],
+        illustrator: [["selection", "Selection"], ["direct", "Direct select"], ["pen", "Pen"], ["type", "Type"], ["rectangle", "Rectangle"], ["ellipse", "Ellipse"], ["paintbrush", "Paintbrush"], ["eyedropper", "Eyedropper"], ["shapebuilder", "Shape builder"]],
+        aftereffects: [["selection", "Selection"], ["hand", "Hand"], ["zoom", "Zoom"], ["rotation", "Rotation"], ["camera", "Camera"], ["shape", "Shape / mask"], ["pen", "Pen"], ["type", "Type"], ["puppet", "Puppet"]],
+        premiere: [["selection", "Selection"], ["trackselect", "Track select"], ["ripple", "Ripple edit"], ["rolling", "Rolling edit"], ["ratestretch", "Rate stretch"], ["razor", "Razor"], ["slip", "Slip"], ["slide", "Slide"], ["hand", "Hand"]],
+      };
+      const C = { illustrator: [{ id: "stroke", label: "Stroke weight (pt)", min: 0, max: 100, step: 0.25 }, { id: "opacity", label: "Opacity (%)", min: 0, max: 100, step: 1 }], photoshop: [{ id: "opacity", label: "Layer opacity (%)", min: 0, max: 100, step: 1 }], aftereffects: [{ id: "value", label: "Selected property", min: -100000, max: 100000, step: 0.1 }] };
+      return { ok: true, tools: (T[app] ?? []).map(([id, label]) => ({ id, label })), controls: C[app] ?? [] };
+    },
+    "creative.tool": () => ({ ok: true, simulated: true }),
+    "creative.get": ({ control } = {}) => ({ ok: true, value: control === "stroke" ? 2.5 : 80 }),
+    "creative.set": ({ value } = {}) => ({ ok: true, value }),
+    "creative.color": () => ({ ok: true, simulated: true }),
+    "blender.op": () => ({ ok: true, simulated: true }),
     "games.cover": () => ({ ok: true, src: null }),
     "games.launch": () => ({ ok: true, simulated: true }),
     "frame.picture": () => ({ ok: true, src: demoPicture(Math.floor(Date.now() / 10_000)) }),

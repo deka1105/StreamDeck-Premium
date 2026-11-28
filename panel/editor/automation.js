@@ -14,6 +14,8 @@ const EXAMPLES = [
   ["Phone charged to 80% → shortcut plug-off", { name: "Phone charged", when: { type: "push_value", key: "phone.battery", op: "ge", value: "80" }, then: { type: "run_shortcut", id: "plug-off" }, restSec: 1800 }],
   ["Phone below 30% → shortcut plug-on", { name: "Phone low", when: { type: "push_value", key: "phone.battery", op: "lt", value: "30" }, then: { type: "run_shortcut", id: "plug-on" }, restSec: 1800 }],
   ["Phone hot → notify", { name: "Phone hot", when: { type: "push_value", key: "phone.temp", op: "ge", value: "42" }, then: { type: "notify", title: "Phone is hot", text: "Battery above 42 °C — unplug it for a while", level: "warn" }, restSec: 1800 }],
+  ["Photoshop in front → Photoshop page", { name: "Photoshop", when: { type: "app_front", apps: "Adobe Photoshop" }, then: { type: "show_page", page: "photoshop" }, whileLasts: true, priority: 6, countdownSec: 0 }],
+  ["Blender in front → Blender page", { name: "Blender", when: { type: "app_front", apps: "Blender" }, then: { type: "show_page", page: "blender" }, whileLasts: true, priority: 6, countdownSec: 0 }],
   ["Sensor silent 10 min → notify", { name: "Sensor stopped", when: { type: "push_stale", key: "temperature", seconds: 600 }, then: { type: "notify", title: "Sensor stopped posting", level: "warn" }, restSec: 3600 }],
 ];
 
