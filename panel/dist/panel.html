@@ -826,6 +826,16 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
   .svc-out { margin-left: 12px; }
 }
 .w-containers .cd-head { margin-bottom: 6px; }
+/* Short screens: scenes keep their height and the body scrolls instead of overlapping. */
+.obs-scenes { flex: 1 0 auto; }
+.tp-surface { overflow: hidden; }
+@container (max-height: 170px) { .tp-hint { display: none; } }
+/* Narrow services tile: buttons move under the name. */
+@container (max-width: 220px) {
+  .svc .ct-row { flex-wrap: wrap; row-gap: 4px; }
+  .svc .ct-row .grow { flex-basis: calc(100% - 14px); }
+  .svc .ct-row .ibtn:first-of-type { margin-left: auto; }
+}
 </style>
 </head>
 <body>
