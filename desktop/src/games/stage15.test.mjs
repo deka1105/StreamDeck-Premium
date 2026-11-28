@@ -56,11 +56,11 @@ test("games: now playing with a session start, recent five, covers, launch is op
   const settings = { games: { launch: false, custom: [{ id: "mc", name: "Minecraft", match: "minecraft", launch: "/Applications/Minecraft.app" }] } };
   let procs = ["/usr/bin/zsh", "java -jar /Users/me/minecraft/launcher.jar"];
   const launched = [];
-  let t = 1_000_000;
+  let t = 1_800_000_000_000;
   const g = createGames({ dir, root, platform: "darwin", getSettings: () => settings, procs: async () => procs, execute: async (a) => launched.push(a), now: () => t, fetchImpl: async () => ({ ok: false }), log: () => {} });
   const s = await g.sample();
   assert.equal(s.playing.name, "Hades", "Steam's running game wins");
-  assert.equal(s.playing.since, 1_000_000);
+  assert.equal(s.playing.since, 1_800_000_000_000);
   assert.deepEqual(s.recent.map((r) => r.name), ["Hades", "Portal 2"]);
   assert.equal(s.friends, null, "no Web API key, no friends list");
   // Steam game ends; a matching non-Steam game is running.
