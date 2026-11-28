@@ -54,6 +54,27 @@ export function createDemoControl() {
       { id: "tests", name: "Tests (watch)", url: "", state: "stopped", since: null, lines: [] },
     ],
     allMuted: false,
+    audio: {
+      outputs: [{ id: "spk", name: "Speakers (Realtek)" }, { id: "hp", name: "Headphones (WH-1000XM5)" }, { id: "mon", name: "DELL U2723QE (HDMI)" }],
+      inputs: [{ id: "usb", name: "Microphone (Shure MV7)" }, { id: "cam", name: "Webcam microphone" }],
+      out: "hp",
+      inp: "usb",
+      outVol: 0.62,
+      outMuted: false,
+      inVol: 0.8,
+      inMuted: true,
+      apps: [
+        { name: "Spotify", display: "Spotify", volume: 0.55, muted: false },
+        { name: "Discord", display: "Discord", volume: 0.8, muted: false },
+        { name: "chrome", display: "Chrome", volume: 1, muted: false },
+        { name: "Teams", display: "Teams", volume: 0.9, muted: false },
+      ],
+      ptt: false,
+      ducked: null,
+      plan: "bal",
+      services: [{ name: "Spooler", display: "Print Spooler", state: "running" }, { name: "docker", display: "Docker Desktop Service", state: "running" }, { name: "wuauserv", display: "Windows Update", state: "stopped" }],
+      displays: [{ index: -1, name: "Built-in display", percent: 70 }, { index: 0, name: "DELL U2723QE", percent: 45 }],
+    },
   };
   const haOn = (e) => ["on", "unlocked"].includes(e.state);
   return {
@@ -71,6 +92,36 @@ export function createDemoControl() {
     ha: () => ({ entities: st.ha.map((e) => ({ ...e, unit: e.unit ?? "", on: haOn(e), tappable: !["sensor"].includes(e.domain), icon: "", brightness: e.state === "on" ? e.brightness : null })), at: Date.now() }),
     containers: () => ({ engine: "docker", containers: st.containers.map((c) => ({ id: c.id, name: c.name, image: c.image, running: c.running, state: c.running ? "running" : "exited", status: c.running ? `Up ${Math.max(1, Math.round((Date.now() - c.upAt) / 3600_000))} hours` : "Exited (0) yesterday" })), at: Date.now() }),
     services: () => ({ services: st.services.map((x) => ({ ...x, code: x.state === "failed" ? 1 : null, lines: [...x.lines] })), at: Date.now() }),
+    audio: () => {
+      const a = st.audio;
+      return {
+        platform: "win32",
+        available: true,
+        canSwitch: true,
+        perApp: true,
+        ptt: a.ptt,
+        ducked: !!a.ducked,
+        profiles: [{ id: "music", name: "Music" }, { id: "call", name: "Calls" }, { id: "game", name: "Gaming" }],
+        output: { devices: a.outputs.map((d) => ({ ...d, default: d.id === a.out })), volume: a.outVol, muted: a.outMuted },
+        input: { devices: a.inputs.map((d) => ({ ...d, default: d.id === a.inp })), volume: a.inVol, muted: a.inMuted && !a.ptt },
+        sessions: a.apps.map((x) => ({ ...x, system: false, peak: 0 })),
+        at: Date.now(),
+      };
+    },
+    audiolevels: () => ({ sessions: Object.fromEntries(st.audio.apps.map((x) => [x.name, x.muted ? 0 : x.name === "Spotify" ? 0.25 + Math.random() * 0.4 : x.name === "Discord" ? Math.random() * 0.2 : Math.random() * 0.05])), output: st.audio.outMuted ? 0 : 0.3 + Math.random() * 0.3, input: 0, at: Date.now() }),
+    winsys: () => ({
+      platform: "win32",
+      plans: [
+        { guid: "bal", name: "Balanced", active: st.audio.plan === "bal" },
+        { guid: "perf", name: "High performance", active: st.audio.plan === "perf" },
+        { guid: "save", name: "Power saver", active: st.audio.plan === "save" },
+      ],
+      services: st.audio.services.map((x) => ({ ...x })),
+      displays: st.audio.displays.map((x) => ({ ...x })),
+      canLock: true,
+      canSleep: true,
+      at: Date.now(),
+    }),
     meeting: () => ({ canMuteAll: true, mic: st.allMuted ? 0 : 60, outMuted: st.allMuted, allMuted: st.allMuted, at: Date.now() }),
     act(method, p = {}) {
       if (method === "obs.control") {
@@ -104,6 +155,26 @@ export function createDemoControl() {
         }
         return "services";
       }
+      const a = st.audio;
+      if (method.startsWith("audio.") || method.startsWith("ptt.")) {
+        if (method === "audio.setDefault") a.outputs.some((d) => d.id === p.id) ? (a.out = p.id) : (a.inp = p.id);
+        else if (method === "audio.setDeviceVolume") p.flow === "capture" ? (a.inVol = p.volume) : (a.outVol = p.volume);
+        else if (method === "audio.setDeviceMute") p.flow === "capture" ? (a.inMuted = p.muted) : (a.outMuted = p.muted);
+        else if (method === "audio.setSessionVolume") a.apps.forEach((x) => x.name === p.name && (x.volume = p.volume));
+        else if (method === "audio.setSessionMute") a.apps.forEach((x) => x.name === p.name && (x.muted = p.muted));
+        else if (method === "audio.duck") {
+          if (p.on && !a.ducked) (a.ducked = Object.fromEntries(a.apps.map((x) => [x.name, x.volume]))), a.apps.forEach((x) => x.name !== "Teams" && (x.volume *= 0.3));
+          else if (!p.on && a.ducked) a.apps.forEach((x) => (x.volume = a.ducked[x.name] ?? x.volume)), (a.ducked = null);
+        } else if (method === "audio.profile") {
+          const pr = { music: ["hp", { Spotify: 0.8, Discord: 0.3 }], call: ["hp", { Spotify: 0.15, Teams: 1 }], game: ["spk", { Discord: 0.7, Spotify: 0.3 }] }[p.id];
+          if (pr) (a.out = pr[0]), a.apps.forEach((x) => x.name in pr[1] && (x.volume = pr[1][x.name]));
+        } else if (method === "ptt.down") a.ptt = true;
+        else if (method === "ptt.up") a.ptt = false;
+        return "audio";
+      }
+      if (method === "system.plan") return (a.plan = p.guid), "winsys";
+      if (method === "system.service") return a.services.forEach((x) => x.name === p.name && (x.state = p.action === "stop" ? "stopped" : "running")), "winsys";
+      if (method === "system.brightness") return a.displays.forEach((x) => x.index === p.index && (x.percent = p.percent)), "winsys";
       if (method === "meeting.muteAll") {
         st.allMuted = !st.allMuted;
         return "meeting";
@@ -345,6 +416,9 @@ export function createDemoBridge({ periodMs = 2000 } = {}) {
     "osc.list": () => ({ items: [{ id: "go", name: "GO" }, { id: "stop", name: "Stop all" }, { id: "next", name: "Next cue" }] }),
     "osc.send": () => ({ ok: true, simulated: true }),
     "pointer.send": () => ({ ok: true, simulated: true }),
+    ...Object.fromEntries(["audio.setDefault", "audio.setDeviceVolume", "audio.setDeviceMute", "audio.setSessionVolume", "audio.setSessionMute", "audio.duck", "audio.profile", "ptt.down", "ptt.up", "system.plan", "system.service", "system.brightness"].map((m) => [m, controlled(m)])),
+    "ptt.hold": () => ({ ok: true }),
+    "system.power": () => ({ ok: true, simulated: true }),
   };
 
   return {

@@ -98,6 +98,27 @@ export const DEMO_LAYOUT = {
       ],
     },
     {
+      id: "audio",
+      name: "Audio",
+      widgets: [
+        { id: "mx", type: "mixer", x: 0, y: 0, w: 6, h: 4, options: { master: true } },
+        { id: "dv", type: "audiodevices", x: 6, y: 0, w: 3, h: 4 },
+        { id: "pt", type: "ptt", x: 9, y: 0, w: 3, h: 4 },
+        { id: "ap", type: "audioprofiles", x: 0, y: 4, w: 6, h: 2 },
+        { id: "pp", type: "powerplan", x: 6, y: 4, w: 3, h: 2 },
+        { id: "pb", type: "powerbuttons", x: 9, y: 4, w: 3, h: 2 },
+      ],
+    },
+    {
+      id: "pcsys",
+      name: "PC",
+      widgets: [
+        { id: "br", type: "brightness", x: 0, y: 0, w: 6, h: 3 },
+        { id: "ws", type: "winservices", x: 6, y: 0, w: 6, h: 6 },
+        { id: "pp2", type: "powerplan", x: 0, y: 3, w: 6, h: 3 },
+      ],
+    },
+    {
       id: "daily",
       name: "Daily",
       widgets: [

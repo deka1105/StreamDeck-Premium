@@ -376,6 +376,22 @@ export const TEMPLATES = [
     },
   },
   {
+    id: "audiodeck",
+    name: "Audio",
+    description: "Per-app volume with meters, output and mic, push-to-talk, profiles, power plan, lock and sleep (Windows; macOS shows what it can).",
+    page: {
+      name: "Audio",
+      widgets: [
+        { type: "mixer", x: 0, y: 0, w: 6, h: 4 },
+        { type: "audiodevices", x: 6, y: 0, w: 3, h: 4 },
+        { type: "ptt", x: 9, y: 0, w: 3, h: 4 },
+        { type: "audioprofiles", x: 0, y: 4, w: 6, h: 2 },
+        { type: "powerplan", x: 6, y: 4, w: 3, h: 2 },
+        { type: "powerbuttons", x: 9, y: 4, w: 3, h: 2 },
+      ],
+    },
+  },
+  {
     id: "clock",
     name: "Clock",
     description: "A big clock with seconds.",
