@@ -18,15 +18,6 @@ export function renderSettings(root, { state, h, change, api, flash }) {
   root.innerHTML = "";
   const section = (title, ...kids) => h("section", { class: "set-section" }, h("h3", { text: title }), ...kids);
 
-  // ---------------------------------------------------------- language ----
-  root.append(
-    section(
-      "Language",
-      h("label", {}, "Panel language ", sel("panelLanguage", s.language ?? "auto", [["auto", "Same as each device"], ["en", "English"], ["es", "Español"], ["fr", "Français"], ["de", "Deutsch"], ["ar", "العربية"]], (v) => (s.language = v))),
-      h("p", { class: "hint", text: "Translations arrive in batches: the panel's own words (banners, page switching, prompts) are translated now; widget texts follow. Arabic lays the panel out right to left." }),
-    ),
-  );
-
   // ---------------------------------------------------------- location ----
   const results = h("div", { class: "geo-results" });
   const q = h("input", { type: "search", id: "geoSearch", placeholder: "Search a city, e.g. Charlotte or Paris", "aria-label": "City" });
@@ -60,6 +51,16 @@ export function renderSettings(root, { state, h, change, api, flash }) {
     el.addEventListener("change", () => change(() => onchange(el.value)));
     return el;
   };
+
+  // ---------------------------------------------------------- language ----
+  root.append(
+    section(
+      "Language",
+      h("label", {}, "Panel language ", sel("panelLanguage", s.language ?? "auto", [["auto", "Same as each device"], ["en", "English"], ["es", "Español"], ["fr", "Français"], ["de", "Deutsch"], ["ar", "العربية"]], (v) => (s.language = v))),
+      h("p", { class: "hint", text: "Translations arrive in batches: the panel's own words (banners, page switching, prompts) are translated now; widget texts follow. Arabic lays the panel out right to left." }),
+    ),
+  );
+
   root.append(
     section(
       "Units",
