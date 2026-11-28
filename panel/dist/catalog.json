@@ -26,6 +26,10 @@
       "name": "Controls"
     },
     {
+      "id": "deck",
+      "name": "Control Deck"
+    },
+    {
       "id": "ai",
       "name": "AI & code"
     },
@@ -1692,6 +1696,270 @@
         "h": 1
       },
       "options": []
+    },
+    {
+      "type": "obs",
+      "name": "OBS Studio",
+      "category": "deck",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "scenes",
+          "type": "bool",
+          "label": "Scenes",
+          "default": true
+        },
+        {
+          "key": "outputs",
+          "type": "bool",
+          "label": "Record, stream and virtual camera",
+          "default": true
+        },
+        {
+          "key": "audio",
+          "type": "bool",
+          "label": "Audio mutes",
+          "default": true
+        },
+        {
+          "key": "sources",
+          "type": "bool",
+          "label": "Sources in the current scene",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "meeting",
+      "name": "Meeting controls",
+      "category": "deck",
+      "size": {
+        "w": 3,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "app",
+          "type": "choice",
+          "label": "Meeting app",
+          "default": "zoom",
+          "choices": [
+            {
+              "value": "zoom",
+              "label": "Zoom"
+            },
+            {
+              "value": "teams",
+              "label": "Teams"
+            },
+            {
+              "value": "meet",
+              "label": "Google Meet"
+            },
+            {
+              "value": "webex",
+              "label": "Webex"
+            }
+          ]
+        },
+        {
+          "key": "muteAll",
+          "type": "bool",
+          "label": "“Mute everything” button (mic and speakers, system-wide)",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "homeassistant",
+      "name": "Home Assistant",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 4
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "title",
+          "type": "text",
+          "label": "Title",
+          "default": "Home"
+        },
+        {
+          "key": "entities",
+          "type": "list",
+          "label": "Entity ids, one per line (e.g. light.desk) — Settings › Control Deck lists yours",
+          "default": []
+        }
+      ]
+    },
+    {
+      "type": "containers",
+      "name": "Containers",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "show",
+          "type": "choice",
+          "label": "Show",
+          "default": "all",
+          "choices": [
+            {
+              "value": "all",
+              "label": "All containers"
+            },
+            {
+              "value": "running",
+              "label": "Running only"
+            }
+          ]
+        },
+        {
+          "key": "allowControl",
+          "type": "bool",
+          "label": "Allow start / stop / restart from the panel",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "services",
+      "name": "Dev services",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "ids",
+          "type": "list",
+          "label": "Service ids, one per line (empty = all from Settings › Control Deck)",
+          "default": []
+        },
+        {
+          "key": "output",
+          "type": "bool",
+          "label": "Show the latest output",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "wake",
+      "name": "Wake a computer",
+      "category": "deck",
+      "size": {
+        "w": 3,
+        "h": 2
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "title",
+          "type": "text",
+          "label": "Title (optional)",
+          "default": ""
+        },
+        {
+          "key": "ids",
+          "type": "list",
+          "label": "Ids, one per line (empty = all from Settings › Control Deck)",
+          "default": []
+        }
+      ]
+    },
+    {
+      "type": "oscpad",
+      "name": "OSC keys",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "min": {
+        "w": 1,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "title",
+          "type": "text",
+          "label": "Title (optional)",
+          "default": ""
+        },
+        {
+          "key": "ids",
+          "type": "list",
+          "label": "Ids, one per line (empty = all from Settings › Control Deck)",
+          "default": []
+        }
+      ]
+    },
+    {
+      "type": "trackpad",
+      "name": "Trackpad",
+      "category": "deck",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "speed",
+          "type": "choice",
+          "label": "Pointer speed",
+          "default": "2",
+          "choices": [
+            {
+              "value": "1",
+              "label": "Slow"
+            },
+            {
+              "value": "2",
+              "label": "Normal"
+            },
+            {
+              "value": "3.5",
+              "label": "Fast"
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "sessions",
