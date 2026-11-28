@@ -28,9 +28,12 @@ export async function runEdgesSmoke({ edges, store }) {
   await wait(2500);
   const win = [...edges.windows.values()][0];
   if (!win) throw new Error("no overlay window");
+  win.webContents.on("console-message", (_e, level, message) => console.log(`[overlay] ${message}`));
+  console.log("state:", await win.webContents.executeJavaScript("JSON.stringify({edges: typeof window.__edges, bridge: typeof window.edges, ctl: document.querySelectorAll('.ctl').length})"));
   const shots = { left: "left", tl: "tl", br: "br", dock: "dock" };
   for (const [name, zone] of Object.entries(shots)) {
-    await win.webContents.executeJavaScript(`window.__edges.reveal(${JSON.stringify(zone)}); true`);
+    const r = await win.webContents.executeJavaScript(`(async () => { try { window.__edges.reveal(${JSON.stringify(zone)}); return "ok " + document.querySelectorAll(".ctl").length; } catch (e) { return "err " + e.message; } })()`);
+    console.log(zone, r);
     await wait(900);
     const img = await win.webContents.capturePage();
     writeFileSync(join(out, `edges-${name}.png`), img.toPNG());
