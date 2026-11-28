@@ -131,6 +131,7 @@ function buildTrayMenu() {
     { type: "separator" },
     { label: "Pair a phone…", click: createPairWindow },
     { label: "Edit panel layout…", click: () => shell.openExternal(`http://127.0.0.1:${LOCAL_PORT}/editor/`) },
+    { label: "Recalibrate desk edges", click: () => edges?.recalibrate() },
     { label: "Open panel in browser", click: () => shell.openExternal(`http://127.0.0.1:${LOCAL_PORT}/panel/?device=monitor`) },
     { label: "Paired devices", submenu: deviceItems },
     { label: "Allowed apps…", click: createAppsWindow },

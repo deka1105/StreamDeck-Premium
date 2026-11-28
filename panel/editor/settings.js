@@ -9,6 +9,7 @@ import { renderLook } from "./look.js";
 import { renderControl } from "./control.js";
 import { renderAudio, renderAndroidHost } from "./audio.js";
 import { renderPrinters, renderGames } from "./printers.js";
+import { renderEdges } from "./edges.js";
 
 const rid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -226,6 +227,7 @@ export function renderSettings(root, { state, h, change, api, flash }) {
   renderAndroidHost(root, { state, h, change, api, flash });
   renderPrinters(root, { state, h, change, api, flash });
   renderGames(root, { state, h, change, api, flash });
+  renderEdges(root, { state, h, change, api, flash });
 }
 
 export { renderLook };
