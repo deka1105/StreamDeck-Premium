@@ -361,6 +361,12 @@ export function sanitizeConfig(raw, catalog) {
       control: cleanControl(raw?.settings?.control),
       audio: cleanAudio(raw?.settings?.audio),
       printers: cleanPrinters(raw?.settings?.printers),
+      games: {
+        launch: raw?.settings?.games?.launch === true,
+        custom: (Array.isArray(raw?.settings?.games?.custom) ? raw.settings.games.custom.slice(0, 30) : [])
+          .filter((g) => typeof g?.match === "string" && g.match.trim())
+          .map((g, i) => ({ id: cleanId(g.id, `g${i + 1}`), name: cleanText(g.name, 60) || g.match, match: cleanText(g.match, 120).trim(), launch: cleanText(g.launch, 500).trim(), cover: /^https:\/\/\S+$/.test(g.cover ?? "") ? g.cover.slice(0, 1000) : "" })),
+      },
       android: { usb: raw?.settings?.android?.usb === true, clipboard: raw?.settings?.android?.clipboard === true, showNotifications: raw?.settings?.android?.showNotifications !== false },
       system: { services: (Array.isArray(raw?.settings?.system?.services) ? raw.settings.system.services : []).filter((n) => typeof n === "string" && /^[A-Za-z0-9_.\- ]{1,80}$/.test(n)).slice(0, 20) },
       mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],

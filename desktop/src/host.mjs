@@ -42,6 +42,8 @@ import { createAgents } from "./panel/agents.mjs";
 import { createControl } from "./control/index.mjs";
 import { createPhone } from "./control/phone.mjs";
 import { createPrinters } from "./printers/index.mjs";
+import { createGames } from "./games/index.mjs";
+import { createExtras } from "./extras/index.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -187,8 +189,12 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
   });
   const phone = createPhone({ pushes, getSettings: () => panelStore.config().settings, port, dryRun });
   const printers = createPrinters({ getSettings: () => panelStore.config().settings, getSecret: (n) => secrets.get(n), isWanted: () => widgetsOfType("printer").length + widgetsOfType("printers").length > 0 });
+  const games = createGames({ dir, getSettings: () => panelStore.config().settings, getSecret: (n) => secrets.get(n), isWanted: () => ["nowgame", "recentgames"].some((t) => widgetsOfType(t).length), execute: (a) => execute(a, { dryRun }) });
+  const extras = createExtras({ getWidget: (client, pageId, widgetId) => findWidget(client, pageId, widgetId), getSecret: (n) => secrets.get(n) });
   const provs = {
     printers,
+    games,
+    ...extras.providers,
     ...control.providers,
     ...(providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun })),
     ...pushes.providers(),
@@ -367,6 +373,10 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
       },
       // ---- Control Deck (Stage 11) ----
       ...control.methods,
+      // ---- games and the long tail (Stage 15) ----
+      "games.cover": async ({ id } = {}) => ({ ok: true, src: await games.cover(String(id ?? "")) }),
+      "games.launch": async ({ id } = {}) => games.launch(String(id ?? "")),
+      ...extras.methods,
       // ---- Android phone (Stage 13) ----
       ...phone.methods,
       "rules.pause": ({ minutes } = {}) => rules.pause(Math.max(0, Math.min(24 * 60, Number(minutes) || 0))),
@@ -620,6 +630,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
     control,
     phone,
     printers,
+    games,
     listen: () =>
       new Promise((r) => {
         sampler.start();
@@ -675,6 +686,7 @@ export function agentRoutes(host) {
         send(res, 200, { ok: false, error: err.message });
       }
     },
+    "GET /api/editor/games/running": async (_req, res, { send }) => send(res, 200, { ok: true, programs: await host.games.running() }),
     "GET /api/editor/usb": async (_req, res, { send }) => send(res, 200, { ok: true, ...(await host.phone.usbStatus()) }),
     "POST /api/editor/audio/snapshot": async (_req, res, { send }) => {
       try {
