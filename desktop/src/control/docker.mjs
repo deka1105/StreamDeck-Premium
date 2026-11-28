@@ -36,6 +36,8 @@ export function createDocker({ getSettings, isWanted, runImpl = run, log = conso
   };
 
   async function cli(args) {
+    // Auto: the first engine that answers. A daemon that's down is a better
+    // error to show than a tool that isn't installed.
     let lastErr = null;
     for (const bin of engineUsed ? [engineUsed] : engines()) {
       try {
@@ -43,8 +45,7 @@ export function createDocker({ getSettings, isWanted, runImpl = run, log = conso
         engineUsed = bin;
         return stdout;
       } catch (err) {
-        lastErr = err;
-        if (err.code !== "ENOENT") break;
+        if (!lastErr || lastErr.code === "ENOENT") lastErr = err;
       }
     }
     engineUsed = null;
