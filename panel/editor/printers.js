@@ -95,3 +95,41 @@ export function renderPrinters(root, { state, h, change, api, flash }) {
     ),
   );
 }
+
+// Editor › Settings › Games: launching, the optional Steam Web API key, and
+// games outside Steam (matched by a running program).
+export function renderGames(root, { state, h, change, api, flash }) {
+  const s = state.config.settings;
+  s.games ??= { launch: false, custom: [] };
+  const g = s.games;
+  g.custom ??= [];
+  const key = h("input", { id: "steamKey", type: "password", placeholder: "Steam Web API key (optional)", autocomplete: "new-password" });
+  const picks = h("div", { class: "ha-list" });
+  const f = { name: h("input", { id: "gName", placeholder: "Game name" }), match: h("input", { id: "gMatch", placeholder: "Program name to look for, e.g. eldenring" }), launch: h("input", { id: "gLaunch", placeholder: "Launch with (app path or URL, optional)" }), cover: h("input", { id: "gCover", placeholder: "Cover picture https://… (optional)" }) };
+  root.append(
+    h(
+      "section",
+      { class: "set-section", id: "gameSettings" },
+      h("h3", { text: "Games" }),
+      h("p", { class: "hint", text: "Steam games are read from Steam's own files on this computer. Other games are noticed when their program runs." }),
+      h("label", { class: "check" }, h("input", { type: "checkbox", id: "gamesLaunch", checked: g.launch, onchange: (e) => change(() => (g.launch = e.target.checked)) }), "Let the panel start games from the Recent games list"),
+      h("div", { class: "row" }, key, h("button", { class: "btn", text: "Save key", onclick: async () => {
+        const r = await api("/api/editor/secret", { name: "steam:key", value: key.value }).catch((e) => ({ ok: false, error: e.message }));
+        key.value = "";
+        flash(r.ok ? (r.saved ? "Steam key saved — friends in game will show." : "Steam key removed.") : r.error, !r.ok);
+      } })),
+      h("p", { class: "hint", text: "The key (from steamcommunity.com/dev/apikey) is only for “friends in game”. Your Steam profile's game details must be visible to friends." }),
+      h("h4", { text: "Other games" }),
+      h("div", { class: "set-list" }, g.custom.map((x) => h("div", { class: "set-row" }, h("div", { class: "grow" }, h("b", { text: x.name }), h("div", { class: "muted small", text: `looks for “${x.match}”${x.launch ? ` · starts ${x.launch}` : ""}` })), h("button", { class: "btn danger", text: "Remove", onclick: () => change(() => (g.custom = g.custom.filter((y) => y.id !== x.id))) })))),
+      h("div", { class: "row form" }, f.name, f.match, f.launch, f.cover, h("button", { class: "btn", id: "addGame", text: "Add", onclick: () => {
+        if (!f.match.value.trim()) return flash("Enter the program name to look for.", true);
+        change(() => g.custom.push({ id: `g${Math.random().toString(36).slice(2, 7)}`, name: f.name.value.trim() || f.match.value.trim(), match: f.match.value.trim(), launch: f.launch.value.trim(), cover: f.cover.value.trim() }));
+      } })),
+      h("button", { class: "btn", id: "pickRunning", text: "Pick from running programs…", onclick: async () => {
+        const r = await api("/api/editor/games/running").catch(() => ({ programs: [] }));
+        picks.replaceChildren(...(r.programs ?? []).map((p) => h("button", { class: "btn small ha-pick", text: p, onclick: () => ((f.match.value = p), (f.name.value ||= p.replace(/\.(exe|app)$/i, ""))) })));
+      } }),
+      picks,
+    ),
+  );
+}

@@ -969,3 +969,5 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
 .cam-img { background-size: contain; }
 .cam-bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding: 6px 10px; font-size: 11px; background: linear-gradient(0deg, rgba(0, 0, 0, 0.7), transparent); }
 .cam-title { font-weight: 700; }
+.ng-art:not(.has-art)::after { content: none; }
+.kv[data-level="warn"] .v { color: var(--warn); }
