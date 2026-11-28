@@ -61,7 +61,6 @@ test.describe("host", () => {
     await sec.locator("#addPrinter").click();
     await page.getByRole("button", { name: /^Save/ }).first().click();
     await expect.poll(async () => (await fetch(`${host.base}/api/editor/state`).then((r) => r.json())).config.settings.printers.length).toBe(1);
-    await page.getByRole("button", { name: /Settings/ }).click();
     await page.locator('#printerSettings .set-row').getByRole("button", { name: "Test connection" }).click();
     await expect(page.locator("#printerSettings .cal-status")).toHaveText(/✓ printing, nozzle 210/);
 
