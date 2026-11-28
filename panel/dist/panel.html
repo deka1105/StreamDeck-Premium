@@ -942,6 +942,8 @@ body[data-font="mono"] .w-title { letter-spacing: 0; }
   .pr-card .pr-temps { gap: 2px 8px; }
 }
 .pr-card { overflow-y: auto; scrollbar-width: none; }
+/* A tall printers widget (phone portrait): one printer per row. */
+@container (max-aspect-ratio: 4/5) { .w-printers .pr-grid { grid-template-columns: 1fr !important; } }
 </style>
 </head>
 <body>
