@@ -13,7 +13,7 @@ const $ = (sel, el = document) => el.querySelector(sel);
 const stage = $("#stage");
 const bridge = window.edges;
 let info = await bridge.info();
-info.dockTray ??= trayBesideDock(info.display, info.dock);
+info.dockTray ??= trayBesideDock(info.display, info.dock, { apps: info.profile?.dock?.length || 1 });
 let display = info.display;
 let cfg = info.profile;
 let pressure = createPressure(cfg.pressureMs ?? 0);

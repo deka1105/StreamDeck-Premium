@@ -47,7 +47,7 @@ export function createEdges({ getSettings, saveEdges, controls, frontmostApp, lo
       id: String(d.id),
       display,
       dock,
-      dockTray: trayBesideDock(display, dock),
+      dockTray: trayBesideDock(display, dock, { apps: effectiveProfile(edges, front).dock?.length || 1 }),
       profile: effectiveProfile(edges, front),
       floating: edges.floating.filter((f) => !f.display || f.display === String(d.id)).map((f) => ({ ...f, ...clampToDisplay(f, display) })),
     };

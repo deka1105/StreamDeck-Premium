@@ -54,14 +54,18 @@ export function createPressure(ms = 0) {
  * above a full-width taskbar), on the same edge. Pure.
  */
 export function trayBesideDock(display, dock, { apps = 8, icon = 52, gap = 8 } = {}) {
+  apps = Math.max(1, Math.min(8, apps));
   const len = apps * icon + (apps + 1) * gap + 36;
   const thick = icon + gap * 2;
   const { width: w, height: h } = display;
   if (dock && (dock.side === "bottom" || !dock.side) && dock.width >= w * 0.9) return { x: 8, y: Math.max(8, dock.y - thick - 8), width: len, height: thick, side: "bottom" };
   if (!dock || dock.side === "bottom" || !dock.side) {
-    const dx = dock ? dock.x : Math.round((w - len) / 2);
-    const x = Math.max(8, dx - len - 12);
-    return { x, y: h - thick - (dock ? Math.max(4, h - (dock.y + dock.height)) : 4), width: len, height: thick, side: "bottom" };
+    const y = h - thick - (dock ? Math.max(4, h - (dock.y + dock.height)) : 4);
+    if (!dock) return { x: Math.round((w - len) / 2), y, width: len, height: thick, side: "bottom" };
+    // Left of the Dock if it fits there, else right of it, else above it.
+    if (dock.x - len - 12 >= 8) return { x: dock.x - len - 12, y, width: len, height: thick, side: "bottom" };
+    if (dock.x + dock.width + 12 + len <= w - 8) return { x: dock.x + dock.width + 12, y, width: len, height: thick, side: "bottom" };
+    return { x: Math.max(8, Math.round((w - len) / 2)), y: Math.max(8, dock.y - thick - 8), width: len, height: thick, side: "bottom" };
   }
   if (dock.side === "left") return { x: dock.x + dock.width + 4, y: Math.max(8, dock.y - len - 12), width: thick, height: len, side: "left" };
   if (dock.side === "right") return { x: dock.x - thick - 4, y: Math.max(8, dock.y - len - 12), width: thick, height: len, side: "right" };
