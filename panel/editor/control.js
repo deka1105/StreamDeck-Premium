@@ -17,23 +17,18 @@ export function renderControl(root, { state, h, change, api, flash }) {
   c.trackpad ??= false;
 
   const input = (id, attrs = {}) => h("input", { id, ...attrs });
-  const saved = h("span", { class: "muted small", id: "ctlSecrets" });
-  api("/api/editor/secrets")
-    .then((r) => {
-      saved.textContent = `OBS password: ${r.have?.["obs:password"] ? "saved" : "not set"} · Home Assistant token: ${r.have?.["ha:token"] ? "saved" : "not set"}`;
-    })
-    .catch(() => {});
+  const saved = h("p", { class: "muted small", id: "ctlSecrets" });
+  const showSaved = () =>
+    api("/api/editor/secrets")
+      .then((r) => (saved.textContent = `OBS password: ${r.have?.["obs:password"] ? "saved" : "not set"} · Home Assistant token: ${r.have?.["ha:token"] ? "saved" : "not set"}`))
+      .catch(() => {});
+  showSaved();
   const secret = async (name, el, label) => {
     const r = await api("/api/editor/secret", { name, value: el.value }).catch((e) => ({ ok: false, error: e.message }));
     el.value = "";
     flash(r.ok ? `${label} ${r.saved ? "saved" : "removed"}.` : r.error ?? "Couldn't save.", !r.ok);
-    saved.textContent = "";
-    renderControlStatus();
+    showSaved();
   };
-  const renderControlStatus = () =>
-    api("/api/editor/secrets")
-      .then((r) => (saved.textContent = `OBS password: ${r.have?.["obs:password"] ? "saved" : "not set"} · Home Assistant token: ${r.have?.["ha:token"] ? "saved" : "not set"}`))
-      .catch(() => {});
 
   const list = (items, label, sub, remove) =>
     h(

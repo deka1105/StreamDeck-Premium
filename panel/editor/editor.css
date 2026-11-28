@@ -109,3 +109,5 @@ body[data-view="settings"] aside.right { opacity: 0.4; pointer-events: none; }
 .preset.on { outline: 2px solid var(--p-accent); }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 16px; }
 .btn.small { padding: 3px 8px; font-size: 11px; }
+.ha-list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 220px; overflow-y: auto; margin-top: 6px; }
+.ha-pick { font-family: var(--mono, ui-monospace, monospace); }
