@@ -164,3 +164,14 @@ decision made *without* reference material because the docs were silent.
 
 - Built from public protocol documents only: obs-websocket 5 protocol (handshake, auth recipe, request names), Home Assistant REST API (`/api/states`, `/api/services/<domain>/<service>`), RFC 6455 (WebSocket framing), OSC 1.0 spec, the Wake-on-LAN magic-packet format, Docker/Podman CLI `--format` docs, and each meeting app's published keyboard-shortcut list.
 - No reference app's code was read. Widget names, layouts and visuals are our own.
+
+### Stages 12–18
+
+- **Stage 12:** built from Microsoft's published Windows SDK headers and documentation (Core Audio, DDC/CI, power, WMI). `IPolicyConfig` is undocumented; its layout is widely described in public write-ups, and it is isolated behind a capability error.
+- **Stage 13:** built from Android's documentation and the Expo v57 docs.
+- **Stage 14:** built from public protocol documentation only (docs/printers.md). Brands known only through other projects' code were skipped (R9).
+- **Stage 15:** built from Steam's own file formats on disk (KeyValues) and the public Steam Web API docs.
+- **Stage 16:** built from public product pages only. The overlay visuals, names and glass material are our own (R11).
+- **Stage 17:** built from Adobe's scripting guides and keyboard-shortcut pages, and Blender's Python API docs.
+- **Stage 18:** translations are our own.
+- No reference app's source was opened at any stage.
