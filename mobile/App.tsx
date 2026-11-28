@@ -50,6 +50,8 @@ import { ProfileSettings } from "./src/ProfileSettings";
 import { RunningApps } from "./src/RunningApps";
 import { SnippetLibrary } from "./src/SnippetLibrary";
 import { PanelScreen } from "./src/PanelScreen";
+import { AndroidSheet } from "./src/AndroidSheet";
+import { androidNative } from "./src/androidPhone";
 import { useDevLink, devPanelClicks, type DevLink } from "./src/devLink";
 import {
   loadSnippets,
@@ -436,6 +438,7 @@ function DeckScreen({
   const reduced = useReduceMotion();
   const [hostStatus, setHostStatus] = useState<HostStatus | null>(null);
   const [showHosts, setShowHosts] = useState(false);
+  const [showAndroid, setShowAndroid] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
   const [showImport, setShowImport] = useState(false);
   // Armed timer tiles: tile id → epoch ms when it fires.
@@ -1023,9 +1026,16 @@ function DeckScreen({
         </View>
         <View style={styles.headerButtons}>
           {view !== "deck" ? (
-            <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Back to deck" onPress={() => { selectFeedback(); animateLayout(reduced); setView("deck"); }}>
-              <Text style={styles.pillText}>← Deck</Text>
-            </PressableScale>
+            <>
+              {view === "panel" && androidNative && (
+                <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Android panel settings" onPress={() => { selectFeedback(); setShowAndroid(true); }}>
+                  <Text style={styles.pillText}>📱</Text>
+                </PressableScale>
+              )}
+              <PressableScale style={styles.pill} accessibilityRole="button" accessibilityLabel="Back to deck" onPress={() => { selectFeedback(); animateLayout(reduced); setView("deck"); }}>
+                <Text style={styles.pillText}>← Deck</Text>
+              </PressableScale>
+            </>
           ) : (
             <>
               {!editing && (
@@ -1378,6 +1388,7 @@ function DeckScreen({
         />
       )}
 
+      {showAndroid && <AndroidSheet onClose={() => setShowAndroid(false)} />}
       {showHosts && (
         <HostsSheet
           hosts={hosts}

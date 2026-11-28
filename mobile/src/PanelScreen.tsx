@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { AppState, StyleSheet, View } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import * as Battery from "expo-battery";
+import { useAndroidPhone, androidRequest } from "./androidPhone";
 import { PANEL_HTML } from "./generated/panelHtml";
 import { panelCall, panelWait } from "./host";
 import { isDemo } from "./demo";
@@ -173,6 +174,9 @@ export function PanelScreen({
     return () => subs.forEach((s) => s.remove());
   }, [send]);
 
+  // Android-only: volume keys, keep awake, auto-dim, kiosk, notification mirror, battery reports.
+  useAndroidPhone(pairing, send);
+
   // Tiles edited on the deck screen show up in the panel straight away.
   useEffect(() => {
     send({ t: "evt", type: "data", data: { kind: "deck", value: deckPayload(deck) } });
@@ -208,6 +212,13 @@ export function PanelScreen({
         // Phone-side requests: answered here, never sent to the computer.
         if (msg.method === "phone.battery") {
           batteryNow().then(
+            (result) => reply(true, { result }),
+            (err) => reply(false, { error: err instanceof Error ? err.message : String(err) }),
+          );
+          return;
+        }
+        if (typeof msg.method === "string" && (msg.method.startsWith("phone.clipboard.") || msg.method === "phone.platform")) {
+          androidRequest(msg.method, pairing).then(
             (result) => reply(true, { result }),
             (err) => reply(false, { error: err instanceof Error ? err.message : String(err) }),
           );
