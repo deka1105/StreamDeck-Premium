@@ -34,7 +34,7 @@ export async function runEdgesSmoke({ edges, store }) {
   for (const [name, zone] of Object.entries(shots)) {
     const r = await win.webContents.executeJavaScript(`(async () => { try { window.__edges.reveal(${JSON.stringify(zone)}); return "ok " + document.querySelectorAll(".ctl").length; } catch (e) { return "err " + e.message; } })()`);
     console.log(zone, r);
-    await wait(900);
+    await wait(350);
     const img = await win.webContents.capturePage();
     writeFileSync(join(out, `edges-${name}.png`), img.toPNG());
     console.log(`captured ${name}: shown=${await win.webContents.executeJavaScript("window.__edges.shown")}`);

@@ -4,6 +4,7 @@
 
 import { BrowserWindow, screen, ipcMain, app as electronApp } from "electron";
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -127,9 +128,12 @@ export function createEdges({ getSettings, saveEdges, controls, frontmostApp, lo
     if (iconCache.has(name)) return iconCache.get(name);
     let src = null;
     try {
-      const path = platform === "darwin" ? (/\.app$/.test(name) ? name : `/Applications/${name}.app`) : name;
-      const img = await electronApp.getFileIcon(path, { size: "large" });
-      src = img.isEmpty() ? null : img.toDataURL();
+      const candidates = platform === "darwin" ? (/\.app$/.test(name) ? [name] : ["/Applications", "/System/Applications", "/System/Applications/Utilities", join(electronApp.getPath("home"), "Applications")].map((d) => join(d, `${name}.app`))) : [name];
+      const path = candidates.find((p) => existsSync(p));
+      if (path) {
+        const img = await electronApp.getFileIcon(path, { size: "large" });
+        src = img.isEmpty() ? null : img.toDataURL();
+      }
     } catch {
       src = null;
     }
