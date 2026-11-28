@@ -44,6 +44,7 @@ let host;
 let tray;
 let pairWindow;
 let appsWindow;
+let edges;
 
 function createPairWindow() {
   if (pairWindow && !pairWindow.isDestroyed()) {
