@@ -10,6 +10,9 @@ import { createServices } from "./services.mjs";
 import { createMeeting } from "./meeting.mjs";
 import { createPointer } from "./pointer.mjs";
 import { wake, sendOsc } from "./udp.mjs";
+import { createWinHelper } from "./winhelper.mjs";
+import { createAudio } from "./audio.mjs";
+import { createSystemControls } from "./system.mjs";
 
 export function createControl({ getSettings, getWidgets, secrets, execute, publish, widgetAllows, dryRun = false, log = console.log, overrides = {} } = {}) {
   const ctl = () => getSettings()?.control ?? {};
@@ -20,6 +23,11 @@ export function createControl({ getSettings, getWidgets, secrets, execute, publi
   const services = overrides.services ?? createServices({ getSettings, log });
   const meeting = overrides.meeting ?? createMeeting({ execute, dryRun, log });
   const pointer = overrides.pointer ?? createPointer({ log });
+  // Stage 12: Windows-native audio and system controls (macOS where it can).
+  const helper = overrides.helper ?? (process.platform === "win32" ? createWinHelper({ log }) : null);
+  const audio = overrides.audio ?? createAudio({ helper, getSettings, log });
+  const system = overrides.system ?? createSystemControls({ helper, getSettings, dryRun, log });
+  audio.setOnChange?.(() => refresh("audio", audio).catch(() => {}));
 
   const refresh = async (kind, prov) => publish("data", { kind, value: await prov.sample() });
   // OBS events and service exits show up without waiting for the next sample.
@@ -30,6 +38,12 @@ export function createControl({ getSettings, getWidgets, secrets, execute, publi
   });
   services.setOnChange?.(() => refresh("services", services).catch(() => {}));
 
+  // Publish fresh state after a change, then answer.
+  const after = (kind, r) => {
+    const prov = { audio, winsys: system }[kind];
+    setTimeout(() => refresh(kind, prov).catch(() => {}), 120);
+    return r;
+  };
   const wrap = (fn) => async (params = {}, ctx = {}) => {
     try {
       return await fn(params, ctx);
@@ -90,6 +104,20 @@ export function createControl({ getSettings, getWidgets, secrets, execute, publi
       await refresh("meeting", meeting);
       return r;
     }),
+    "audio.setDefault": wrap(async (p) => after("audio", await audio.methods.setDefault(p))),
+    "audio.setDeviceVolume": wrap(async (p) => audio.methods.setDeviceVolume(p)),
+    "audio.setDeviceMute": wrap(async (p) => after("audio", await audio.methods.setDeviceMute(p))),
+    "audio.setSessionVolume": wrap(async (p) => audio.methods.setSessionVolume(p)),
+    "audio.setSessionMute": wrap(async (p) => after("audio", await audio.methods.setSessionMute(p))),
+    "audio.duck": wrap(async (p) => after("audio", await audio.methods.duck(p))),
+    "audio.profile": wrap(async (p) => after("audio", await audio.methods.applyProfile(p))),
+    "ptt.down": wrap(async () => audio.methods.pttDown()),
+    "ptt.hold": wrap(async () => audio.methods.pttHold()),
+    "ptt.up": wrap(async () => audio.methods.pttUp()),
+    "system.plan": wrap(async (p) => after("winsys", await system.methods.setPlan(p))),
+    "system.service": wrap(async (p) => after("winsys", await system.methods.service(p))),
+    "system.brightness": wrap(async (p) => system.methods.setBrightness(p)),
+    "system.power": wrap(async (p) => system.methods.power(p)),
     "pointer.send": wrap(async (req) => {
       if (!ctl().trackpad) return { ok: false, error: "The trackpad is off. Turn it on in the editor (Settings › Control Deck)." };
       return pointer.send(req);
@@ -97,7 +125,8 @@ export function createControl({ getSettings, getWidgets, secrets, execute, publi
   };
 
   return {
-    providers: { obs, ha, containers, services, meeting },
+    providers: { obs, ha, containers, services, meeting, audio, audiolevels: audio.levels, winsys: system },
+    audioSnapshot: () => audio.snapshot(),
     methods,
     testHa: () => ha.test(),
     stop() {
@@ -105,6 +134,8 @@ export function createControl({ getSettings, getWidgets, secrets, execute, publi
       obs.close?.();
       services.stopAll();
       pointer.stop();
+      audio.stop?.();
+      helper?.stop();
     },
   };
 }

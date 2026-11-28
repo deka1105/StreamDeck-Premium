@@ -289,6 +289,30 @@ export function cleanControl(c) {
   };
 }
 
+// Stage 12 audio: profiles (output + input device names, app levels), ducking.
+export function cleanAudio(a) {
+  const names = (v, max) => (Array.isArray(v) ? v : []).filter((x) => typeof x === "string" && x.trim()).map((x) => cleanText(x, 80).trim()).slice(0, max);
+  const ids = new Set();
+  return {
+    duckLevel: Math.max(0, Math.min(100, int(a?.duckLevel, 30))),
+    duckExcept: names(a?.duckExcept ?? ["Teams", "Zoom", "Discord"], 20),
+    pttDuck: a?.pttDuck === true,
+    profiles: (Array.isArray(a?.profiles) ? a.profiles.slice(0, 12) : [])
+      .map((p, i) => {
+        let id = cleanId(p?.id, `ap${i + 1}`);
+        while (ids.has(id)) id += "x";
+        ids.add(id);
+        return {
+          id,
+          name: cleanText(p?.name, 40) || `Profile ${i + 1}`,
+          output: cleanText(p?.output, 120),
+          input: cleanText(p?.input, 120),
+          apps: (Array.isArray(p?.apps) ? p.apps.slice(0, 24) : []).filter((x) => typeof x?.name === "string" && x.name.trim()).map((x) => ({ name: cleanText(x.name, 80), volume: Math.max(0, Math.min(100, int(x.volume, 100))) })),
+        };
+      }),
+  };
+}
+
 export function sanitizeConfig(raw, catalog) {
   const byType = new Map((catalog?.widgets ?? []).map((w) => [w.type, w]));
   const devices = {};
@@ -332,6 +356,8 @@ export function sanitizeConfig(raw, catalog) {
         holdMaxMin: Math.max(0, Math.min(600, int(raw?.settings?.pageSwitch?.holdMaxMin, 30))),
       },
       control: cleanControl(raw?.settings?.control),
+      audio: cleanAudio(raw?.settings?.audio),
+      system: { services: (Array.isArray(raw?.settings?.system?.services) ? raw.settings.system.services : []).filter((n) => typeof n === "string" && /^[A-Za-z0-9_.\- ]{1,80}$/.test(n)).slice(0, 20) },
       mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],
     },
   };

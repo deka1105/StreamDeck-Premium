@@ -655,6 +655,13 @@ export function agentRoutes(host) {
       }
     },
     "POST /api/editor/agents/remove": (_req, res, { send }) => send(res, 200, { ok: true, ...host.agents.remove() }),
+    "POST /api/editor/audio/snapshot": async (_req, res, { send }) => {
+      try {
+        send(res, 200, { ok: true, ...(await host.control.audioSnapshot()) });
+      } catch (err) {
+        send(res, 200, { ok: false, error: err.message });
+      }
+    },
     "POST /api/editor/ha/test": async (_req, res, { send }) => {
       try {
         send(res, 200, await host.control.testHa());
