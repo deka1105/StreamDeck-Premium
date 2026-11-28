@@ -17,7 +17,7 @@ import http from "node:http";
 import crypto from "node:crypto";
 import os from "node:os";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import qrcode from "qrcode";
 import { execute, validateAction, frontmostApp, runningApps, hostStatus } from "./executor.mjs";
