@@ -2,7 +2,7 @@
 // display that ignores the mouse (but still receives moves) until the pointer
 // is over a revealed control. Hidden over fullscreen apps unless allowed.
 
-import { BrowserWindow, screen, ipcMain, app as electronApp } from "electron";
+import { BrowserWindow, screen, ipcMain, nativeImage, app as electronApp } from "electron";
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { promisify } from "node:util";
@@ -131,7 +131,8 @@ export function createEdges({ getSettings, saveEdges, controls, frontmostApp, lo
       const candidates = platform === "darwin" ? (/\.app$/.test(name) ? [name] : ["/Applications", "/System/Applications", "/System/Applications/Utilities", join(electronApp.getPath("home"), "Applications")].map((d) => join(d, `${name}.app`))) : [name];
       const path = candidates.find((p) => existsSync(p));
       if (path) {
-        const img = await electronApp.getFileIcon(path, { size: "large" });
+        // A Quick Look thumbnail of the app bundle is its icon (getFileIcon crashed Electron 34 on macOS).
+        const img = platform === "darwin" ? await nativeImage.createThumbnailFromPath(path, { width: 128, height: 128 }) : await electronApp.getFileIcon(path, { size: "large" });
         src = img.isEmpty() ? null : img.toDataURL();
       }
     } catch {
