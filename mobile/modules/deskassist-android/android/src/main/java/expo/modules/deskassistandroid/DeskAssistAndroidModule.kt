@@ -84,7 +84,8 @@ class DeskAssistAndroidModule : Module() {
     // ---- kiosk ----
     Function("isDefaultHome") {
       val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-      val info = context.packageManager.resolveActivity(intent, 0)
+      // With several launchers and none chosen, this resolves to Android's chooser, not us.
+      val info = context.packageManager.resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
       info?.activityInfo?.packageName == context.packageName
     }
     Function("openHomeSettings") {

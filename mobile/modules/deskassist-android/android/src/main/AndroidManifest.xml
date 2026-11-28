@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Lets the app see which launcher is the home app (package visibility, Android 11+). -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.HOME" />
+    </intent>
+  </queries>
   <application>
     <!-- Mirrors notifications to the computer, only after the user grants
          notification access in Android's settings and turns it on in DeskAssist. -->
