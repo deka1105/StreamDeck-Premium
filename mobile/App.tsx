@@ -1388,7 +1388,7 @@ function DeckScreen({
         />
       )}
 
-      {showAndroid && <AndroidSheet onClose={() => setShowAndroid(false)} />}
+      {showAndroid && <AndroidSheet pairing={pairing} onClose={() => setShowAndroid(false)} />}
       {showHosts && (
         <HostsSheet
           hosts={hosts}

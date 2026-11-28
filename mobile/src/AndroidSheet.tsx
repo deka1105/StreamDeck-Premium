@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { androidFeatures, type AndroidSettings, type KeepAwake } from "./androidLogic";
-import { androidNative, saveAndroidSettings, useAndroidSettings } from "./androidPhone";
+import { androidNative, saveAndroidSettings, useAndroidSettings, wakeComputer, wakeInfoFor } from "./androidPhone";
+import type { Pairing } from "./storage";
 import { Platform } from "react-native";
 
 /** Android phone settings for the panel. Never shown on iOS (no native module). */
-export function AndroidSheet({ onClose }: { onClose: () => void }) {
+export function AndroidSheet({ onClose, pairing }: { onClose: () => void; pairing?: Pairing | null }) {
   const s = useAndroidSettings();
   const native = androidNative;
   const [home, setHome] = useState(false);
   const [access, setAccess] = useState(false);
+  const [canWake, setCanWake] = useState(false);
+  const [wakeMsg, setWakeMsg] = useState("");
+  useEffect(() => {
+    if (pairing) wakeInfoFor(pairing.kid).then((w) => setCanWake(!!w));
+  }, [pairing]);
   useEffect(() => {
     if (!native) return;
     const check = () => {
@@ -79,6 +85,21 @@ export function AndroidSheet({ onClose }: { onClose: () => void }) {
             </View>
 
             <Text style={styles.section}>Computer</Text>
+            {pairing && (
+              <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowName}>Wake {pairing.name}</Text>
+                  <Text style={styles.rowMeta}>{wakeMsg || (canWake ? "Sends a Wake-on-LAN packet from this phone (same network, Wake-on-LAN on in the computer)." : "Connect once while the computer is awake so the phone learns its address.")}</Text>
+                </View>
+                <Pressable
+                  style={[styles.smallBtn, !canWake && { opacity: 0.4 }]}
+                  disabled={!canWake}
+                  onPress={() => wakeComputer(pairing.kid).then(() => setWakeMsg("Sent. It can take a minute to start."), (e) => setWakeMsg(e instanceof Error ? e.message : String(e)))}
+                >
+                  <Text style={styles.smallBtnText}>Wake</Text>
+                </Pressable>
+              </View>
+            )}
             {toggle("usbFirst", "Prefer the USB cable", "With “USB link” on in the computer's editor, the phone reaches it over the cable, no Wi-Fi needed.")}
             {toggle("reportBattery", "Share battery with the computer", "Level, charging and temperature, for rules like “charged to 80 % → turn the plug off”.")}
             {toggle("mirror", "Show phone notifications on the computer", "App name, title and text only. Needs notification access.")}

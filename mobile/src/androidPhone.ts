@@ -48,6 +48,37 @@ export function useAndroidSettings(): AndroidSettings | null {
   return s;
 }
 
+// ---- wake the computer from the phone (Wake-on-LAN) ----
+type WakeInfo = { mac: string; broadcast: string };
+const wakeKey = (kid: string) => `deskassist.wake.${kid}`;
+
+export async function rememberWakeInfo(pairing: Pairing) {
+  if (!native || isDemo(pairing)) return;
+  try {
+    const r = await panelCall<{ mac?: string; broadcast?: string }>(pairing, "host.wakeInfo", {});
+    if (r?.mac) await AsyncStorage.setItem(wakeKey(pairing.kid), JSON.stringify({ mac: r.mac, broadcast: r.broadcast ?? "255.255.255.255" }));
+  } catch {
+    /* older host or offline */
+  }
+}
+
+export async function wakeInfoFor(kid: string): Promise<WakeInfo | null> {
+  try {
+    return JSON.parse((await AsyncStorage.getItem(wakeKey(kid))) ?? "null");
+  } catch {
+    return null;
+  }
+}
+
+/** Send the magic packet to the subnet broadcast and the general broadcast. */
+export async function wakeComputer(kid: string): Promise<void> {
+  if (!native) throw new Error("Waking a computer from the phone works on Android.");
+  const w = await wakeInfoFor(kid);
+  if (!w) throw new Error("Connect to this computer once while it's awake, so the phone learns its address.");
+  await native.sendWake(w.mac, w.broadcast, 9);
+  if (w.broadcast !== "255.255.255.255") await native.sendWake(w.mac, "255.255.255.255", 9).catch(() => {});
+}
+
 /** Phone-side panel requests (clipboard bridge). Returns undefined if not ours. */
 export async function androidRequest(method: string, pairing: Pairing): Promise<unknown> {
   if (method !== "phone.clipboard.send" && method !== "phone.clipboard.receive" && method !== "phone.platform") return undefined;
@@ -70,6 +101,11 @@ export function useAndroidPhone(pairing: Pairing, send: (msg: unknown) => void) 
   const s = useAndroidSettings();
   const pairingRef = useRef(pairing);
   pairingRef.current = pairing;
+
+  // Learn the computer's wake address while it's awake.
+  useEffect(() => {
+    if (native) rememberWakeInfo(pairing);
+  }, [pairing]);
 
   // Volume keys flip pages.
   useEffect(() => {
