@@ -55,3 +55,8 @@ session-logs/
 brag-output/work-*/
 brag-output/composition/renders/
 brag-output/composition/.debug/
+
+# Windows helper build output (built in CI / on Windows)
+desktop/native/win-helper/bin/
+desktop/native/win-helper/obj/
+desktop/native/win-helper/out/
