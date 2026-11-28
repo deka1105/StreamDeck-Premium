@@ -1287,6 +1287,166 @@
       }
     },
     {
+      "id": "photoshop",
+      "name": "Photoshop",
+      "description": "Nine Photoshop tool keys, a precision slider and a colour control. Pair with a rule: “Photoshop in front → show this page”.",
+      "page": {
+        "name": "Photoshop",
+        "widgets": [
+          {
+            "type": "creativekeys",
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 6,
+            "options": {
+              "app": "photoshop"
+            }
+          },
+          {
+            "type": "creativeslider",
+            "x": 6,
+            "y": 0,
+            "w": 6,
+            "h": 2,
+            "options": {
+              "app": "photoshop",
+              "control": "opacity"
+            }
+          },
+          {
+            "type": "creativecolor",
+            "x": 6,
+            "y": 2,
+            "w": 6,
+            "h": 4,
+            "options": {
+              "app": "photoshop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "illustrator",
+      "name": "Illustrator",
+      "description": "Nine Illustrator tool keys, a precision slider and a colour control. Pair with a rule: “Illustrator in front → show this page”.",
+      "page": {
+        "name": "Illustrator",
+        "widgets": [
+          {
+            "type": "creativekeys",
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 6,
+            "options": {
+              "app": "illustrator"
+            }
+          },
+          {
+            "type": "creativeslider",
+            "x": 6,
+            "y": 0,
+            "w": 6,
+            "h": 2,
+            "options": {
+              "app": "illustrator",
+              "control": "stroke"
+            }
+          },
+          {
+            "type": "creativecolor",
+            "x": 6,
+            "y": 2,
+            "w": 6,
+            "h": 4,
+            "options": {
+              "app": "illustrator"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "aftereffects",
+      "name": "After Effects",
+      "description": "Nine After Effects tool keys, a precision slider and a colour control. Pair with a rule: “After Effects in front → show this page”.",
+      "page": {
+        "name": "After Effects",
+        "widgets": [
+          {
+            "type": "creativekeys",
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 6,
+            "options": {
+              "app": "aftereffects"
+            }
+          },
+          {
+            "type": "creativeslider",
+            "x": 6,
+            "y": 0,
+            "w": 6,
+            "h": 2,
+            "options": {
+              "app": "aftereffects",
+              "control": "value"
+            }
+          },
+          {
+            "type": "creativecolor",
+            "x": 6,
+            "y": 2,
+            "w": 6,
+            "h": 4,
+            "options": {
+              "app": "aftereffects"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "premiere",
+      "name": "Premiere Pro",
+      "description": "Premiere Pro's editing tools as keys.",
+      "page": {
+        "name": "Premiere Pro",
+        "widgets": [
+          {
+            "type": "creativekeys",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 6,
+            "options": {
+              "app": "premiere"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "blender",
+      "name": "Blender",
+      "description": "Modes, view, rotation, camera focal length, light power and sculpt brush (needs the DeskAssist add-on in Blender).",
+      "page": {
+        "name": "Blender",
+        "widgets": [
+          {
+            "type": "blender",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 6
+          }
+        ]
+      }
+    },
+    {
       "id": "clock",
       "name": "Clock",
       "description": "A big clock with seconds.",

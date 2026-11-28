@@ -2324,6 +2324,159 @@
       ]
     },
     {
+      "type": "creativekeys",
+      "name": "Creative tool keys",
+      "category": "deck",
+      "size": {
+        "w": 6,
+        "h": 3
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "app",
+          "type": "choice",
+          "label": "App",
+          "default": "photoshop",
+          "choices": [
+            {
+              "value": "photoshop",
+              "label": "Photoshop"
+            },
+            {
+              "value": "illustrator",
+              "label": "Illustrator"
+            },
+            {
+              "value": "aftereffects",
+              "label": "After Effects"
+            },
+            {
+              "value": "premiere",
+              "label": "Premiere Pro"
+            }
+          ]
+        },
+        {
+          "key": "tools",
+          "type": "list",
+          "label": "Nine tool ids, one per line (empty = a good default set)",
+          "default": []
+        }
+      ]
+    },
+    {
+      "type": "creativeslider",
+      "name": "Creative precision slider",
+      "category": "deck",
+      "size": {
+        "w": 6,
+        "h": 2
+      },
+      "min": {
+        "w": 3,
+        "h": 1
+      },
+      "options": [
+        {
+          "key": "app",
+          "type": "choice",
+          "label": "App",
+          "default": "illustrator",
+          "choices": [
+            {
+              "value": "photoshop",
+              "label": "Photoshop"
+            },
+            {
+              "value": "illustrator",
+              "label": "Illustrator"
+            },
+            {
+              "value": "aftereffects",
+              "label": "After Effects"
+            },
+            {
+              "value": "premiere",
+              "label": "Premiere Pro"
+            }
+          ]
+        },
+        {
+          "key": "control",
+          "type": "choice",
+          "label": "Control",
+          "default": "stroke",
+          "choices": [
+            {
+              "value": "stroke",
+              "label": "Illustrator: stroke weight"
+            },
+            {
+              "value": "opacity",
+              "label": "Opacity (Illustrator selection / Photoshop layer)"
+            },
+            {
+              "value": "value",
+              "label": "After Effects: selected property"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "creativecolor",
+      "name": "Creative colour",
+      "category": "deck",
+      "size": {
+        "w": 4,
+        "h": 3
+      },
+      "min": {
+        "w": 2,
+        "h": 2
+      },
+      "options": [
+        {
+          "key": "app",
+          "type": "choice",
+          "label": "App",
+          "default": "photoshop",
+          "choices": [
+            {
+              "value": "photoshop",
+              "label": "Photoshop"
+            },
+            {
+              "value": "illustrator",
+              "label": "Illustrator"
+            },
+            {
+              "value": "aftereffects",
+              "label": "After Effects"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "blender",
+      "name": "Blender",
+      "category": "deck",
+      "size": {
+        "w": 6,
+        "h": 4
+      },
+      "min": {
+        "w": 3,
+        "h": 2
+      },
+      "options": []
+    },
+    {
       "type": "sessions",
       "name": "Agent sessions",
       "category": "ai",
