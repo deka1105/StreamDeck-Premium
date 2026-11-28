@@ -75,7 +75,7 @@ export function createEditorRoutes({ store, listDevices = () => [], panelDist = 
     },
     "GET /api/editor/secrets": (_req, res, { send }) => {
       const cfg = store.config();
-      const names = [...(cfg.settings.calendars ?? []).map((c) => `calendar:${c.id}`), "obs:password", "ha:token"];
+      const names = [...(cfg.settings.calendars ?? []).map((c) => `calendar:${c.id}`), "obs:password", "ha:token", ...(cfg.settings.printers ?? []).map((p) => `printer:${p.id}`)];
       send(res, 200, { ok: true, have: Object.fromEntries(names.map((n) => [n, !!secrets?.has(n)])), protected: !!secrets?.protected });
     },
     // Try a saved calendar now and report what came back.
