@@ -1,3 +1,4 @@
+import { cleanPrinters } from "../printers/index.mjs";
 import { sanitizeShortcuts, sanitizeCommands } from "./shortcuts.mjs";
 import { sanitizeRules } from "./rules.mjs";
 // Panel layout schema (ours; PLAN D2). Everything that comes from the editor,
@@ -313,6 +314,8 @@ export function cleanAudio(a) {
   };
 }
 
+export { cleanPrinters };
+
 export function sanitizeConfig(raw, catalog) {
   const byType = new Map((catalog?.widgets ?? []).map((w) => [w.type, w]));
   const devices = {};
@@ -357,6 +360,7 @@ export function sanitizeConfig(raw, catalog) {
       },
       control: cleanControl(raw?.settings?.control),
       audio: cleanAudio(raw?.settings?.audio),
+      printers: cleanPrinters(raw?.settings?.printers),
       android: { usb: raw?.settings?.android?.usb === true, clipboard: raw?.settings?.android?.clipboard === true, showNotifications: raw?.settings?.android?.showNotifications !== false },
       system: { services: (Array.isArray(raw?.settings?.system?.services) ? raw.settings.system.services : []).filter((n) => typeof n === "string" && /^[A-Za-z0-9_.\- ]{1,80}$/.test(n)).slice(0, 20) },
       mediaUsers: Array.isArray(raw?.settings?.mediaUsers) ? raw.settings.mediaUsers.filter((u) => typeof u === "string").slice(0, 10).map((u) => cleanText(u, 60)) : [],

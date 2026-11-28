@@ -41,6 +41,7 @@ import { createGithub } from "./providers/github.mjs";
 import { createAgents } from "./panel/agents.mjs";
 import { createControl } from "./control/index.mjs";
 import { createPhone } from "./control/phone.mjs";
+import { createPrinters } from "./printers/index.mjs";
 
 const PROTOCOL = "spd2";
 const PROTOCOL_VERSION = 2;
@@ -185,7 +186,9 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
     dryRun,
   });
   const phone = createPhone({ pushes, getSettings: () => panelStore.config().settings, port, dryRun });
+  const printers = createPrinters({ getSettings: () => panelStore.config().settings, getSecret: (n) => secrets.get(n), isWanted: () => widgetsOfType("printer").length + widgetsOfType("printers").length > 0 });
   const provs = {
+    printers,
     ...control.providers,
     ...(providers ?? createProviders({ dir, getSettings: () => panelStore.config().settings, getWidgets: widgetsOfType, secrets, dryRun })),
     ...pushes.providers(),
@@ -616,6 +619,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
     agents,
     control,
     phone,
+    printers,
     listen: () =>
       new Promise((r) => {
         sampler.start();
@@ -632,6 +636,7 @@ export function createHost({ dir, port = 8788, localPort = 8789, claudeDir = pro
         runner.stopAll();
         control.stop();
         phone.stop();
+        printers.stop();
         provs.netq?.stopUsage?.();
         provs.radio?.stop?.();
         widgetState.flush();
@@ -662,6 +667,14 @@ export function agentRoutes(host) {
       }
     },
     "POST /api/editor/agents/remove": (_req, res, { send }) => send(res, 200, { ok: true, ...host.agents.remove() }),
+    "POST /api/editor/printers/test": async (req, res, { send, readJson }) => {
+      const b = await body(req, readJson);
+      try {
+        send(res, 200, await host.printers.test(String(b.id ?? ""), { setSecret: (n, v) => host.secrets.set(n, v) }));
+      } catch (err) {
+        send(res, 200, { ok: false, error: err.message });
+      }
+    },
     "GET /api/editor/usb": async (_req, res, { send }) => send(res, 200, { ok: true, ...(await host.phone.usbStatus()) }),
     "POST /api/editor/audio/snapshot": async (_req, res, { send }) => {
       try {
